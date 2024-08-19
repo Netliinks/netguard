@@ -123,11 +123,12 @@ export class SelectCustomer {
                     let customer = paginatedItems[i]; // getting visit items
                     let row = document.createElement('TR');
                     row.innerHTML += `
-                    <td style="white-space: nowrap">${customer.name}</td>
-                    <td>${customer.ruc}</td>
-                    <td class="tag"><span>${customer.state.name}</span></td>
-                    <td>${customer.permitMarcation ? 'Si' : 'No'}</td>
-                    <td>${customer.permitVehicular ? 'Si' : 'No'}</td>
+                    <td style="white-space: nowrap">${customer?.name ?? ''}</td>
+                    <td>${customer?.ruc ?? ''}</td>
+                    <td class="tag"><span>${customer?.state?.name ?? ''}</span></td>
+                    <td>${customer?.permitMarcation ? 'Si' : 'No'}</td>
+                    <td>${customer?.permitVehicular ? 'Si' : 'No'}</td>
+                    <td>${customer?.permitRoutine ? 'Si' : 'No'}</td>
                     <td>
                         <button class="button" id="entity-details" data-entityId="${customer.id}">
                             <i class="table_icon fa-regular fa-check"></i>

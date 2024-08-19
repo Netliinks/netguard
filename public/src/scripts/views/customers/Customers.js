@@ -131,9 +131,12 @@ export class Customers {
                 let customer = paginatedItems[i];
                 let row = document.createElement('tr');
                 row.innerHTML += `
-          <td>${customer.name}</dt>
-          <td>${customer.ruc}</dt>
-          <td class="tag"><span>${customer.state.name}</span></td>
+          <td>${customer?.name ?? ''}</dt>
+          <td>${customer?.ruc ?? ''}</dt>
+          <td class="tag"><span>${customer?.state?.name ?? ''}</span></td>
+          <td>${customer?.permitMarcation ? 'Si' : 'No'}</td>
+          <td>${customer?.permitVehicular ? 'Si' : 'No'}</td>
+          <td>${customer?.permitRoutine ? 'Si' : 'No'}</td>
           <td class="entity_options">
               <button class="button" id="edit-entity" data-entityId="${customer.id}">
                 <i class="fa-solid fa-pen"></i>
