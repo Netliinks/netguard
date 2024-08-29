@@ -405,10 +405,8 @@ export class Locations {
                   alert("Distancia inválida");
                 }else if(routine.id == '' || routine.id == null || routine.id == undefined){
                   alert("No hay rutina");
-                }else if(hourIni > hourEnd){
-                  alert("Hora inicial no puede ser mayor a la del final");
                 }else if(hourIni == hourEnd && (minIni > minEnd || minIni == minEnd)){
-                  alert("Minutos iniciales no pueden ser mayores a las del final en horas iguales.");
+                  alert("Minutos iniciales no pueden ser mayores o iguales a las del final en horas iguales.");
                 }else{
                   registerEntity(raw, 'RoutineSchedule');
                   setTimeout(() => {
@@ -677,8 +675,6 @@ export class Locations {
               alert("No se ha seleccionado una ubicación");
             }else if($value.distance.value == "" || $value.distance.value == undefined || $value.distance.value < 0){
               alert("Distancia inválida");
-            }else if(hourIni > hourEnd){
-              alert("Hora inicial no puede ser mayor a la del final");
             }else if(hourIni == hourEnd && (minIni > minEnd || minIni == minEnd)){
               alert("Minutos iniciales no pueden ser mayores o iguales a las del final en horas iguales.");
             }else{
@@ -1050,12 +1046,18 @@ const createRoutines = async (mode, routineId, scheduleId) => {
     let validators; 
     let releaseHour = false;
     let releaseMin = false;
+    let exceed = false;
     let i = 0;
     do {
       minAdd = parseInt(minAdd) + ubications.frequency;
-      validators = timesResults[i].split(":");
-      if((equivalentTime(timeEnd[0]) == equivalentTime(validators[0])) && releaseHour == false){
+      if(exceed){
         releaseHour = true;
+        releaseMin = true;
+      }else{
+        validators = timesResults[i].split(":");
+        if(((equivalentTime(timeEnd[0]) == equivalentTime(validators[0])) && releaseHour == false)){
+          releaseHour = true;
+        }
       }
 
       if(releaseHour == true && (minAdd > parseInt(timeEnd[1]))){
@@ -1066,21 +1068,56 @@ const createRoutines = async (mode, routineId, scheduleId) => {
           hourAdd += 1;
           minAdd = minRest;
           if((parseInt(timeIni[0]) + hourAdd) > 24){
-            timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minRest)+":00");
+
+            if(((parseInt(timeIni[0]) + hourAdd)-24)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minRest)+":00");
+            }
+            
+            
           }else if((parseInt(timeIni[0]) + hourAdd) == 24){
-            timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+            
+            if((equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+            }
+          
           }else{
-            timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+
+            if((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+            }
+            
           }
 
           
         }else{
           if((parseInt(timeIni[0]) + hourAdd) > 24){
-            timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minAdd)+":00");
+
+            if(((parseInt(timeIni[0]) + hourAdd)-24)==parseInt(timeEnd[0]) && minAdd > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minAdd)+":00");
+            }
           }else if((parseInt(timeIni[0]) + hourAdd) == 24){
-            timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minAdd)+":00");
+
+            if((equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minAdd > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minAdd)+":00");
+            }
+            
           }else{
-            timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minAdd)+":00");
+
+            if((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minAdd > parseInt(timeEnd[1])){
+              exceed = true;
+            }else{
+              timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minAdd)+":00");;
+            }
           }
         }
         i+=1;
