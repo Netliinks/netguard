@@ -405,8 +405,8 @@ export class Locations {
                   alert("Distancia inválida");
                 }else if(routine.id == '' || routine.id == null || routine.id == undefined){
                   alert("No hay rutina");
-                }else if(hourIni == hourEnd && (minIni > minEnd || minIni == minEnd)){
-                  alert("Minutos iniciales no pueden ser mayores o iguales a las del final en horas iguales.");
+                }else if(hourIni == hourEnd && minIni > minEnd){
+                  alert("Minutos iniciales no pueden ser mayores a las del final en horas iguales.");
                 }else{
                   registerEntity(raw, 'RoutineSchedule');
                   setTimeout(() => {
@@ -675,8 +675,8 @@ export class Locations {
               alert("No se ha seleccionado una ubicación");
             }else if($value.distance.value == "" || $value.distance.value == undefined || $value.distance.value < 0){
               alert("Distancia inválida");
-            }else if(hourIni == hourEnd && (minIni > minEnd || minIni == minEnd)){
-              alert("Minutos iniciales no pueden ser mayores o iguales a las del final en horas iguales.");
+            }else if(hourIni == hourEnd && minIni > minEnd){
+              alert("Minutos iniciales no pueden ser mayores a las del final en horas iguales.");
             }else{
               update(raw);
             }
