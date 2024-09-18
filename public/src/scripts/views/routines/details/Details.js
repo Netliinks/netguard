@@ -21,7 +21,8 @@ let infoPage = {
     search: "",
     check: false,
     counter: 10,
-    table: "RoutineRegister"
+    table: "RoutineRegister",
+    newRegister: false
 };
 let dataPage;
 let raw;
@@ -198,6 +199,7 @@ export class RoutineRegisters {
                         //console.log(newRegisters);
                         if(newRegisters > infoPage.count){
                             console.log("updates detected")
+                            infoPage.newRegister = true;
                             new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check);
                         }else{
                             console.log("no updates")
@@ -266,6 +268,18 @@ export class RoutineRegisters {
                     
                     // TODO: Corret this fixer
                     // fixDate()
+                    if(register?.routineState?.name == 'No cumplido' && infoPage.newRegister){
+                        const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
+                        let timeTemp = 10000;
+                        let alarmAudio = async () => {
+                            audio.pause();
+                        }
+                        setTimeout(alarmAudio, timeTemp);
+                        audio.play();
+                        infoPage.newRegister = false;
+                    }else{
+                        infoPage.newRegister = false;
+                    }
                 }
             }
             this.previewNote();
