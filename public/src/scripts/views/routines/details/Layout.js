@@ -49,6 +49,7 @@ export const UIContentLayout = `
             Obs <i class="fa-regular fa-filter"></i>
             </span></th>
             <th class="header_filled"></th>
+            <th class="header_filled"></th>
         </tr></thead>
         <tbody id="datatable-body" class="datatable_body">
 

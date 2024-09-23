@@ -1,4 +1,4 @@
-import { getEntitiesData, getUserInfo, getFilterEntityData, getEntityData, registerEntity, _userAgent } from "./endpoints.js";
+import { getEntitiesData, getUserInfo, getFilterEntityData, getFilterEntityCount, getEntityData, registerEntity, _userAgent } from "./endpoints.js";
 //
 export const inputObserver = () => {
     const inputs = document.querySelectorAll('input');
@@ -629,4 +629,26 @@ export const searchUniversalSingle = async (param, operator, value, table) => {
     }else{
         return data;
     }
+}
+
+export const getRoutinesTopBar =async(id)=> {
+    const raw = JSON.stringify({
+        "filter": {
+            "conditions": [
+                {
+                    "property": "business.id",
+                    "operator": "=",
+                    "value": `${id}`
+                },
+                {
+                    "property": "routineState.name",
+                    "operator": "=",
+                    "value": `No cumplido`
+                }
+            ]
+        },
+        sort: "-createdDate",
+    });
+    return await getFilterEntityCount("RoutineRegister", raw);
+
 }
