@@ -19,7 +19,9 @@ let infoPage = {
     newRegister: false,
     countNewRegister: 0,
     timeColor: null,
-    audio: new Audio("./public/src/assets/sounds/alert.mp3")
+    audio: new Audio("./public/src/assets/sounds/alert.mp3"),
+    timeColorNoti: null,
+    audioNoti: new Audio("./public/src/assets/sounds/alarm.mp3")
 };
 export class RenderApplicationUI {
     constructor() {
@@ -59,8 +61,14 @@ export class RenderApplicationUI {
                 </p>
                 <p id="routine-message-topbar" class="customer">Ninguna</p>
             </div>
-         </div>
+        </div>
+        <div id="menuAlert"></div>
          
+    `;
+    this.topbar.innerHTML = topbar;
+    const divMenu = document.getElementById('menuAlert');
+    const defaultMenu = () => {
+        const userMenu =  `
         <div class="user">
             <span class="welcome">Bienvenido</span>
             <span class="separator"></span>
@@ -74,129 +82,132 @@ export class RenderApplicationUI {
                 <p id="current-user-customer" class="customer">${user.username}</p>
                 <p >${customer.name ? customer.name : 'Seleccione una empresa'}</p>
             </div>
-           <div class="settings_button">
-             <button id="settings-button">
-               <i class="fa-solid fa-gear"></i>
-             </button>
-           </div>
-           <div class="user_settings" id="user-settings">
-             <button class="btn btn_transparent btn_widder" id="permit-notify">🔔 Activar notificaciones</button>
-             <button class="btn btn_transparent btn_widder" id="change-customer">Cambiar Empresa</button>
-             <!--<button class="btn btn_transparent btn_widder">Preferencias</button>-->
-             <button class="btn btn_transparent btn_widder" id="change-password">Cambiar Contraseña</button>
-             <br>
-             <button class="btn btn_primary btn_widder" id="logout-button">Cerrar sesión</button>
-           </div>
-         </div>
-    `;
-    this.topbar.innerHTML = topbar;
-    const permitNotify = document.getElementById('permit-notify');
-    const btnRoutine = document.getElementById('button-routine-topbar');
-    const fireBaseCtrl = new FirebaseCtrl();
-    fireBaseCtrl.initApp();
-    fireBaseCtrl.onError((errorMessage) => {
-        permitNotify.innerText = "❌ Error, reintente"
-        permitNotify.disabled= false
-        console.log(errorMessage)
-    });
-    fireBaseCtrl.onGetToken((token) => {
-        let raw = JSON.stringify({
-            // @ts-ignore
-            "webToken": `${token}`,
-        });
-        updateEntity('User', currentUser.attributes.id, raw).then((res) => {
-            console.log("token: "+token)
-            permitNotify.innerText = "✔️​ Notificaciones activas"
-            permitNotify.disabled= true
-        });
-    });
-    fireBaseCtrl.onRecieveNotification((notificationData) => {
-        
-        //let dialog = confirm(`${notificationData.notification.title} | ${notificationData.notification.body}`);
-        let topBarNotification = this.topbar.innerHTML = `
-            <div class="user">
-                <span class="welcome" id="titleNotify"style="color:red;">ALERTA</span>
-                <span class="separator"></span>
-                <div class="userAvatar">
-                    <button id="okNotification">
-                    <i class="fa-solid fa-bell" style="color:red; font-size:20px;"></i>
-                    </button>
-                </div>
-                <div class="nameAndCustomer">
-                    <p id="current-username" class="name">
-                    ${notificationData.notification.title}
-                    </p>
-                    <p id="current-user-customer" class="customer">${notificationData.notification.body}</p>
-                </div>
+            <div class="settings_button">
+                <button id="settings-button">
+                <i class="fa-solid fa-gear"></i>
+                </button>
             </div>
-            
-            
+            <div class="user_settings" id="user-settings">
+                <button class="btn btn_transparent btn_widder" id="permit-notify">🔔 Activar notificaciones</button>
+                <button class="btn btn_transparent btn_widder" id="change-customer">Cambiar Empresa</button>
+                <!--<button class="btn btn_transparent btn_widder">Preferencias</button>-->
+                <button class="btn btn_transparent btn_widder" id="change-password">Cambiar Contraseña</button>
+                <br>
+                <button class="btn btn_primary btn_widder" id="logout-button">Cerrar sesión</button>
+            </div>
+        </div>
         `;
-        this.topbar.innerHTML = topBarNotification;
-        //const audio = document.getElementById("audio");
-        const button = document.getElementById("okNotification");
-        const titleNotify = document.getElementById("titleNotify");
-        const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
-        audio.play();
-        let counter = 1000;
-        let color = 1;
-        let change = async () => {
-            if(color == 1){
-                titleNotify.style.color = "red";
-                color = 2;
-            }else{
-                titleNotify.style.color = "orange";
-                color = 1;
-            }
-            setTimeout(change, counter);
-        }
-        setTimeout(change, counter);
-        audio.play();
-        button.addEventListener('click', () => {
-            audio.pause();
-            audio.currentTime = 0;
-            this.renderTopbar();
-            
-        });
-    });
-    const options = document.getElementById('settings-button');
-    options.addEventListener('click', () => {
-        const settingOptions = document.getElementById('user-settings');
-        const changePassword = document.getElementById('change-password');
-        const changeCustomer = document.getElementById('change-customer');
-        const logoutButton = document.getElementById('logout-button');
-        settingOptions.classList.toggle("user_settings_visible");
+        divMenu.innerHTML = userMenu;
+        const permitNotify = document.getElementById('permit-notify');
         
-            permitNotify.addEventListener("click", async (event) => {
-                if(tokenMessaging == undefined){
-                    try {
-                        const permission = await Notification.requestPermission();
-                        if (permission !== "granted") {
-                            console.log("No se ha aceptado el registro de notificaciones");
-                            return;
-                        }
-                        await fireBaseCtrl.enableWebNotifications();
-                    }
-                    catch (err) {
-                        console.log("Hubo un error", err);
-                    }
-                    finally {
-                        permitNotify.disabled= true
-                    }
-                }
+        const fireBaseCtrl = new FirebaseCtrl();
+        fireBaseCtrl.initApp();
+        fireBaseCtrl.onError((errorMessage) => {
+            permitNotify.innerText = "❌ Error, reintente"
+            permitNotify.disabled= false
+            console.log(errorMessage)
+        });
+        fireBaseCtrl.onGetToken((token) => {
+            let raw = JSON.stringify({
+                // @ts-ignore
+                "webToken": `${token}`,
             });
-        changePassword.addEventListener("click", () => {
-            new ChangePassword().render();
-            //new CloseDialog().x(settingOptions);
+            updateEntity('User', currentUser.attributes.id, raw).then((res) => {
+                console.log("token: "+token)
+                permitNotify.innerText = "✔️​ Notificaciones activas"
+                permitNotify.disabled= true
+            });
         });
-        changeCustomer.addEventListener("click", () => {
-            new SelectCustomer().render(0, 1, '');
-            //new CloseDialog().x(settingOptions);
+        fireBaseCtrl.onRecieveNotification((notificationData) => {
+            clearTimeout(infoPage.timeColorNoti);
+            //let dialog = confirm(`${notificationData.notification.title} | ${notificationData.notification.body}`);
+            let topBarNotification = `
+                <div class="user">
+                    <span class="welcome" id="titleNotify"style="color:red;">ALERTA</span>
+                    <span class="separator"></span>
+                    <div class="userAvatar">
+                        <button id="okNotification">
+                        <i class="fa-solid fa-bell" style="color:red; font-size:20px;"></i>
+                        </button>
+                    </div>
+                    <div class="nameAndCustomer">
+                        <p id="current-username" class="name">
+                        ${notificationData.notification.title}
+                        </p>
+                        <p id="current-user-customer" class="customer">${notificationData.notification.body}</p>
+                    </div>
+                </div>
+                
+                
+            `;
+            divMenu.innerHTML = topBarNotification;
+            //const audio = document.getElementById("audio");
+            const button = document.getElementById("okNotification");
+            const titleNotify = document.getElementById("titleNotify");
+            infoPage.audioNoti.play();
+            infoPage.audioNoti.loop = true;
+            let counter = 1000;
+            let color = 1;
+            let change = async () => {
+                if(color == 1){
+                    titleNotify.style.color = "red";
+                    color = 2;
+                }else{
+                    titleNotify.style.color = "orange";
+                    color = 1;
+                }
+                infoPage.timeColorNoti = setTimeout(change, counter);
+            }
+            infoPage.timeColorNoti = setTimeout(change, counter);
+            button.addEventListener('click', () => {
+                infoPage.audioNoti.pause();
+                infoPage.audioNoti.currentTime = 0;
+                clearTimeout(infoPage.timeColorNoti);
+                //this.renderTopbar();
+                defaultMenu();
+            });
         });
-        logoutButton.addEventListener("click", () => {
-            new SignIn().signOut();
+        const options = document.getElementById('settings-button');
+        options.addEventListener('click', () => {
+            const settingOptions = document.getElementById('user-settings');
+            const changePassword = document.getElementById('change-password');
+            const changeCustomer = document.getElementById('change-customer');
+            const logoutButton = document.getElementById('logout-button');
+            settingOptions.classList.toggle("user_settings_visible");
+            
+                permitNotify.addEventListener("click", async (event) => {
+                    if(tokenMessaging == undefined){
+                        try {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== "granted") {
+                                console.log("No se ha aceptado el registro de notificaciones");
+                                return;
+                            }
+                            await fireBaseCtrl.enableWebNotifications();
+                        }
+                        catch (err) {
+                            console.log("Hubo un error", err);
+                        }
+                        finally {
+                            permitNotify.disabled= true
+                        }
+                    }
+                });
+            changePassword.addEventListener("click", () => {
+                new ChangePassword().render();
+                //new CloseDialog().x(settingOptions);
+            });
+            changeCustomer.addEventListener("click", () => {
+                new SelectCustomer().render(0, 1, '');
+                //new CloseDialog().x(settingOptions);
+            });
+            logoutButton.addEventListener("click", () => {
+                new SignIn().signOut();
+            });
         });
-    });
+    }
+    defaultMenu();
+    const btnRoutine = document.getElementById('button-routine-topbar');
     btnRoutine.addEventListener('click', () => {
         clearTimeout(infoPage.timeColor);
         const titleRoutine = document.getElementById('routine-title-topbar');
