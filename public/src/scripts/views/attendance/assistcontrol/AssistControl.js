@@ -75,6 +75,16 @@ const GetAssistControl = async () => {
                                 "property": "marcationState.name",
                                 "operator": "contains",
                                 "value": `${infoPage.search.toLowerCase()}`
+                            },
+                            {
+                                "property": "ingressIssued.username",
+                                "operator": "contains",
+                                "value": `${infoPage.search.toLowerCase()}`
+                            },
+                            {
+                                "property": "egressIssued.username",
+                                "operator": "contains",
+                                "value": `${infoPage.search.toLowerCase()}`
                             }
                         ]
                     },
