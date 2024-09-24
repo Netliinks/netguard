@@ -22,7 +22,8 @@ let infoPage = {
     check: false,
     counter: 10,
     table: "RoutineRegister",
-    newRegister: false
+    newRegister: false,
+    countNewRegister: 0
 };
 let dataPage;
 let raw;
@@ -200,6 +201,7 @@ export class RoutineRegisters {
                         if(newRegisters > infoPage.count){
                             console.log("updates detected")
                             infoPage.newRegister = true;
+                            infoPage.countNewRegister = newRegisters - infoPage.count;
                             new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check);
                         }else{
                             console.log("no updates")
@@ -256,6 +258,7 @@ export class RoutineRegisters {
                     <td class="tag"><span>${register?.routineState?.name ?? ''}</span></td>
                     <td id="table-date">${register?.creationDate ?? ''} ${register?.creationTime ?? ''}</td>
                     <td>${register?.observation == undefined ? 'No' : 'Si'}</td>
+                    <td id="td-alert-${register.id}"></td>
                     <td>
                         <button class="button" id="entity-details" data-entityId="${register.id}">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -268,17 +271,36 @@ export class RoutineRegisters {
                     
                     // TODO: Corret this fixer
                     // fixDate()
-                    if(register?.routineState?.name == 'No cumplido' && infoPage.newRegister){
-                        const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
-                        let timeTemp = 10000;
-                        let alarmAudio = async () => {
-                            audio.pause();
+                    if(i+1 <= infoPage.countNewRegister){
+                        if(register?.routineState?.name == 'No cumplido'){
+                            let divNewRegister = document.getElementById(`td-alert-${register.id}`);
+                            divNewRegister.innerHTML = `
+                                <button class="button" id="entity-alert" data-entityId="${register.id}">
+                                    <i class="fa-solid fa-circle-exclamation" id="btnAlarm-${register.id}"></i>
+                                </button>
+                            `;
+                            let color = 1;
+                            //const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
+                            let timeTemp = 1000;
+                            let btnAlarm = document.getElementById(`btnAlarm-${register.id}`);
+                            let alarmIcon = async () => {
+                                //audio.pause();
+                                if(color == 1){
+                                    btnAlarm.style.color = "red";
+                                    color = 2;
+                                }else{
+                                    btnAlarm.style.color = "orange";
+                                    color = 1;
+                                }
+                                setTimeout(alarmIcon, timeTemp);
+                            }
+                            setTimeout(alarmIcon, timeTemp);
+                            //audio.play();
+                            infoPage.newRegister = false;
+                        }else{
+                            infoPage.newRegister = false;
                         }
-                        setTimeout(alarmAudio, timeTemp);
-                        audio.play();
-                        infoPage.newRegister = false;
-                    }else{
-                        infoPage.newRegister = false;
+
                     }
                 }
             }
