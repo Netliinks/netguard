@@ -256,6 +256,7 @@ export class SignIn {
         localStorage.removeItem('password');
         localStorage.removeItem('libreriasjs-notification-token');
         clearTimeout(Config.timeOut);
+        clearTimeout(Config.timeRoutineTopBar);
         this.checkSignIn();
         window.location.reload();
     }

@@ -272,17 +272,17 @@ export class RoutineRegisters {
                     // TODO: Corret this fixer
                     // fixDate()
                     if(i+1 <= infoPage.countNewRegister){
-                        const divNewRegister = document.getElementById(`td-alert-${register.id}`);
-                        if(register?.routineState?.name == 'No cumplido' && infoPage.newRegister){
+                        if(register?.routineState?.name == 'No cumplido'){
+                            let divNewRegister = document.getElementById(`td-alert-${register.id}`);
                             divNewRegister.innerHTML = `
                                 <button class="button" id="entity-alert" data-entityId="${register.id}">
-                                    <i class="fa-solid fa-circle-exclamation" id="btnAlarm"></i>
+                                    <i class="fa-solid fa-circle-exclamation" id="btnAlarm-${register.id}"></i>
                                 </button>
                             `;
                             let color = 1;
                             //const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
                             let timeTemp = 1000;
-                            const btnAlarm = document.getElementById(`btnAlarm`);
+                            let btnAlarm = document.getElementById(`btnAlarm-${register.id}`);
                             let alarmIcon = async () => {
                                 //audio.pause();
                                 if(color == 1){
@@ -299,7 +299,6 @@ export class RoutineRegisters {
                             infoPage.newRegister = false;
                         }else{
                             infoPage.newRegister = false;
-                            divNewRegister.innerHTML = '';
                         }
 
                     }
