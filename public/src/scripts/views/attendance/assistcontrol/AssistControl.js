@@ -455,7 +455,7 @@ export class AssistControl {
                 if(images.length != 0){
                     this.previewZoom(images);
                 }else{
-                    _values.tab.style.width="30%";
+                    _values.tab.style.width="37%";
                     _values.gallery.style.flex = "0.5";
                     _values.gallery1.style.width = "70px";
                     _values.gallery2.style.width = "70px";
