@@ -81,12 +81,16 @@ const GetRoutinesDetails = async () => {
                                     "operator": "contains",
                                     "value": `${infoPage.search.toLowerCase()}`
                                 },
-                                ,
                                 {
                                     "property": "routineSchedule.name",
                                     "operator": "contains",
                                     "value": `${infoPage.search.toLowerCase()}`
                                 },
+                                {
+                                    "property": "customer.name",
+                                    "operator": "contains",
+                                    "value": `${infoPage.search.toLowerCase()}`
+                                }
                             ]
                         },
                         {
@@ -145,12 +149,11 @@ const GetRoutinesDetails = async () => {
                                     "operator": "contains",
                                     "value": `${infoPage.search.toLowerCase()}`
                                 },
-                                ,
                                 {
                                     "property": "routineSchedule.name",
                                     "operator": "contains",
                                     "value": `${infoPage.search.toLowerCase()}`
-                                },
+                                }
                             ]
                         },
                         {
