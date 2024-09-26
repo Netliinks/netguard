@@ -180,11 +180,12 @@ export class RoutineRegisters {
         this.dialogContainer = document.getElementById('app-dialogs');
         this.siebarDialogContainer = document.getElementById('entity-editor-container');
         this.appContainer = document.getElementById('datatable-container');
-        this.render = async (offset, actualPage, search, check) => {
+        this.render = async (offset, actualPage, search, check, countNewRegister) => {
             infoPage.offset = offset;
             infoPage.currentPage = actualPage;
             infoPage.search = search;
             infoPage.check = check;
+            infoPage.countNewRegister = countNewRegister;
             this.appContainer.innerHTML = '';
             this.appContainer.innerHTML = UIContentLayout;
             // Getting interface elements
@@ -205,7 +206,7 @@ export class RoutineRegisters {
                             console.log("updates detected")
                             infoPage.newRegister = true;
                             infoPage.countNewRegister = newRegisters - infoPage.count;
-                            new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check);
+                            new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check, infoPage.countNewRegister);
                         }else{
                             console.log("no updates")
                             Config.timeOut = setTimeout(change, infoPage.counter);
@@ -330,7 +331,7 @@ export class RoutineRegisters {
                 // Rendering icons*/
             });
             btnSearch.addEventListener('click', async () => {
-                new RoutineRegisters().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked);
+                new RoutineRegisters().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked, 0);
             });
         };
         /*this.obtainDelay = async (register) =>{
@@ -624,7 +625,7 @@ export class RoutineRegisters {
             button.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (page - 1);
                 currentPage = page;
-                new RoutineRegisters().render(infoPage.offset, currentPage, infoPage.search, infoPage.check); //new RoutineRegisters().load(tableBody, page, items)
+                new RoutineRegisters().render(infoPage.offset, currentPage, infoPage.search, infoPage.check, 0); //new RoutineRegisters().load(tableBody, page, items)
             });
             return button;
         }
@@ -650,11 +651,11 @@ export class RoutineRegisters {
         }
         function setupButtonsEvents(prevButton, nextButton) {
             prevButton.addEventListener('click', () => {
-                new RoutineRegisters().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check);
+                new RoutineRegisters().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check, 0);
             });
             nextButton.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (pageCount - 1);
-                new RoutineRegisters().render(infoPage.offset, pageCount, infoPage.search, infoPage.check);
+                new RoutineRegisters().render(infoPage.offset, pageCount, infoPage.search, infoPage.check, 0);
             });
         }
     };
