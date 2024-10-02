@@ -652,3 +652,65 @@ export const getRoutinesTopBar =async(id)=> {
     return await getFilterEntityCount("RoutineRegister", raw);
 
 }
+
+export const getPermission =async(module, user)=> {
+    const raw = JSON.stringify({
+        "filter": {
+            "conditions": [
+                {
+                    "property": "business.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                },
+                {
+                    "property": "customer.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                },
+                {
+                    "property": "user.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                },
+                {
+                    "property": "module.active",
+                    "operator": "=",
+                    "value": `${true}`
+                },
+                {
+                    "property": "module.name",
+                    "operator": "=",
+                    "value": `${module}`
+                },
+                {
+                    "property": "user.id",
+                    "operator": "=",
+                    "value": `${user}`
+                }
+            ]
+        }
+    });
+    const permission = await getFilterEntityData("Permission", raw);
+    if(permission === undefined){
+        return {
+            code: 1,
+            message: "No se pudo obtener el permiso"
+        };
+    }else if(permission.length === 0){
+        return {
+            code: 2,
+            message: "Usuario no tiene el permiso o módulo inactivo"
+        };
+    }else if(permission.length !== 0){
+        return {
+            code: 3,
+            message: permission[0]
+        };
+    }else{
+        return {
+            code: 4,
+            message: "Ocurrió un error al obtener el permiso"
+        };
+    }
+
+}

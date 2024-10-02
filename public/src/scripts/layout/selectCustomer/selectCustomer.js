@@ -5,7 +5,7 @@
 //
 import { Config } from "../../Configs.js";
 import { getEntityData, getUserInfo, getFilterEntityData, getFilterEntityCount } from "../../endpoints.js";
-import { drawTagsIntoTables, filterDataByHeaderType, pageNumbers, fillBtnPagination } from "../../tools.js";
+import { drawTagsIntoTables, filterDataByHeaderType, pageNumbers, fillBtnPagination, getPermission } from "../../tools.js";
 import { tableLayout, tableLayoutTemplate } from "./Layout.js";
 // Local configs
 const tableRows = Config.tableRows;
@@ -15,7 +15,9 @@ let infoPage = {
     count: 0,
     offset: Config.offset,
     currentPage: currentPage,
-    search: ""
+    search: "",
+    msgPermission: "",
+    actions: []
   };
 const currentBusiness = async () => {
     const currentUser = await getUserInfo();
@@ -26,55 +28,70 @@ const GetCustomers = async () => {
     const businessData = await currentBusiness();
     /*const customers = await getEntitiesData('Customer');
     const FCustomer = customers.filter((data) => data.business.id === `${businessData.business.id}`);*/
-    let raw = JSON.stringify({
-        "filter": {
-            "conditions": [
-                {
-                    "property": "business.id",
-                    "operator": "=",
-                    "value": `${businessData.business.id}`
-                }
-            ],
-        },
-        sort: "-createdDate",
-        limit: Config.tableRows,
-        offset: infoPage.offset,
-        fetchPlan: 'full',
-    });
-    if (infoPage.search != "") {
-        raw = JSON.stringify({
+    const response = async () => {
+        let raw = JSON.stringify({
             "filter": {
                 "conditions": [
                     {
-                        "group": "OR",
-                        "conditions": [
-                            {
-                                "property": "name",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "ruc",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            }
-                        ]
-                    },
-                    {
-                      "property": "business.id",
-                      "operator": "=",
-                      "value": `${businessData.business.id}`
+                        "property": "business.id",
+                        "operator": "=",
+                        "value": `${businessData.business.id}`
                     }
-                ]
+                ],
             },
             sort: "-createdDate",
             limit: Config.tableRows,
             offset: infoPage.offset,
             fetchPlan: 'full',
         });
+        if (infoPage.search != "") {
+            raw = JSON.stringify({
+                "filter": {
+                    "conditions": [
+                        {
+                            "group": "OR",
+                            "conditions": [
+                                {
+                                    "property": "name",
+                                    "operator": "contains",
+                                    "value": `${infoPage.search.toLowerCase()}`
+                                },
+                                {
+                                    "property": "ruc",
+                                    "operator": "contains",
+                                    "value": `${infoPage.search.toLowerCase()}`
+                                }
+                            ]
+                        },
+                        {
+                        "property": "business.id",
+                        "operator": "=",
+                        "value": `${businessData.business.id}`
+                        }
+                    ]
+                },
+                sort: "-createdDate",
+                limit: Config.tableRows,
+                offset: infoPage.offset,
+                fetchPlan: 'full',
+            });
+        }
+        infoPage.count = await getFilterEntityCount("Customer", raw);
+        return await getFilterEntityData("Customer", raw);
     }
-      infoPage.count = await getFilterEntityCount("Customer", raw);
-    return await getFilterEntityData("Customer", raw);
+    if(businessData?.isMaster){
+        return response();
+    }else{
+        const permission = await getPermission('CUSTOMER_CHANGE', businessData.id);
+        if(permission.code === 3){
+            return response();
+        }else{
+            infoPage.msgPermission = permission.message;
+            infoPage.count = 0;
+            return [];
+        }
+        
+    }
 };
 export class SelectCustomer {
     constructor() {
@@ -112,7 +129,7 @@ export class SelectCustomer {
             if (customers.length === 0) {
                 let row = document.createElement('TR');
                 row.innerHTML = `
-            <td>No existen datos<td>
+            <td>No existen datos. ${infoPage.msgPermission}<td>
             <td></td>
             <td></td>
             `;

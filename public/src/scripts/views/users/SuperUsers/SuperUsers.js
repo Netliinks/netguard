@@ -1,6 +1,6 @@
 // @filename: SuperUsers.ts
 import { deleteEntity, getEntityData, registerEntity, setPassword, setUserRole, updateEntity, getUserInfo, sendMail, getFilterEntityData, getFilterEntityCount } from "../../../endpoints.js";
-import { drawTagsIntoTables, inputObserver, inputSelect, inputSelectType, CloseDialog, filterDataByHeaderType, verifyUserType, getVerifyEmail, getVerifyUsername, pageNumbers, fillBtnPagination } from "../../../tools.js";
+import { drawTagsIntoTables, inputObserver, inputSelect, inputSelectType, CloseDialog, filterDataByHeaderType, verifyUserType, getVerifyEmail, getVerifyUsername, pageNumbers, fillBtnPagination, getPermission } from "../../../tools.js";
 import { Config } from "../../../Configs.js";
 import { tableLayout, UIConvertToSU } from "./Layout.js";
 import { tableLayoutTemplate } from "./Templates.js";
@@ -15,7 +15,9 @@ let infoPage = {
   count: 0,
   offset: Config.offset,
   currentPage: currentPage,
-  search: ""
+  search: "",
+  msgPermission: "",
+  actions: []
 };
 let dataPage;
 const currentUserData = async() => {
@@ -30,71 +32,16 @@ const currentCustomerData = async() => {
 }
 const getUsers = async (superUser) => {
     const currentUser = await currentUserData(); //usuario logueado
-    currentCustomer = await currentCustomerData();
-    /*const users = await getEntitiesData('User');
-    const FSuper = users.filter((data) => data.isSuper === superUser);
-    const admin = FSuper.filter((data) => data.username != `admin`);
-    const consulta = admin.filter((data) => data.username != `consulta`);
-    const FCustomer = consulta.filter((data) => `${data.customer?.id}` === `${customerId}`);*/
-    let raw = JSON.stringify({
-      "filter": {
-          "conditions": [
-              {
-                  "property": "customer.id",
-                  "operator": "=",
-                  "value": `${customerId}`
-              },
-              {
-                  "property": "isSuper",
-                  "operator": "=",
-                  "value": `${superUser}`
-              }
-          ],
-      },
-      sort: "-createdDate",
-      limit: Config.tableRows,
-      offset: infoPage.offset,
-      fetchPlan: 'full',
-  });
-  if (infoPage.search != "") {
-    raw = JSON.stringify({
+    const response = async () => {
+      currentCustomer = await currentCustomerData();
+      /*const users = await getEntitiesData('User');
+      const FSuper = users.filter((data) => data.isSuper === superUser);
+      const admin = FSuper.filter((data) => data.username != `admin`);
+      const consulta = admin.filter((data) => data.username != `consulta`);
+      const FCustomer = consulta.filter((data) => `${data.customer?.id}` === `${customerId}`);*/
+      let raw = JSON.stringify({
         "filter": {
             "conditions": [
-                {
-                    "group": "OR",
-                    "conditions": [
-                        {
-                            "property": "dni",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        },
-                        {
-                            "property": "firstName",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        },
-                        {
-                            "property": "lastName",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        },
-                        {
-                            "property": "secondLastName",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        },
-                        {
-                            "property": "username",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        },
-                        {
-                            "property": "email",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        }
-                    ]
-                },
                 {
                     "property": "customer.id",
                     "operator": "=",
@@ -105,17 +52,94 @@ const getUsers = async (superUser) => {
                     "operator": "=",
                     "value": `${superUser}`
                 }
-            ]
+            ],
         },
         sort: "-createdDate",
         limit: Config.tableRows,
         offset: infoPage.offset,
         fetchPlan: 'full',
     });
+    if (infoPage.search != "") {
+      raw = JSON.stringify({
+          "filter": {
+              "conditions": [
+                  {
+                      "group": "OR",
+                      "conditions": [
+                          {
+                              "property": "dni",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          },
+                          {
+                              "property": "firstName",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          },
+                          {
+                              "property": "lastName",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          },
+                          {
+                              "property": "secondLastName",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          },
+                          {
+                              "property": "username",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          },
+                          {
+                              "property": "email",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          }
+                      ]
+                  },
+                  {
+                      "property": "customer.id",
+                      "operator": "=",
+                      "value": `${customerId}`
+                  },
+                  {
+                      "property": "isSuper",
+                      "operator": "=",
+                      "value": `${superUser}`
+                  }
+              ]
+          },
+          sort: "-createdDate",
+          limit: Config.tableRows,
+          offset: infoPage.offset,
+          fetchPlan: 'full',
+      });
+    }
+    infoPage.count = await getFilterEntityCount("User", raw);
+    dataPage = await getFilterEntityData("User", raw);
+    return dataPage;
   }
-  infoPage.count = await getFilterEntityCount("User", raw);
-  dataPage = await getFilterEntityData("User", raw);
-  return dataPage;
+  if(currentUser?.isMaster){
+    return response();
+  }else{
+      const permission = await getPermission('USER_ADMIN', currentUser.id);
+      if(permission.code === 3){
+          infoPage.actions = permission.message.actionsText.split(';');
+          if(infoPage.actions.includes("READ")){
+              return response();
+          }else{
+              infoPage.msgPermission = "Usuario no tiene permiso de lectura.";
+              infoPage.count = 0;
+              return [];
+          }
+      }else{
+          infoPage.msgPermission = permission.message;
+          infoPage.count = 0;
+          return [];
+      }
+      
+  }
 };
 export class SuperUsers {
     constructor() {
@@ -197,7 +221,7 @@ export class SuperUsers {
         let end = start + tableRows;
         let paginatedItems = data.slice(start, end);
         if (data.length === 0) {
-            let mensaje = 'No existen datos';
+            let mensaje = `No existen datos. ${infoPage.msgPermission}`;
             if(customerId == null){mensaje = 'Seleccione una empresa';}
             let row = document.createElement('tr');
             row.innerHTML = `
@@ -250,7 +274,11 @@ export class SuperUsers {
         // register entity
         const openEditor = document.getElementById('new-entity');
         openEditor.addEventListener('click', () => {
+          if(infoPage.actions.includes("INS") || Config.currentUser?.isMaster){
             renderInterface('User');
+          }else{
+            alert("Usuario no tiene permiso de registrar.");
+          }
         });
         const renderInterface = async (entities) => {
             this.entityDialogContainer.innerHTML = '';
@@ -323,6 +351,10 @@ export class SuperUsers {
               </div>
             </div>
 
+            <div class="input_checkbox">
+                <label><input type="checkbox" class="checkbox" id="allow-master"> Todos los permisos</label>
+            </div>
+
             <!--
             <div class="material_input_select">
               <label for="entity-business">Empresa</label>
@@ -379,6 +411,9 @@ export class SuperUsers {
             this.generateUserName();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async() => {
+              if(!infoPage.actions.includes("INS") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de registrar.");
+              }else{
                 const inputsCollection = {
                     firstName: document.getElementById('entity-firstname'),
                     lastName: document.getElementById('entity-lastname'),
@@ -392,6 +427,7 @@ export class SuperUsers {
                     userType: document.getElementById('entity-type'),
                     dni: document.getElementById('entity-dni'),
                     email: document.getElementById('entity-email'),
+                    isMaster: document.getElementById('allow-master')
                 };
                 const randomKey = { key: Math.floor(Math.random() * 999999) };
                 const raw = JSON.stringify({
@@ -404,6 +440,7 @@ export class SuperUsers {
                     "dni": `${inputsCollection.dni.value}`,
                     "email": `${inputsCollection.email.value}`,
                     "temp": `${inputsCollection.temporalPass.value}`,
+                    "isMaster": `${inputsCollection.isMaster.checked ? true : false}`,
                     "isWebUser": false,
                     "active": true,
                     "firstName": `${inputsCollection.firstName.value}`,
@@ -467,7 +504,7 @@ export class SuperUsers {
                 }else{
                     reg(raw, mailRaw);
                 }       
-                
+              }
             });
         };
         const reg = async (raw, mailRaw) => {
@@ -594,6 +631,11 @@ export class SuperUsers {
               <input type="text" id="entity-customer" class="input_filled" value="${data.customer.name}" readonly>
               <label for="entity-customer">Empresa</label>
             </div>
+
+            <div class="input_checkbox">
+              <label><input type="checkbox" class="checkbox" id="allow-master"> Todos los permisos</label>
+            </div>
+
             <!--
             <div class="material_input_select" style="display: none">
               <label for="entity-department">Departamento</label>
@@ -622,6 +664,10 @@ export class SuperUsers {
           </div>
         </div>
       `;
+            const checkbox = document.getElementById('allow-master');
+            if (data.isMaster === true) {
+                checkbox?.setAttribute('checked', 'true');
+            }
             inputObserver();
             //inputSelectType('entity-type',data.userType);
             //inputSelect('Citadel', 'entity-citadel');
@@ -670,6 +716,7 @@ export class SuperUsers {
                 status: document.getElementById('entity-state'),
                 // @ts-ignore
                 dni: document.getElementById('entity-dni'),
+                isMaster: document.getElementById('allow-master'),
                 // @ts-ignore
                 //business: document.getElementById('entity-business'),
                 // @ts-ignore
@@ -698,6 +745,7 @@ export class SuperUsers {
                   // @ts-ignore
                   "phone": `${$value.phone?.value}`,
                   "dni": `${$value.dni.value}`,
+                  "isMaster": `${_values.isMaster.checked ? true : false}`,
                   // @ts-ignore
                   //"email": `${$value.email?.value}`,
                   // @ts-ignore
@@ -709,7 +757,9 @@ export class SuperUsers {
               }else{
                   update(raw);
               } */
-              if ($value.dni.value === '' || $value.dni.value === undefined) {
+              if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de actualizar.");
+              }else if ($value.dni.value === '' || $value.dni.value === undefined) {
                 alert("DNI vacío!");
               }else{
                 update(raw);
@@ -736,6 +786,9 @@ export class SuperUsers {
       const changeUserPasswordKeys = document.querySelectorAll('#change-user-password');
       changeUserPasswordKeys.forEach((buttonKey) => {
           buttonKey.addEventListener('click', async () => {
+            if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+              alert("Usuario no tiene permiso de actualizar.");
+            }else{
               let userId = buttonKey.dataset.userid;
               this.dialogContainer.style.display = 'block';
               this.dialogContainer.innerHTML = `
@@ -773,7 +826,9 @@ export class SuperUsers {
               const _closeButton = document.getElementById('cancel');
               const _dialog = document.getElementById('dialog-content');
               _updatePasswordButton.addEventListener('click', () => {
-                  if (_password.value === '') {
+                  if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+                      alert("Usuario no tiene permiso de actualizar.");
+                  }else if (_password.value === '') {
                       alert('El campo "Contraseña" no puede estar vacío.');
                   }
                   else if (_repassword.value === ' ') {
@@ -800,6 +855,7 @@ export class SuperUsers {
               _closeButton.onclick = () => {
                   new CloseDialog().x(_dialog);
               };
+            }
           });
       });
     }
@@ -808,6 +864,9 @@ export class SuperUsers {
         remove.forEach((remove) => {
             const entityId = remove.dataset.entityid;
             remove.addEventListener('click', () => {
+              if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de eliminar.");
+              }else{
                 this.dialogContainer.style.display = 'block';
                 this.dialogContainer.innerHTML = `
           <div class="dialog_content" id="dialog-content">
@@ -836,6 +895,9 @@ export class SuperUsers {
                 const cancelButton = document.getElementById('cancel');
                 const dialogContent = document.getElementById('dialog-content');
                 deleteButton.onclick = async() => {
+                  if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+                    alert("Usuario no tiene permiso de eliminar.");
+                  }else{
                     deleteEntity('User', entityId)
                     .then((res) => {
                       setTimeout(async () => {
@@ -844,11 +906,13 @@ export class SuperUsers {
                           new CloseDialog().x(dialogContent);
                           new SuperUsers().render(infoPage.offset, infoPage.currentPage, infoPage.search);
                       }, 1000);
-                  });
+                    });
+                  }
                 };
                 cancelButton.onclick = () => {
                     new CloseDialog().x(dialogContent);
                 };
+              }
             });
         });
     }
@@ -862,89 +926,97 @@ export class SuperUsers {
     export = (SUser) => {
       const exportUsers = document.getElementById('export-entities');
       exportUsers.addEventListener('click', async () => {
-        this.dialogContainer.style.display = 'block';
-        this.dialogContainer.innerHTML = `
-        <div class="dialog_content" id="dialog-content">
-            <div class="dialog">
-                <div class="dialog_container padding_8">
-                    <div class="dialog_header">
-                        <h2>Seleccione un tipo</h2>
-                    </div>
+        if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
+          alert("Usuario no tiene permiso de exportar.");
+        }else{
+          this.dialogContainer.style.display = 'block';
+          this.dialogContainer.innerHTML = `
+          <div class="dialog_content" id="dialog-content">
+              <div class="dialog">
+                  <div class="dialog_container padding_8">
+                      <div class="dialog_header">
+                          <h2>Seleccione un tipo</h2>
+                      </div>
 
-                    <div class="dialog_message padding_8">
-                        <div class="form_group">
-                            <label for="exportCsv">
-                                <input type="radio" id="exportCsv" name="exportOption" value="csv" /> CSV
-                            </label>
+                      <div class="dialog_message padding_8">
+                          <div class="form_group">
+                              <label for="exportCsv">
+                                  <input type="radio" id="exportCsv" name="exportOption" value="csv" /> CSV
+                              </label>
 
-                            <label for="exportXls">
-                                <input type="radio" id="exportXls" name="exportOption" value="xls" checked /> XLS
-                            </label>
+                              <label for="exportXls">
+                                  <input type="radio" id="exportXls" name="exportOption" value="xls" checked /> XLS
+                              </label>
 
-                            <label for="exportPdf">
-                                <input type="radio" id="exportPdf" name="exportOption" value="pdf" /> PDF
-                            </label>
-                        </div>
-                    </div>
+                              <label for="exportPdf">
+                                  <input type="radio" id="exportPdf" name="exportOption" value="pdf" /> PDF
+                              </label>
+                          </div>
+                      </div>
 
-                    <div class="dialog_footer">
-                        <button class="btn btn_primary" id="cancel">Cancelar</button>
-                        <button class="btn btn_danger" id="export-data">Exportar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-        inputObserver();
-        const _closeButton = document.getElementById('cancel');
-        const exportButton = document.getElementById('export-data');
-        const _dialog = document.getElementById('dialog-content');
-        exportButton.addEventListener('click', async () => {
-            const _values = {
-                exportOption: document.getElementsByName('exportOption')
-            };
-            let rawExport = JSON.stringify({
-              "filter": {
-                  "conditions": [
-                      {
-                          "property": "customer.id",
-                          "operator": "=",
-                          "value": `${customerId}`
-                      },
-                      {
-                          "property": "isSuper",
-                          "operator": "=",
-                          "value": `${SUser}`
+                      <div class="dialog_footer">
+                          <button class="btn btn_primary" id="cancel">Cancelar</button>
+                          <button class="btn btn_danger" id="export-data">Exportar</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      `;
+          inputObserver();
+          const _closeButton = document.getElementById('cancel');
+          const exportButton = document.getElementById('export-data');
+          const _dialog = document.getElementById('dialog-content');
+          exportButton.addEventListener('click', async () => {
+            if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
+              alert("Usuario no tiene permiso de exportar.");
+            }else{
+              const _values = {
+                  exportOption: document.getElementsByName('exportOption')
+              };
+              let rawExport = JSON.stringify({
+                "filter": {
+                    "conditions": [
+                        {
+                            "property": "customer.id",
+                            "operator": "=",
+                            "value": `${customerId}`
+                        },
+                        {
+                            "property": "isSuper",
+                            "operator": "=",
+                            "value": `${SUser}`
+                        }
+                    ],
+                },
+                sort: "-createdDate",
+                fetchPlan: 'full',
+              });
+              const users = await getFilterEntityData("User", rawExport); //await getUsers(SUser)
+              for (let i = 0; i < _values.exportOption.length; i++) {
+                  let ele = _values.exportOption[i];
+                  if (ele.type = "radio") {
+                      if (ele.checked) {
+                          if (ele.value == "xls") {
+                              // @ts-ignore
+                              exportSuperXls(users);
+                          }
+                          else if (ele.value == "csv") {
+                              // @ts-ignore
+                              exportSuperCsv(users);
+                          }
+                          else if (ele.value == "pdf") {
+                              // @ts-ignore
+                              exportSuperPdf(users);
+                          }
                       }
-                  ],
-              },
-              sort: "-createdDate",
-              fetchPlan: 'full',
-          });
-          const users = await getFilterEntityData("User", rawExport); //await getUsers(SUser)
-            for (let i = 0; i < _values.exportOption.length; i++) {
-                let ele = _values.exportOption[i];
-                if (ele.type = "radio") {
-                    if (ele.checked) {
-                        if (ele.value == "xls") {
-                            // @ts-ignore
-                            exportSuperXls(users);
-                        }
-                        else if (ele.value == "csv") {
-                            // @ts-ignore
-                            exportSuperCsv(users);
-                        }
-                        else if (ele.value == "pdf") {
-                            // @ts-ignore
-                            exportSuperPdf(users);
-                        }
-                    }
-                }
+                  }
+              }
             }
-        });
-        _closeButton.onclick = () => {
-            new CloseDialog().x(_dialog);
-        };
+          });
+          _closeButton.onclick = () => {
+              new CloseDialog().x(_dialog);
+          };
+        }
       });
     };
     pagination(items, limitRows, currentPage) {
