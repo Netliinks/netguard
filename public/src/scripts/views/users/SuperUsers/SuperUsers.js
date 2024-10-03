@@ -745,7 +745,7 @@ export class SuperUsers {
                   // @ts-ignore
                   "phone": `${$value.phone?.value}`,
                   "dni": `${$value.dni.value}`,
-                  "isMaster": `${_values.isMaster.checked ? true : false}`,
+                  "isMaster": `${$value.isMaster.checked ? true : false}`,
                   // @ts-ignore
                   //"email": `${$value.email?.value}`,
                   // @ts-ignore
@@ -1084,6 +1084,9 @@ export class SuperUsers {
     convert.forEach((convert) => {
         const entityId = convert.dataset.entityid;
         convert.addEventListener('click', async () => {
+          if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+            alert("Usuario no tiene permiso de actualizar.");
+          }else{
             const user = await getEntityData('User', entityId);
             if (!user.verifiedSuper) {
                 this.dialogContainer.style.display = 'block';
@@ -1108,6 +1111,9 @@ export class SuperUsers {
                 //let roleRaw = [];
                 inputMail.value = user.email;
                 nextButton.addEventListener('click', async () => {
+                  if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+                    alert("Usuario no tiene permiso de actualizar.");
+                  }else{
                     const randomKey = { key: Math.floor(Math.random() * 999999) };
                     const existEmail = await getVerifyEmail(inputMail.value);
                     if (inputMail.value === '' || inputMail.value == null) {
@@ -1162,6 +1168,7 @@ export class SuperUsers {
                             //this.load(tableBody, currentPage, data);
                         }, 100);
                     }
+                  }
                 });
                 cancelButton.onclick = () => {
                     new CloseDialog().x(modalContainer);
@@ -1170,6 +1177,7 @@ export class SuperUsers {
             else {
                 alert(`Usuario ${user.username} ya está verificado.`);
             }
+          }
         });
     });
   }
