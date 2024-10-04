@@ -20,10 +20,10 @@ let infoPage = {
 };
 let dataPage;
 const currentUserData = async() => {
-    const currentUser = await getUserInfo();
-    const user = await getEntityData('User', `${currentUser.attributes.id}`);
-    currentUserInfo = user;
-    return user;
+    //const currentUser = await getUserInfo();
+    //const user = await getEntityData('User', `${currentUser.attributes.id}`);
+    currentUserInfo = Config.currentUser;
+    return Config.currentUser;
 }
 const currentCustomerData = async() => {
     const customer = await getEntityData('Customer', `${customerId}`);
@@ -494,62 +494,63 @@ export class Contractors {
             this.generateContractorName();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async() => {
-                let _values;
-                _values = {
-                    firstName: document.getElementById('entity-firstname'),
-                    lastName: document.getElementById('entity-lastname'),
-                    secondLastName: document.getElementById('entity-secondlastname'),
-                    dni: document.getElementById('entity-dni'),
-                    phoneNumer: document.getElementById('entity-phone'),
-                    state: document.getElementById('entity-state'),
-                    //customer: document.getElementById('entity-customer'),
-                    username: document.getElementById('entity-username'),
-                    //citadel: document.getElementById('entity-citadel'),
-                    temporalPass: document.getElementById('tempPass'),
-                    ingressHour: document.getElementById('start-time'),
-                    turnChange: document.getElementById('end-time'),
-                    //departments: document.getElementById('entity-department'),
-                    email: document.getElementById('entity-email'),
-                };
-                const contractorRaw = JSON.stringify({
-                    "lastName": `${_values.lastName.value}`,
-                    "secondLastName": `${_values.secondLastName.value}`,
-                    "isSuper": false,
-                    "newUser": true,
-                    "email": `${_values.email.value}`,
-                    "temp": `${_values.temporalPass.value}`,
-                    "isMaster": false,
-                    "isWebUser": false,
-                    "active": true,
-                    "firstName": `${_values.firstName.value}`,
-                    "ingressHour": `${_values.ingressHour.value}`,
-                    "turnChange": `${_values.turnChange.value}`,
-                    "state": {
-                        "id": `${_values.state.dataset.optionid}`
-                    },
-                    "contractor": {
-                        "id": `${currentUserInfo.contractor.id}`,
-                    },
-                    "customer": {
-                        "id": `${customerId}`
-                    },
-                    "citadel": {
-                        "id": `${currentUserInfo.citadel.id}`
-                    },
-                    "business":{
-                        "id": `${currentUserInfo.business.id}`
-                    },
-                    "department": {
-                        "id": `${currentUserInfo.department.id}`
-                    },
-                    "phone": `${_values.phoneNumer.value}`,
-                    "dni": `${_values.dni.value}`,
-                    "userType": "CONTRACTOR",
-                    "username": `${_values.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
-                });
                 if(!infoPage.actions.includes("INS") && !Config.currentUser?.isMaster){
                     alert("Usuario no tiene permiso de registrar.");
                 }else{
+                    let _values;
+                    _values = {
+                        firstName: document.getElementById('entity-firstname'),
+                        lastName: document.getElementById('entity-lastname'),
+                        secondLastName: document.getElementById('entity-secondlastname'),
+                        dni: document.getElementById('entity-dni'),
+                        phoneNumer: document.getElementById('entity-phone'),
+                        state: document.getElementById('entity-state'),
+                        //customer: document.getElementById('entity-customer'),
+                        username: document.getElementById('entity-username'),
+                        //citadel: document.getElementById('entity-citadel'),
+                        temporalPass: document.getElementById('tempPass'),
+                        ingressHour: document.getElementById('start-time'),
+                        turnChange: document.getElementById('end-time'),
+                        //departments: document.getElementById('entity-department'),
+                        email: document.getElementById('entity-email'),
+                    };
+                    const contractorRaw = JSON.stringify({
+                        "lastName": `${_values.lastName.value}`,
+                        "secondLastName": `${_values.secondLastName.value}`,
+                        "isSuper": false,
+                        "newUser": true,
+                        "email": `${_values.email.value}`,
+                        "temp": `${_values.temporalPass.value}`,
+                        "isMaster": false,
+                        "isWebUser": false,
+                        "active": true,
+                        "firstName": `${_values.firstName.value}`,
+                        "ingressHour": `${_values.ingressHour.value}`,
+                        "turnChange": `${_values.turnChange.value}`,
+                        "state": {
+                            "id": `${_values.state.dataset.optionid}`
+                        },
+                        "contractor": {
+                            "id": `${currentUserInfo.contractor.id}`,
+                        },
+                        "customer": {
+                            "id": `${customerId}`
+                        },
+                        "citadel": {
+                            "id": `${currentUserInfo.citadel.id}`
+                        },
+                        "business":{
+                            "id": `${currentUserInfo.business.id}`
+                        },
+                        "department": {
+                            "id": `${currentUserInfo.department.id}`
+                        },
+                        "phone": `${_values.phoneNumer.value}`,
+                        "dni": `${_values.dni.value}`,
+                        "userType": "CONTRACTOR",
+                        "username": `${_values.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
+                    });
+                    
                     const existUsername = await getVerifyUsername(`${_values.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
                     /*const existEmail = await getVerifyEmail(_values.email.value);
                     if(existEmail == true){

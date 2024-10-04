@@ -20,9 +20,9 @@ let infoPage = {
     actions: []
   };
 const currentBusiness = async () => {
-    const currentUser = await getUserInfo();
-    const business = await getEntityData('User', `${currentUser.attributes.id}`);
-    return business;
+    //const currentUser = await getUserInfo();
+    //const business = await getEntityData('User', `${currentUser.attributes.id}`);
+    return Config.currentUser;
 };
 const GetCustomers = async () => {
     const businessData = await currentBusiness();

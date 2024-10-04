@@ -1,6 +1,6 @@
 // @filename: Routines.ts
 import { registerEntity, getUserInfo, getEntityData, updateEntity, getFilterEntityData, getFilterEntityCount, deleteEntity } from "../../../endpoints.js";
-import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination, currentDateTime, getDetails } from "../../../tools.js";
+import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination, currentDateTime, getDetails, getPermission } from "../../../tools.js";
 import { Config } from "../../../Configs.js";
 import { tableLayout } from "./Layout.js";
 import { tableLayoutTemplate } from "./Template.js";
@@ -13,59 +13,83 @@ let infoPage = {
   count: 0,
   offset: Config.offset,
   currentPage: currentPage,
-  search: ""
+  search: "",
+  msgPermission: "",
+  actions: []
 };
 const currentBusiness = async() => {
-  const currentUser = await getUserInfo();
-  const userid = await getEntityData('User', `${currentUser.attributes.id}`);
-  return userid;
+  //const currentUser = await getUserInfo();
+  //const userid = await getEntityData('User', `${currentUser.attributes.id}`);
+  return Config.currentUser;
 }
 
 const getRoutines = async () => {
+  const response = async () => {
     let raw = JSON.stringify({
-      "filter": {
-          "conditions": [
-              {
-                "property": "customer.id",
-                "operator": "=",
-                "value": `${customerId}`
-              }
-          ],
-      },
-      sort: "-createdDate",
-      limit: Config.tableRows,
-      offset: infoPage.offset,
-      fetchPlan: 'full',
-  });
-  if (infoPage.search != "") {
-    raw = JSON.stringify({
         "filter": {
             "conditions": [
-                {
-                    "group": "OR",
-                    "conditions": [
-                        {
-                            "property": "name",
-                            "operator": "contains",
-                            "value": `${infoPage.search.toLowerCase()}`
-                        }
-                    ]
-                },
                 {
                   "property": "customer.id",
                   "operator": "=",
                   "value": `${customerId}`
                 }
-            ]
+            ],
         },
         sort: "-createdDate",
         limit: Config.tableRows,
         offset: infoPage.offset,
         fetchPlan: 'full',
     });
-}
-  infoPage.count = await getFilterEntityCount("Routine", raw);
-  return await getFilterEntityData("Routine", raw);
+    if (infoPage.search != "") {
+      raw = JSON.stringify({
+          "filter": {
+              "conditions": [
+                  {
+                      "group": "OR",
+                      "conditions": [
+                          {
+                              "property": "name",
+                              "operator": "contains",
+                              "value": `${infoPage.search.toLowerCase()}`
+                          }
+                      ]
+                  },
+                  {
+                    "property": "customer.id",
+                    "operator": "=",
+                    "value": `${customerId}`
+                  }
+              ]
+          },
+          sort: "-createdDate",
+          limit: Config.tableRows,
+          offset: infoPage.offset,
+          fetchPlan: 'full',
+      });
+    }
+    infoPage.count = await getFilterEntityCount("Routine", raw);
+    return await getFilterEntityData("Routine", raw);
+  }
+  if(Config.currentUser?.isMaster){
+    return response();
+  }else{
+    const permission = await getPermission('ROUTINE_CONFIG', Config.currentUser.id);
+    if(permission.code === 3){
+        infoPage.actions = permission.message.actionsText.split(';');
+        if(infoPage.actions.includes("READ")){
+            return response();
+        }else{
+            infoPage.msgPermission = "Usuario no tiene permiso de lectura.";
+            infoPage.count = 0;
+            return [];
+        }
+    }else{
+        infoPage.msgPermission = permission.message;
+        infoPage.count = 0;
+        return [];
+    }
+    
+  }
 };
 export class Routines {
     constructor() {
@@ -115,7 +139,7 @@ export class Routines {
         let end = start + tableRows;
         let paginatedItems = data.slice(start, end);
         if (data.length === 0) {
-            let mensaje = 'No existen datos';
+            let mensaje = `No existen datos. ${infoPage.msgPermission}`;
             if(customerId == null){mensaje = 'Seleccione una empresa';}
             let row = document.createElement('tr');
             row.innerHTML = `
@@ -225,7 +249,11 @@ export class Routines {
         // register entity
         const openEditor = document.getElementById('new-entity');
         openEditor.addEventListener('click', () => {
-            renderInterface();
+            if(infoPage.actions.includes("INS") || Config.currentUser?.isMaster){
+              renderInterface();
+            }else{
+                alert("Usuario no tiene permiso de registrar.");
+            }
         });
         const renderInterface = async () => {
             this.entityDialogContainer.innerHTML = '';
@@ -269,6 +297,9 @@ export class Routines {
             this.close();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async() => {
+              if(!infoPage.actions.includes("INS") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de registrar.");
+              }else{
                 const businessData = await currentBusiness();
                 const inputsCollection = {
                     name: document.getElementById('entity-name'),
@@ -297,6 +328,7 @@ export class Routines {
                     }, 1000);
                   });
                 }
+              }
             });
         };
         const reg = async (raw) => {
@@ -401,7 +433,9 @@ export class Routines {
                   "isActive": `${$value.active.checked ? true : false}`,
                   "checkLocation": `${$value.checkLocation.checked ? true : false}`
               });
-              if($value.name.value == '' || $value.name.value == null || $value.name.value == undefined){
+              if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de actualizar.");
+              }else if($value.name.value == '' || $value.name.value == null || $value.name.value == undefined){
                 alert("Debe completar el nombre");
               }else{
                 update(raw);
@@ -430,6 +464,9 @@ export class Routines {
           const entityId = remove.dataset.entityid;
           // BOOKMARK: MODAL
           remove.addEventListener('click', () => {
+            if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+              alert("Usuario no tiene permiso de eliminar.");
+            }else{
               this.dialogContainer.style.display = 'block';
               this.dialogContainer.innerHTML = `
                   <div class="dialog_content" id="dialog-content">
@@ -454,6 +491,9 @@ export class Routines {
               const cancelButton = document.getElementById('cancel');
               const dialogContent = document.getElementById('dialog-content');
               deleteButton.onclick = async() => {
+                if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+                  alert("Usuario no tiene permiso de eliminar.");
+                }else{
                   const locations = await getDetails('routine.id', entityId, 'RoutineSchedule');
                   if(locations.length != 0 && locations != undefined){
                     for(let i=0; i<locations.length; i++){
@@ -492,10 +532,12 @@ export class Routines {
                           new Routines().render(infoPage.offset, infoPage.currentPage, infoPage.search);
                       }, 1000);
                   });
+                }
               };
               cancelButton.onclick = () => {
                   new CloseDialog().x(dialogContent);
               };
+            }
           });
       });
   }
@@ -504,7 +546,7 @@ export class Routines {
       locationRoutine.forEach((buttonKey) => {
             buttonKey.addEventListener('click', async () => {
                 let entityId = buttonKey.dataset.entityid;
-                new Locations().render(Config.offset, Config.currentPage, "", entityId);
+                new Locations().render(Config.offset, Config.currentPage, "", entityId, Config.actions);
             });
         });
   }
@@ -513,7 +555,7 @@ export class Routines {
     userRoutine.forEach((buttonKey) => {
           buttonKey.addEventListener('click', async () => {
               let entityId = buttonKey.dataset.entityid;
-              new RoutineUsers().render(Config.offset, Config.currentPage, "", entityId);
+              new RoutineUsers().render(Config.offset, Config.currentPage, "", entityId, Config.actions);
           });
       });
 }

@@ -11,55 +11,27 @@ let infoPage = {
   count: 0,
   offset: Config.offset,
   currentPage: currentPage,
-  search: ""
+  search: "",
+  msgPermission: "",
+  actions: []
 };
 let dataPage;
 let routine;
 const currentBusiness = async() => {
-    const currentUser = await getUserInfo();
-    const userid = await getEntityData('User', `${currentUser.attributes.id}`);
-    return userid;
-  }
+    //const currentUser = await getUserInfo();
+    //const userid = await getEntityData('User', `${currentUser.attributes.id}`);
+    return Config.currentUser;
+}
 const getLocations = async (routineId) => {
     //nombre de la entidad
     /*const location = await getEntitiesData('Location');
     const FCustomer = location.filter((data) => `${data.customer?.id}` === `${customerId}`);
     return FCustomer;*/
     routine = await getEntityData("Routine", routineId)
-    let raw = JSON.stringify({
-      "filter": {
-          "conditions": [
-              {
-                  "property": "customer.id",
-                  "operator": "=",
-                  "value": `${customerId}`
-              },
-              {
-                "property": "routine.id",
-                "operator": "=",
-                "value": `${routineId}`
-              },
-          ],
-      },
-      sort: "-createdDate",
-      limit: Config.tableRows,
-      offset: infoPage.offset,
-      fetchPlan: 'full',
-  });
-  if (infoPage.search != "") {
-      raw = JSON.stringify({
+    const response = async () => {
+        let raw = JSON.stringify({
           "filter": {
               "conditions": [
-                  {
-                      "group": "OR",
-                      "conditions": [
-                          {
-                              "property": "name",
-                              "operator": "contains",
-                              "value": `${infoPage.search.toLowerCase()}`
-                          }
-                      ]
-                  },
                   {
                       "property": "customer.id",
                       "operator": "=",
@@ -68,19 +40,62 @@ const getLocations = async (routineId) => {
                   {
                     "property": "routine.id",
                     "operator": "=",
-                    "value": `${routine.id}`
+                    "value": `${routineId}`
                   },
-              ]
+              ],
           },
           sort: "-createdDate",
           limit: Config.tableRows,
           offset: infoPage.offset,
           fetchPlan: 'full',
       });
-  }
-  infoPage.count = await getFilterEntityCount("RoutineSchedule", raw);
-  dataPage = await getFilterEntityData("RoutineSchedule", raw);
-  return dataPage;
+      if (infoPage.search != "") {
+          raw = JSON.stringify({
+              "filter": {
+                  "conditions": [
+                      {
+                          "group": "OR",
+                          "conditions": [
+                              {
+                                  "property": "name",
+                                  "operator": "contains",
+                                  "value": `${infoPage.search.toLowerCase()}`
+                              }
+                          ]
+                      },
+                      {
+                          "property": "customer.id",
+                          "operator": "=",
+                          "value": `${customerId}`
+                      },
+                      {
+                        "property": "routine.id",
+                        "operator": "=",
+                        "value": `${routine.id}`
+                      },
+                  ]
+              },
+              sort: "-createdDate",
+              limit: Config.tableRows,
+              offset: infoPage.offset,
+              fetchPlan: 'full',
+          });
+      }
+      infoPage.count = await getFilterEntityCount("RoutineSchedule", raw);
+      dataPage = await getFilterEntityData("RoutineSchedule", raw);
+      return dataPage;
+    }
+    if(Config.currentUser?.isMaster){
+      return response();
+    }else{
+      if(infoPage.actions.includes("READ")){
+          return response();
+      }else{
+          infoPage.msgPermission = "Usuario no tiene permiso de lectura.";
+          infoPage.count = 0;
+          return [];
+      }
+    }
 };
 export class Locations {
     constructor() {
@@ -108,10 +123,11 @@ export class Locations {
         };
     }
 
-    async render(offset, actualPage, search, routineId) {
+    async render(offset, actualPage, search, routineId, actions) {
         infoPage.offset = offset;
         infoPage.currentPage = actualPage;
         infoPage.search = search;
+        infoPage.actions = actions;
         this.content.innerHTML = '';
         this.content.innerHTML = tableLayout;
         const tableBody = document.getElementById('datatable-body');
@@ -134,7 +150,7 @@ export class Locations {
         let end = start + tableRows;
         let paginatedItems = data.slice(start, end);
         if (data.length === 0) {
-            let mensaje = 'No existen datos';
+            let mensaje = `No existen datos. ${infoPage.msgPermission}`;
             if(customerId == null){mensaje = 'Seleccione una empresa';}
             let row = document.createElement('tr');
             row.innerHTML = `
@@ -238,7 +254,11 @@ export class Locations {
         // register entity
         const openEditor = document.getElementById('new-entity');
         openEditor.addEventListener('click', () => {
+          if(infoPage.actions.includes("INS") || Config.currentUser?.isMaster){
             renderInterface();
+          }else{
+              alert("Usuario no tiene permiso de registrar.");
+          }
         });
         const renderInterface = async () => {
             let lat = -2.186790330550842;
@@ -350,6 +370,9 @@ export class Locations {
             this.close();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async () => {
+              if(!infoPage.actions.includes("INS") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de registrar.");
+              }else{
                 const businessData = await currentBusiness();
                 const inputsCollection = {
                     name: document.getElementById('entity-name'),
@@ -417,6 +440,7 @@ export class Locations {
                     }, 1000);
                   }
                 }
+              }
             });
             const btnObtCords = document.getElementById('obtCords');
             btnObtCords.addEventListener('click', () => {
@@ -642,7 +666,9 @@ export class Locations {
 
           };
           updateButton.addEventListener('click', () => {
-            if($value.cords.value == "" || $value.cords.value == undefined){
+            if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+              alert("Usuario no tiene permiso de actualizar.");
+            }else if($value.cords.value == "" || $value.cords.value == undefined){
               alert("No se ha seleccionado una ubicación");
             }else{
               const coords = $value.cords.value.split(',');
@@ -802,6 +828,9 @@ export class Locations {
         remove.forEach((remove) => {
             const entityId = remove.dataset.entityid;
             remove.addEventListener('click', () => {
+              if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+                alert("Usuario no tiene permiso de eliminar.");
+              }else{
                 this.dialogContainer.style.display = 'flex';
                 this.dialogContainer.innerHTML = `
           <div class="dialog_content" id="dialog-content">
@@ -828,14 +857,19 @@ export class Locations {
                 const cancelButton = document.getElementById('cancel');
                 const dialogContent = document.getElementById('dialog-content');
                 deleteButton.onclick = async () => {
+                  if(!infoPage.actions.includes("DLT") && !Config.currentUser?.isMaster){
+                    alert("Usuario no tiene permiso de eliminar.");
+                  }else{
                     createRoutines('DLT', null, entityId);
                     deleteEntity('RoutineSchedule', entityId)
                         .then(res => new Locations().render(infoPage.offset, infoPage.currentPage, infoPage.search, routine.id));
                     new CloseDialog().x(dialogContent);
+                  }
                 };
                 cancelButton.onclick = () => {
                     new CloseDialog().x(dialogContent);
                 };
+              }
             });
         });
     }

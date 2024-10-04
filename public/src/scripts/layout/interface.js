@@ -46,7 +46,7 @@ export class RenderApplicationUI {
     const tokenMessaging = localStorage.getItem('libreriasjs-notification-token');
     const currentUser = await getUserInfo();
     const user = await getEntityData('User', currentUser.attributes.id);
-    Config.currentUser = user[0];
+    Config.currentUser = user;
     let customer = await getEntityData('Customer', customerId);
     renderRoutines(customer.business.id);
     let topbar = this.topbar.innerHTML = `

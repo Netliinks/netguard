@@ -21,10 +21,10 @@ let infoPage = {
 };
 let dataPage;
 const currentUserData = async() => {
-  const currentUser = await getUserInfo();
-  const user = await getEntityData('User', `${currentUser.attributes.id}`);
-  currentUserInfo = user;
-  return user;
+  //const currentUser = await getUserInfo();
+  //const user = await getEntityData('User', `${currentUser.attributes.id}`);
+  currentUserInfo = Config.currentUser;
+  return Config.currentUser;
 }
 const currentCustomerData = async() => {
   const customer = await getEntityData('Customer', `${customerId}`);

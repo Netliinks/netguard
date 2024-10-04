@@ -24,10 +24,10 @@ let infoPage = {
 };
 let dataPage;
 const currentUserData = async() => {
-    const currentUser = await getUserInfo();
-    const user = await getEntityData('User', `${currentUser.attributes.id}`);
-    currentUserInfo = user;
-    return user;
+    //const currentUser = await getUserInfo();
+    //const user = await getEntityData('User', `${currentUser.attributes.id}`);
+    currentUserInfo = Config.currentUser;
+    return Config.currentUser;
 }
 const currentCustomerData = async() => {
     const customer = await getEntityData('Customer', `${customerId}`);
@@ -407,56 +407,57 @@ export class Clients {
             this.generateUserName();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async() => {
-                const inputsCollection = {
-                    firstName: document.getElementById('entity-firstname'),
-                    lastName: document.getElementById('entity-lastname'),
-                    secondLastName: document.getElementById('entity-secondlastname'),
-                    phoneNumer: document.getElementById('entity-phone'),
-                    state: document.getElementById('entity-state'),
-                    //customer: document.getElementById('entity-customer'),
-                    username: document.getElementById('entity-username'),
-                    //citadel: document.getElementById('entity-citadel'),
-                    temporalPass: document.getElementById('tempPass'),
-                    dni: document.getElementById('entity-dni'),
-                    email: document.getElementById('entity-email'),
-                };
-                const raw = JSON.stringify({
-                    "lastName": `${inputsCollection.lastName.value}`,
-                    "secondLastName": `${inputsCollection.secondLastName.value}`,
-                    "isSuper": false,
-                    "newUser": true,
-                    "dni": `${inputsCollection.dni.value}`,
-                    "email": `${inputsCollection.email.value}`,
-                    "temp": `${inputsCollection.temporalPass.value}`,
-                    "isMaster": false,
-                    "isWebUser": false,
-                    "active": true,
-                    "firstName": `${inputsCollection.firstName.value}`,
-                    "state": {
-                        "id": `${inputsCollection.state.dataset.optionid}`
-                    },
-                    "contractor": {
-                        "id": `${currentUserInfo.contractor.id}`,
-                    },
-                    "customer": {
-                        "id": `${customerId}`
-                    },
-                    "citadel": {
-                        "id": `${currentUserInfo.citadel.id}`
-                    },
-                    "business":{
-                        "id": `${currentUserInfo.business.id}`
-                    },
-                    "department":{
-                      "id": `${currentUserInfo.department.id}`
-                    },
-                    "phone": `${inputsCollection.phoneNumer.value}`,
-                    "userType": "CUSTOMER",
-                    "username": `${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`
-                });
                 if(!infoPage.actions.includes("INS") && !Config.currentUser?.isMaster){
                     alert("Usuario no tiene permiso de registrar.");
                 }else{
+                    const inputsCollection = {
+                        firstName: document.getElementById('entity-firstname'),
+                        lastName: document.getElementById('entity-lastname'),
+                        secondLastName: document.getElementById('entity-secondlastname'),
+                        phoneNumer: document.getElementById('entity-phone'),
+                        state: document.getElementById('entity-state'),
+                        //customer: document.getElementById('entity-customer'),
+                        username: document.getElementById('entity-username'),
+                        //citadel: document.getElementById('entity-citadel'),
+                        temporalPass: document.getElementById('tempPass'),
+                        dni: document.getElementById('entity-dni'),
+                        email: document.getElementById('entity-email'),
+                    };
+                    const raw = JSON.stringify({
+                        "lastName": `${inputsCollection.lastName.value}`,
+                        "secondLastName": `${inputsCollection.secondLastName.value}`,
+                        "isSuper": false,
+                        "newUser": true,
+                        "dni": `${inputsCollection.dni.value}`,
+                        "email": `${inputsCollection.email.value}`,
+                        "temp": `${inputsCollection.temporalPass.value}`,
+                        "isMaster": false,
+                        "isWebUser": false,
+                        "active": true,
+                        "firstName": `${inputsCollection.firstName.value}`,
+                        "state": {
+                            "id": `${inputsCollection.state.dataset.optionid}`
+                        },
+                        "contractor": {
+                            "id": `${currentUserInfo.contractor.id}`,
+                        },
+                        "customer": {
+                            "id": `${customerId}`
+                        },
+                        "citadel": {
+                            "id": `${currentUserInfo.citadel.id}`
+                        },
+                        "business":{
+                            "id": `${currentUserInfo.business.id}`
+                        },
+                        "department":{
+                        "id": `${currentUserInfo.department.id}`
+                        },
+                        "phone": `${inputsCollection.phoneNumer.value}`,
+                        "userType": "CUSTOMER",
+                        "username": `${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`
+                    });
+                
                     const existEmail = await getVerifyEmail(inputsCollection.email.value);
                     const existUsername = await getVerifyUsername(`${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
                     if (existUsername != "none") {
