@@ -128,6 +128,7 @@ export class Locations {
         infoPage.currentPage = actualPage;
         infoPage.search = search;
         infoPage.actions = actions;
+        console.log(infoPage.actions)
         this.content.innerHTML = '';
         this.content.innerHTML = tableLayout;
         const tableBody = document.getElementById('datatable-body');

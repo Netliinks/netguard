@@ -546,7 +546,7 @@ export class Routines {
       locationRoutine.forEach((buttonKey) => {
             buttonKey.addEventListener('click', async () => {
                 let entityId = buttonKey.dataset.entityid;
-                new Locations().render(Config.offset, Config.currentPage, "", entityId, Config.actions);
+                new Locations().render(Config.offset, Config.currentPage, "", entityId, infoPage.actions);
             });
         });
   }
@@ -555,7 +555,7 @@ export class Routines {
     userRoutine.forEach((buttonKey) => {
           buttonKey.addEventListener('click', async () => {
               let entityId = buttonKey.dataset.entityid;
-              new RoutineUsers().render(Config.offset, Config.currentPage, "", entityId, Config.actions);
+              new RoutineUsers().render(Config.offset, Config.currentPage, "", entityId, infoPage.actions);
           });
       });
 }
