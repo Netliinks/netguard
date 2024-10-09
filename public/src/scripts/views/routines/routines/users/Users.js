@@ -11,7 +11,9 @@ let infoPage = {
   count: 0,
   offset: Config.offset,
   currentPage: currentPage,
-  search: ""
+  search: "",
+  msgPermission: "",
+  actions: []
 };
 let dataPage;
 let routine;

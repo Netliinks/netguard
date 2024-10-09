@@ -714,3 +714,51 @@ export const getPermission =async(module, user)=> {
     }
 
 }
+
+export const getPermissions =async(user)=> {
+    const raw = JSON.stringify({
+        "filter": {
+            "conditions": [
+                {
+                    "property": "business.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                },
+                {
+                    "property": "customer.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                },
+                {
+                    "property": "user.id",
+                    "operator": "=",
+                    "value": `${user}`
+                }
+            ]
+        },
+        fetchPlan: 'full',
+    });
+    const permission = await getFilterEntityData("Permission", raw);
+    if(permission === undefined){
+        return {
+            code: 1,
+            message: "No se pudo obtener el permiso"
+        };
+    }else if(permission.length === 0){
+        return {
+            code: 2,
+            message: "Usuario no tiene el permiso o módulo inactivo"
+        };
+    }else if(permission.length !== 0){
+        return {
+            code: 3,
+            message: permission
+        };
+    }else{
+        return {
+            code: 4,
+            message: "Ocurrió un error al obtener el permiso"
+        };
+    }
+
+}

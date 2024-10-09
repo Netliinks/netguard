@@ -1,10 +1,11 @@
 // @filename: SuperUsers.ts
 import { deleteEntity, getEntityData, registerEntity, setPassword, setUserRole, updateEntity, getUserInfo, sendMail, getFilterEntityData, getFilterEntityCount } from "../../../endpoints.js";
-import { drawTagsIntoTables, inputObserver, inputSelect, inputSelectType, CloseDialog, filterDataByHeaderType, verifyUserType, getVerifyEmail, getVerifyUsername, pageNumbers, fillBtnPagination, getPermission } from "../../../tools.js";
+import { drawTagsIntoTables, inputObserver, inputSelect, inputSelectType, CloseDialog, filterDataByHeaderType, verifyUserType, getVerifyEmail, getVerifyUsername, pageNumbers, fillBtnPagination, getPermission, getPermissions } from "../../../tools.js";
 import { Config } from "../../../Configs.js";
 import { tableLayout, UIConvertToSU } from "./Layout.js";
 import { tableLayoutTemplate } from "./Templates.js";
 import { exportSuperCsv, exportSuperPdf, exportSuperXls } from "../../../exportFiles/superUsers.js";
+import { UserPermissions } from "./permissions/Permissions.js";
 const tableRows = Config.tableRows;
 const currentPage = Config.currentPage;
 const SUser = true;
@@ -245,6 +246,10 @@ export class SuperUsers {
           <td>${client.verifiedSuper ? 'Si' : 'No'}</td>
 
           <td class="entity_options">
+            <button class="button" id="permission-entity" data-entityId="${client.id}">
+                <i class="fa-solid fa-sliders-up"></i>
+            </button>
+
             <button class="button" id="convert-entity" data-entityId="${client.id}">
                 <i class="fa-solid fa-envelope"></i>
             </button>
@@ -269,18 +274,19 @@ export class SuperUsers {
         this.remove();
         this.convertToSuper();
         this.changeUserPassword();
+        this.setPermissions();
     }
     register() {
         // register entity
         const openEditor = document.getElementById('new-entity');
         openEditor.addEventListener('click', () => {
           if(infoPage.actions.includes("INS") || Config.currentUser?.isMaster){
-            renderInterface('User');
+            renderInterface();
           }else{
             alert("Usuario no tiene permiso de registrar.");
           }
         });
-        const renderInterface = async (entities) => {
+        const renderInterface = async () => {
             this.entityDialogContainer.innerHTML = '';
             this.entityDialogContainer.style.display = 'flex';
             this.entityDialogContainer.innerHTML = `
@@ -665,7 +671,7 @@ export class SuperUsers {
         </div>
       `;
             const checkbox = document.getElementById('allow-master');
-            if (data.isMaster === true) {
+            if (data?.isMaster === true) {
                 checkbox?.setAttribute('checked', 'true');
             }
             inputObserver();
@@ -916,6 +922,15 @@ export class SuperUsers {
             });
         });
     }
+    setPermissions() {
+      const setPermission = document.querySelectorAll('#permission-entity');
+      setPermission.forEach((buttonKey) => {
+            buttonKey.addEventListener('click', async () => {
+                let entityId = buttonKey.dataset.entityid;
+                new UserPermissions().render(Config.offset, Config.currentPage, "", entityId, infoPage.actions);
+            });
+        });
+  }
     close() {
         const closeButton = document.getElementById('close');
         const editor = document.getElementById('entity-editor-container');

@@ -84,7 +84,14 @@ const GetCustomers = async () => {
     }else{
         const permission = await getPermission('CUSTOMER_CHANGE', businessData.id);
         if(permission.code === 3){
-            return response();
+            infoPage.actions = permission.message.actionsText.split(';');
+            if(infoPage.actions.includes("CHANGE")){
+                return response();
+            }else{
+                infoPage.msgPermission = "Usuario no tiene permiso de cambiar de empresa.";
+                infoPage.count = 0;
+                return [];
+            }
         }else{
             infoPage.msgPermission = permission.message;
             infoPage.count = 0;
