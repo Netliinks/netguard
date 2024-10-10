@@ -18,7 +18,7 @@ const connectionHeader = {
 };
 const platformSystem = 'guards';
 const reqOP = {
-    url: 'http://localhost:8080/oauth/token',
+    url: 'https://backendtest.netliinks.com:443/oauth/token',
     method: 'POST'
 };
 export class SignIn {

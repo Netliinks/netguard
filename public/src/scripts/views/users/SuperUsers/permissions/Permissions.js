@@ -12,7 +12,7 @@ let infoPage = {
   offset: Config.offset,
   currentPage: currentPage,
   search: "",
-  modalRows: 30,
+  modalRows: 50,
   msgPermission: "",
   actions: []
 };
@@ -523,7 +523,7 @@ export class UserPermissions {
                 if(itemsChange.includes(entityId.trim())){
                     select.checked = true;
                     select.disabled = true;
-                    select.style.display = "none";
+                    //select.style.display = "none";
                 }
             });
             
@@ -806,49 +806,44 @@ export class UserPermissions {
         const UUpdate = async (entityId) => {
             const updateButton = document.getElementById('update-changes');
             updateButton.addEventListener('click', async() => {
-              const $value = {
-                dni: document.getElementById('entity-dni'),
-                isMaster: document.getElementById('allow-master'),
-            };
-              let raw = JSON.stringify({
-                  // @ts-ignore
-                  //"lastName": `${$value.lastName?.value}`,
-                  // @ts-ignore
-                  //"secondLastName": `${$value.secondLastName?.value}`,
-                  "active": true,
-                  // @ts-ignore
-                  //"firstName": `${$value.firstName?.value}`,
-                  "state": {
-                      "id": `${$value.status?.dataset.optionid}`
-                  },
-                  //"customer": {
-                  //    "id": `${$value.customer?.dataset.optionid}`
-                  //},
-                  // @ts-ignore
-                  "phone": `${$value.phone?.value}`,
-                  "dni": `${$value.dni.value}`,
-                  "isMaster": `${$value.isMaster.checked ? true : false}`,
-                  // @ts-ignore
-                  //"email": `${$value.email?.value}`,
-                  // @ts-ignore
-                  //"userType": `${$value.userType?.dataset.optionid}`,
-              });
-              /*const existEmail = await getVerifyEmail($value.email?.value);
-              if(existEmail == true){
-                  alert("¡Correo electrónico ya existe!");
-              }else{
-                  update(raw);
-              } */
-              if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
-                alert("Usuario no tiene permiso de actualizar.");
-              }else if ($value.dni.value === '' || $value.dni.value === undefined) {
-                alert("DNI vacío!");
-              }else{
-                update(raw);
-              }
+                const $value = {
+                    ins: document.getElementById('entity-ins'),
+                    upd: document.getElementById('entity-upd'),
+                    read: document.getElementById('entity-read'),
+                    dlt: document.getElementById('entity-dlt'),
+                    change: document.getElementById('entity-change'),
+                };
+                let actions = [];
+                if($value.change === null){
+                    if($value.ins.checked){
+                        actions.push('INS');
+                    }
+                    if($value.upd.checked){
+                        actions.push('UPD');
+                    }
+                    if($value.read.checked){
+                        actions.push('READ');
+                    }
+                    if($value.dlt.checked){
+                        actions.push('DLT');
+                    }
+                }else{
+                    if($value.change.checked){
+                        actions.push('CHANGE');
+                    }
+                }
+                let raw = JSON.stringify({
+                    "actionsText": `${actions.toString().replaceAll(",",";")}`
+                });
+                
+                if(!infoPage.actions.includes("UPD") && !Config.currentUser?.isMaster){
+                    alert("Usuario no tiene permiso de actualizar.");
+                }else{
+                    update(raw);
+                }
             });
             const update = (raw) => {
-              updateEntity('User', entityId, raw)
+              updateEntity('Permission', entityId, raw)
                   .then((res) => {
                   setTimeout(async () => {
                       let tableBody;
@@ -858,10 +853,10 @@ export class UserPermissions {
                       new CloseDialog()
                           .x(container =
                           document.getElementById('entity-editor-container'));
-                      new SuperUsers().render(infoPage.offset, infoPage.currentPage, infoPage.search);
+                      new UserPermissions().render(infoPage.offset, infoPage.currentPage, infoPage.search, user.id, infoPage.actions);
                   }, 100);
               });
-          };
+            };
         };
     }
     remove() {

@@ -244,6 +244,7 @@ export class SuperUsers {
           <td>${verifyUserType(client.userType)}</td>
           <td class="tag"><span>${client.state.name}</span></td>
           <td>${client.verifiedSuper ? 'Si' : 'No'}</td>
+          <td>${client.isMaster ? 'Si' : 'No'}</td>
 
           <td class="entity_options">
             <button class="button" id="permission-entity" data-entityId="${client.id}">
