@@ -12,7 +12,7 @@ let infoPage = {
   offset: Config.offset,
   currentPage: currentPage,
   search: "",
-  modalRows: 30,
+  modalRows: 15,
   msgPermission: "",
   actions: []
 };
