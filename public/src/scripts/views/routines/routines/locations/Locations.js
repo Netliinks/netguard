@@ -265,9 +265,10 @@ export class Locations {
                 mes='0'+mes //agrega cero si el menor de 10
             this.entityDialogContainer.innerHTML = '';
             this.entityDialogContainer.style.display = 'flex';
+            //<div class="entity_editor" id="entity-editor" style="max-width:80%"></div>
             this.entityDialogContainer.innerHTML = `
             
-        <div class="entity_editor" id="entity-editor" style="max-width:80%">
+        <div class="entity_editor" id="entity-editor">
           <div class="entity_editor_header">
             <div class="user_info">
               <div class="avatar"><i class="fa-solid fa-map-location"></i></div>
@@ -278,7 +279,7 @@ export class Locations {
           <!-- EDITOR BODY -->
           <div class="entity_editor_body">
           
-          <div class="fila" style="display: flex">
+          <!-- <div class="fila" style="display: flex">
             <div class="elemento" style ="flex: 1;">
               <div  style="padding-bottom:20px"> 
               <input id="pac-input" class="controls pac-target-input" type="text" placeholder="Ciudad, lugar o calle" autocomplete="off">
@@ -287,7 +288,7 @@ export class Locations {
               <div id="map" style="height: 400px;width: 600px">
               </div>
             </div>
-            <div class="elemento" style ="flex: 0.6">
+            <div class="elemento" style ="flex: 0.6"> -->
             <div class="material_input">
               <input type="text" id="entity-name" autocomplete="none">
               <label for="entity-name">Nombre Ubicación</label>
@@ -332,8 +333,8 @@ export class Locations {
                   </select>
                 </div>
             </div>    
-          </div>
-        </div>
+          <!-- </div>
+        </div> -->
             
             
             
@@ -342,11 +343,11 @@ export class Locations {
           <div class="entity_editor_footer">
             <button class="btn btn_primary btn_widder" id="register-entity">Guardar</button>
           </div>
-        </div-->
+        </div>
       `;
             // @ts-ignore
             inputObserver();
-            initAutocomplete(lat, long, zoom);
+            //initAutocomplete(lat, long, zoom);
             this.close();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async () => {
@@ -418,7 +419,7 @@ export class Locations {
                   }
                 }
             });
-            const btnObtCords = document.getElementById('obtCords');
+            /*const btnObtCords = document.getElementById('obtCords');
             btnObtCords.addEventListener('click', () => {
                 var geocoder = new google.maps.Geocoder();
                 var direccion = document.getElementById('pac-input').value; // Obtén la dirección ingresada por el usuario desde un campo de entrada de texto
@@ -435,11 +436,11 @@ export class Locations {
                     alert("No encontrado "+status);
                 }
                 });
-            });
+            });*/
              
             
         };
-        async function initAutocomplete(lat, lng, zoom) {
+        /*async function initAutocomplete(lat, lng, zoom) {
           //var map = new google.maps.Map(document.getElementById('map'), {
           var marker1;
           const { Map } = await google.maps.importLibrary("maps");
@@ -493,7 +494,7 @@ export class Locations {
                   //console.log('Longitud2: ' + longitud)
         
             });
-          } 
+          } */
         
 
     }
@@ -510,8 +511,9 @@ export class Locations {
           const data = await getEntityData(entities, entityID);
           this.entityDialogContainer.innerHTML = '';
           this.entityDialogContainer.style.display = 'flex';
+          //<div class="entity_editor" id="entity-editor" style="max-width:80%"></div>
           this.entityDialogContainer.innerHTML = `
-      <div class="entity_editor" id="entity-editor" style="max-width:80%">
+      <div class="entity_editor" id="entity-editor">
         <div class="entity_editor_header">
           <div class="user_info">
             <div class="avatar"><i class="fa-regular fa-map-location"></i></div>
@@ -521,7 +523,7 @@ export class Locations {
         </div>
         <!-- EDITOR BODY -->
         <div class="entity_editor_body">
-          <div class="fila" style="display: flex">
+          <!-- <div class="fila" style="display: flex">
             <div class="elemento" style ="flex: 1;">
               <div  style="padding-bottom:20px"> 
                 <input id="pac-input" class="controls pac-target-input" type="text" placeholder="Ciudad, lugar o calle" autocomplete="off">
@@ -529,7 +531,7 @@ export class Locations {
               </div>
               <div id="map" style="height: 400px;width: 600px"></div>
             </div>
-            <div class="elemento" style ="flex: 0.6">
+            <div class="elemento" style ="flex: 0.6"> -->
               <div class="material_input">
                 <input type="text"
                   id="entity-name"
@@ -585,8 +587,8 @@ export class Locations {
                     <br>
                     <button id="btnDescargar">Descargar</button>
               </div>
-            </div>
-          </div>
+            <!-- </div>
+          </div> -->
         </div>
         <!-- END EDITOR BODY -->
         <div class="entity_editor_footer">
@@ -603,7 +605,7 @@ export class Locations {
           inputObserver();
           document.getElementById("entity-distance").value = data?.distance;
           document.getElementById("entity-frequency").value = data?.frequency;
-          initAutocomplete(latitud, longitud, 20, data);
+          //initAutocomplete(latitud, longitud, 20, data);
           this.close();
           const qr = document.getElementById("qrcode");
             // @ts-ignore
@@ -685,7 +687,7 @@ export class Locations {
               }
             }
           });
-          const btnObtCords = document.getElementById('obtCords');
+          /*const btnObtCords = document.getElementById('obtCords');
             btnObtCords.addEventListener('click', () => {
                 var geocoder = new google.maps.Geocoder();
                 var direccion = document.getElementById('pac-input').value; // Obtén la dirección ingresada por el usuario desde un campo de entrada de texto
@@ -702,7 +704,7 @@ export class Locations {
                     alert("No encontrado "+status);
                 }
                 });
-            });
+            });*/
           const update = (raw) => {
             updateEntity('RoutineSchedule', entityId, raw)
                 .then((res) => {
@@ -723,7 +725,7 @@ export class Locations {
             });
         };
       };
-      async function initAutocomplete(lat, lng, zoom, data) {
+      /*async function initAutocomplete(lat, lng, zoom, data) {
         //var map = new google.maps.Map(document.getElementById('map'), {
         var marker1;
         var marker2;
@@ -795,7 +797,7 @@ export class Locations {
               });
               //marker2.setMap(map);
             }
-        } 
+        } */
   }
     remove() {
         const remove = document.querySelectorAll('#remove-entity');
