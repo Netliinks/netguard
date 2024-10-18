@@ -8,7 +8,7 @@ export const exportFixedPdf = (ar, start, end) => {
     doc.setFont(undefined, 'bold');
     doc.setTextColor(0, 0, 128);
     doc.setFontSize(25);
-    doc.text(10, 40, `Generales`);
+    doc.text(10, 40, `Consignas Fijas`);
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'italic');
@@ -19,8 +19,8 @@ export const exportFixedPdf = (ar, start, end) => {
     doc.setFillColor(210, 210, 210);
     doc.rect(5, 45, 285, 10, 'F');
     doc.text(10, 50, "Nombre");
-    doc.text(110, 50, "Hora");
-    doc.text(130, 50, "Usuario");
+    //doc.text(110, 50, "Hora");
+    doc.text(110, 50, "Usuario");//130
     doc.text(170, 50, "Tipo");
     doc.line(5, 55, 290, 55);
     let row = 60;
@@ -37,8 +37,8 @@ export const exportFixedPdf = (ar, start, end) => {
             doc.setFont(undefined, 'normal');
             doc.setTextColor(0, 0, 0);
             doc.text(10, row, `${fixed.name}`);
-            doc.text(110, row, `${fixed.execTime}`);
-            doc.text(130, row, `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`);
+            //doc.text(110, row, `${fixed.execTime}`);
+            doc.text(110, row, `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`);//130
             doc.text(170, row, `${verifyUserType(fixed.user.userType)}`);
             
             row += 5;
@@ -58,8 +58,8 @@ export const exportFixedPdf = (ar, start, end) => {
                 doc.rect(5, 15, 285, 10, 'F');
                 doc.text(10, 20, "Nombre");   
                 doc.text(90, 20, "Fecha");
-                doc.text(110, 20, "Hora");
-                doc.text(130, 20, "Usuario");
+                //doc.text(110, 20, "Hora");
+                doc.text(110, 20, "Usuario");//130
                 doc.text(170, 20, "Tipo");
                 doc.line(5, 25, 290, 25);
                 doc.setTextColor(0, 0, 128);
@@ -70,7 +70,7 @@ export const exportFixedPdf = (ar, start, end) => {
     }
     // Save the PDF
     var d = new Date();
-    var title = "log_Generales_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.pdf`;
+    var title = "log_Fijas_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.pdf`;
     doc.save(title);
 };
 export const exportFixedCsv = (ar, start, end) => {
@@ -81,7 +81,7 @@ export const exportFixedCsv = (ar, start, end) => {
         //if (fixed.creationDate >= start && fixed.creationDate <= end) {
             let obj = {
                 "Nombre": `${fixed.name}`,
-                "Hora Ejecución": `${fixed.execTime}`,
+                //"Hora Ejecución": `${fixed.execTime}`,
                 "Usuario": `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`,
                 "Tipo": `${verifyUserType(fixed.user.userType)}`,
 
@@ -89,7 +89,7 @@ export const exportFixedCsv = (ar, start, end) => {
             rows.push(obj);
         //}
     }
-    generateFile(rows, "Generales", "csv");
+    generateFile(rows, "Fijas", "csv");
 };
 export const exportFixedXls = (ar, start, end) => {
     let rows = [];
@@ -99,7 +99,7 @@ export const exportFixedXls = (ar, start, end) => {
         //if (fixed.creationDate >= start && fixed.creationDate <= end) {
             let obj = {
                 "Nombre": `${fixed.name} `,
-                "Hora Ejecución": `${fixed.execTime}`,
+                //"Hora Ejecución": `${fixed.execTime}`,
                 "Usuario": `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`,
                 "Tipo": `${verifyUserType(fixed.user.userType)}`,
                 
@@ -107,7 +107,7 @@ export const exportFixedXls = (ar, start, end) => {
             rows.push(obj);
         //}
     }
-    generateFile(rows, "Generales", "xls");
+    generateFile(rows, "Fijas", "xls");
 };
 const generateFile = (ar, title, extension) => {
     //comprobamos compatibilidad

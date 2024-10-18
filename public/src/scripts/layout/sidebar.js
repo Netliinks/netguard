@@ -195,12 +195,12 @@ export class Sidebar {
                     </div-->
                     <div class="sidebar_subitem" id="render-fixed">
                       <span class="sidebar_subitem_label">
-                        <i class="fa-regular fa-calendar-check"></i><div class="label">Generales</div>
+                        <i class="fa-regular fa-calendar-check"></i><div class="label">Fijas</div>
                       </span>
                     </div>
                     <div class="sidebar_subitem" id="render-sporadic">
                       <span class="sidebar_subitem_label">
-                        <i class="fa-regular fa-clock"></i> <div class="label">Específicas</div>
+                        <i class="fa-regular fa-clock"></i> <div class="label">Eventuales</div>
                       </span>
                   </div>
                   </div> 
