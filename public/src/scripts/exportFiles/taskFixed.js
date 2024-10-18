@@ -12,7 +12,7 @@ export const exportFixedPdf = (ar, start, end) => {
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'italic');
-    doc.text(220, 40, `Hora: Desde ${start} Hasta ${end}`);
+    doc.text(220, 40, `Fecha: Desde ${start} Hasta ${end}`);
     //construimos cabecera del csv
     doc.setFont(undefined, 'bold');
     doc.line(5, 45, 290, 45);

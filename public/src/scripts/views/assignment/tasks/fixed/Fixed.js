@@ -761,14 +761,14 @@ export class Fixed {
                           <div class="dialog_message padding_8">
                               <div class="form_group">
                                   <div class="form_input">
-                                      <label class="form_label" for="start-date">Desde:</label>
-                                      <input type="time" class="input_date input_time-start" id="start-time" name="start-time">
-                                  </div>
-                  
-                                  <div class="form_input">
-                                      <label class="form_label" for="end-date">Hasta:</label>
-                                      <input type="time" class="input_date input_time-end" id="end-time" name="end-time">
-                                  </div>
+                                        <label class="form_label" for="start-date">Desde:</label>
+                                        <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
+                                    </div>
+                    
+                                    <div class="form_input">
+                                        <label class="form_label" for="end-date">Hasta:</label>
+                                        <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
+                                    </div>
 
                                   <label for="exportCsv">
                                       <input type="radio" id="exportCsv" name="exportOption" value="csv" /> CSV
@@ -792,24 +792,35 @@ export class Fixed {
                   </div>
               </div>
           `;
-            const fecha = new Date();
+            let fecha = new Date(); //Fecha actual
+            let mes = fecha.getMonth()+1; //obteniendo mes
+            let dia = fecha.getDate(); //obteniendo dia
+            let anio = fecha.getFullYear(); //obteniendo año
+            if(dia<10)
+                dia='0'+dia; //agrega cero si el menor de 10
+            if(mes<10)
+                mes='0'+mes //agrega cero si el menor de 10
 
-            const hour = fecha.getHours();
-            const minutes = fecha.getMinutes();
-            const seconds = fecha.getSeconds();
+            document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
+            document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
+            //const fecha = new Date();
+            
+            //const hour = fecha.getHours();
+            //const minutes = fecha.getMinutes();
+            //const seconds = fecha.getSeconds();
 
-            const hourFormat = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            //const hourFormat = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
-            document.getElementById("start-time").value = "00:00"
-            document.getElementById("end-time").value = hourFormat
+            //document.getElementById("start-time").value = "00:00"
+            //document.getElementById("end-time").value = hourFormat
             inputObserver();
             const _closeButton = document.getElementById('cancel');
             const exportButton = document.getElementById('export-data');
             const _dialog = document.getElementById('dialog-content');
             exportButton.addEventListener('click', async () => {
                 const _values = {
-                    start: document.getElementById('start-time'),
-                    end: document.getElementById('end-time'),
+                    start: document.getElementById('start-date'),
+                    end: document.getElementById('end-date'),
                     exportOption: document.getElementsByName('exportOption')
                 }
                 let rawExport = JSON.stringify({
@@ -831,18 +842,18 @@ export class Fixed {
                                 "value": `${customerId}`
                             },
                             {
-                                "property": "execTime",
+                                "property": "execDate",
                                 "operator": ">=",
                                 "value": `${_values.start.value}`
                             },
                             {
-                                "property": "execTime",
+                                "property": "execDate",
                                 "operator": "<=",
                                 "value": `${_values.end.value}`
                             }
                         ],
                     },
-                    sort: "+execTime",
+                    sort: "-createdDate",
                     fetchPlan: 'full',
                 });
                 const fixed = await getFilterEntityData("Task_", rawExport);
