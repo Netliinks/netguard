@@ -313,49 +313,67 @@ export class Vehiculars {
         this.export = () => {
             const exportNotes = document.getElementById('export-entities');
             exportNotes.addEventListener('click', async() => {
-                this.dialogContainer.style.display = 'block';
-                this.dialogContainer.innerHTML = `
-                    <div class="dialog_content" id="dialog-content">
-                        <div class="dialog">
-                            <div class="dialog_container padding_8">
-                                <div class="dialog_header">
-                                    <h2>Seleccionar la fecha</h2>
-                                </div>
-
-                                <div class="dialog_message padding_8">
-                                    <div class="form_group">
-                                        <div class="form_input">
-                                            <label class="form_label" for="start-date">Desde:</label>
-                                            <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
-                                        </div>
-                        
-                                        <div class="form_input">
-                                            <label class="form_label" for="end-date">Hasta:</label>
-                                            <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
-                                        </div>
-
-                                        <label for="exportCsv">
-                                            <input type="radio" id="exportCsv" name="exportOption" value="csv" /> CSV
-                                        </label>
-
-                                        <label for="exportXls">
-                                            <input type="radio" id="exportXls" name="exportOption" value="xls" checked /> XLS
-                                        </label>
-
-                                        <label for="exportPdf">
-                                            <input type="radio" id="exportPdf" name="exportOption" value="pdf" /> PDF
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="dialog_footer">
-                                    <button class="btn btn_primary" id="cancel">Cancelar</button>
-                                    <button class="btn btn_danger" id="export-data">Exportar</button>
-                                </div>
-                            </div>
+                this.siebarDialogContainer.innerHTML = '';
+                this.siebarDialogContainer.style.display = 'flex';
+                this.siebarDialogContainer.innerHTML = `
+                    <div class="entity_editor" id="entity-editor">
+                    <div class="entity_editor_header">
+                        <div class="user_info">
+                        <div class="avatar"><i class="fa-regular fa-file-export"></i></div>
+                        <h1 class="entity_editor_title">Exportar<br><small>Datos</small></h1>
                         </div>
+
+                        <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+                    </div>
+
+                    <!-- EDITOR BODY -->
+                    <div class="entity_editor_body">
+                        <div class="material_input">
+                        <input type="text" id="entity-customer" class="input_filled" autocomplete="none" value="Actual" data-optionid="${customerId}" disabled>
+                        <label for="entity-customer"><i class="fa-solid fa-car"></i> Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
+                        </div>
+
+                        <div class="form_group">
+                            <div class="form_input">
+                                <label class="form_label" for="start-date">Desde:</label>
+                                <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
+                            </div>
+            
+                            <div class="form_input">
+                                <label class="form_label" for="end-date">Hasta:</label>
+                                <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
+                            </div>
+
+                        </div>
+
+                        <div class="input_checkbox">
+                            <label for="exportCsv">
+                                <input type="radio" class="checkbox" id="exportCsv" name="exportOption" value="csv" /> CSV
+                            </label>
+                        </div>
+
+                        <div class="input_checkbox">
+                            <label for="exportXls">
+                                <input type="radio" class="checkbox" id="exportXls" name="exportOption" value="xls" checked /> XLS
+                            </label>
+                        </div>
+
+                        <div class="input_checkbox">
+                            <label for="exportPdf">
+                                <input type="radio" class="checkbox" id="exportPdf" name="exportOption" value="pdf" /> PDF
+                            </label>
+                        </div>
+
+                    </div>
+                    <!-- END EDITOR BODY -->
+
+                    <div class="entity_editor_footer">
+                        <button class="btn btn_primary btn_widder" id="export-data">Listo</button>
+                    </div>
                     </div>
                 `;
+                inputObserver();
+                this.selectCustomer();
                 let fecha = new Date(); //Fecha actual
                 let mes = fecha.getMonth()+1; //obteniendo mes
                 let dia = fecha.getDate(); //obteniendo dia
@@ -367,12 +385,11 @@ export class Vehiculars {
 
                 document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
                 document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
-                inputObserver();
-                const _closeButton = document.getElementById('cancel');
+                const _closeButton = document.getElementById('close');
                 const exportButton = document.getElementById('export-data');
-                const _dialog = document.getElementById('dialog-content');
                 exportButton.addEventListener('click', async() => {
                     const _values = {
+                        customer: document.getElementById('entity-customer'),
                         start: document.getElementById('start-date'),
                         end: document.getElementById('end-date'),
                         exportOption: document.getElementsByName('exportOption')
@@ -383,7 +400,7 @@ export class Vehiculars {
                                 {
                                     "property": "customer.id",
                                     "operator": "=",
-                                    "value": `${customerId}`
+                                    "value": `${_values.customer.dataset.optionid}`
                                 },
                                 {
                                     "property": "ingressDate",
@@ -424,9 +441,183 @@ export class Vehiculars {
                     
                 });
                 _closeButton.onclick = () => {
-                    new CloseDialog().x(_dialog);
+                    const editor = document.getElementById('entity-editor-container');
+                    new CloseDialog().x(editor);
                 };
             });
         };
+    }
+
+    selectCustomer() {
+        const btnElement = document.getElementById('btn-select-customer');
+
+        btnElement.addEventListener('click', async () => {
+            const element = document.getElementById('entity-customer');
+            modalTable(0, "", element);
+        })
+
+        async function modalTable(offset, search, element){
+            const dialogContainer = document.getElementById('app-dialogs');
+            let raw = JSON.stringify({
+                "filter": {
+                    "conditions": [
+                        {
+                        "property": "business.id",
+                        "operator": "=",
+                        "value": `${Config.currentUser.business.id}`
+                        }
+                    ],
+                }, 
+                sort: "+name",
+                limit: Config.modalRows,
+                offset: offset
+            });
+            if(search != ""){
+                raw = JSON.stringify({
+                    "filter": {
+                        "conditions": [
+                            {
+                            "group": "OR",
+                            "conditions": [
+                                {
+                                "property": "name",
+                                "operator": "contains",
+                                "value": `${search.toLowerCase()}`
+                                },
+                                {
+                                "property": "ruc",
+                                "operator": "contains",
+                                "value": `${search.toLowerCase()}`
+                                }
+                            ]
+                            },
+                            {
+                            "property": "business.id",
+                            "operator": "=",
+                            "value": `${Config.currentUser.business.id}`
+                            }
+                        ],
+                    }, 
+                    sort: "+name",
+                    limit: Config.modalRows,
+                    offset: offset
+                });
+            }
+            let dataModal = await getFilterEntityData("Customer", raw);
+            dialogContainer.style.display = 'block';
+            dialogContainer.innerHTML = `
+                <div class="dialog_content" id="dialog-content">
+                    <div class="dialog">
+                        <div class="dialog_container padding_8">
+                            <div class="dialog_header">
+                                <h2>Seleccione una empresa</h2>
+                            </div>
+
+                            <div class="dialog_message padding_8">
+                                <div class="datatable_tools">
+                                    <input type="search"
+                                    class="search_input"
+                                    placeholder="Buscar"
+                                    id="search-modal">
+                                    <button
+                                        class="datatable_button add_user"
+                                        id="btnSearchModal">
+                                        <i class="fa-solid fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dashboard_datatable">
+                                    <table class="datatable_content margin_t_16">
+                                    <thead>
+                                        <tr>
+                                        <th>Nombre</th>
+                                        <th>RUC</th>
+                                        <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="datatable-modal-body">
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <br>
+                            </div>
+
+                            <div class="dialog_footer">
+                                <button class="btn btn_primary" id="prevModal"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button class="btn btn_primary" id="nextModal"><i class="fa-solid fa-arrow-right"></i></button>
+                                <button class="btn btn_danger" id="cancel">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            inputObserver();
+            const datetableBody = document.getElementById('datatable-modal-body');
+            if (dataModal.length === 0) {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>No hay datos</td>
+                    <td></td>
+                    <td></td>
+                `;
+                datetableBody.appendChild(row);
+            }
+            else {
+                for (let i = 0; i < dataModal.length; i++) {
+                    let data = dataModal[i];
+                    let row = document.createElement('tr');
+                    row.innerHTML += `
+                        <td>${data?.name ?? ''}</dt>
+                        <td>${data?.ruc ?? ''}</dt>
+                        <td class="entity_options">
+                            <button class="button" id="edit-entity" data-entityId="${data.id}" data-entityName="${data?.name ?? ''}">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </button>
+                        </td>
+                    `;
+                    datetableBody.appendChild(row);
+                }
+            }
+            const txtSearch = document.getElementById('search-modal');
+            const btnSearchModal = document.getElementById('btnSearchModal');
+            const _selectCustomer = document.querySelectorAll('#edit-entity');
+            const _closeButton = document.getElementById('cancel');
+            const _dialog = document.getElementById('dialog-content');
+            const prevModalButton = document.getElementById('prevModal');
+            const nextModalButton = document.getElementById('nextModal');
+
+            txtSearch.value = search ?? '';
+
+            _selectCustomer.forEach((edit) => {
+                const entityId = edit.dataset.entityid;
+                const entityName = edit.dataset.entityname;
+                edit.addEventListener('click', () => {
+                    element.setAttribute('data-optionid', entityId);
+                    element.setAttribute('value', `${entityName}`);
+                    element.classList.add('input_filled');
+                    new CloseDialog().x(_dialog);
+                })
+            
+            })
+
+            btnSearchModal.onclick = () => {
+                modalTable(0, txtSearch.value, element);
+            }
+
+            _closeButton.onclick = () => {
+                new CloseDialog().x(_dialog);
+            }
+
+            nextModalButton.onclick = () => {
+                offset = Config.modalRows + (offset);
+                modalTable(offset, search, element);
+            }
+
+            prevModalButton.onclick = () => {
+                if(offset > 0){
+                offset = (offset) - Config.modalRows;
+                modalTable(offset, search, element);
+                }
+            }
+        }
     }
 }

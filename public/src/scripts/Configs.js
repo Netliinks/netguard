@@ -14,5 +14,6 @@ export const Config = {
     //mapIdGM: "c6d95126296646a5",
     timeReolad: 30000,
     timeOut: null,
-    timeRoutineTopBar: null
+    timeRoutineTopBar: null,
+    currentUser: null
 };
