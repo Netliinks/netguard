@@ -462,7 +462,7 @@ export class Fixed {
                         "description": `${inputsCollection.description.value}`,
                         "execDate": `${dateFormat}`,
                         "user": {
-                            "id": `${_userInfo['attributes']['id']}`
+                            "id": `${Config.currentUser.id}` //`${_userInfo['attributes']['id']}`
                         },
                         "customer": {
                             "id": `${customerId}`
@@ -505,55 +505,12 @@ export class Fixed {
                                     }
                                 ],
                             },
-                            "customer": {
-                                "id": `${customerId}`
-                            },
-                            "execTime": `${inputsCollection.executionTime.value}`,
-                            "startTime": `${hourFormat}`,
-                            "startDate": `${dateFormat}`,
-
                         });
-                        if (name.value.trim() === '' || name.value.trim() === null) {
-                            alert('Nombre del consigna fija vacío')
-                        }
-                        if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
-                            alert('Debe especificar la hora de ejecución de la consigna')
-                        }
-                        else {
-                            reg(raw);
-                            let rawUser = JSON.stringify({
-                                "filter": {
-                                    "conditions": [
-                                        {
-                                            "property": "customer.id",
-                                            "operator": "=",
-                                            "value": `${customerId}`
-                                        },
-                                        {
-                                            "property": "userType",
-                                            "operator": "=",
-                                            "value": `GUARD`
-                                        },
-                                        {
-                                            "property": "state.name",
-                                            "operator": "=",
-                                            "value": `Enabled`
-                                        },
-                                        {
-                                            "property": "token",
-                                            "operator": "<>",
-                                            "value": ``
-                                        }
-                                    ],
-                                },
-                            });
-                            const dataUser = await getFilterEntityData("User", rawUser);
-                            for (let i = 0; i < dataUser.length; i++) {
+                        const dataUser = await getFilterEntityData("User", rawUser);
+                        for (let i = 0; i < dataUser.length; i++) {
 
-                                const data = { "token": dataUser[i]['token'], "title": "General", "body": `${inputsCollection.name.value}` }
-                                const envioPush = await postNotificationPush(data);
-                            }
-
+                            const data = { "token": dataUser[i]['token'], "title": "General", "body": `${inputsCollection.name.value}` }
+                            const envioPush = await postNotificationPush(data);
                         }
                     }
 
@@ -906,7 +863,64 @@ export class Fixed {
                     if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
                         alert("Usuario no tiene permiso de exportar.");
                     }else{
-                    
+                        const _values = {
+                            start: document.getElementById('start-date'),
+                            end: document.getElementById('end-date'),
+                            exportOption: document.getElementsByName('exportOption')
+                        }
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": "taskType",
+                                        "operator": "=",
+                                        "value": `FIJAS`
+                                    },
+                                    {
+                                        "property": "user.userType",
+                                        "operator": "=",
+                                        "value": `GUARD`
+                                    },
+                                    {
+                                        "property": "customer.id",
+                                        "operator": "=",
+                                        "value": `${customerId}`
+                                    },
+                                    {
+                                        "property": "execDate",
+                                        "operator": ">=",
+                                        "value": `${_values.start.value}`
+                                    },
+                                    {
+                                        "property": "execDate",
+                                        "operator": "<=",
+                                        "value": `${_values.end.value}`
+                                    }
+                                ],
+                            },
+                            sort: "-createdDate",
+                            fetchPlan: 'full',
+                        });
+                        const fixed = await getFilterEntityData("Task_", rawExport);
+                        for (let i = 0; i < _values.exportOption.length; i++) {
+                            let ele = _values.exportOption[i];
+                            if (ele.type = "radio") {
+                                if (ele.checked) {
+                                    if (ele.value == "xls") {
+                                        // @ts-ignore
+                                        exportFixedXls(fixed, _values.start.value, _values.end.value);
+                                    }
+                                    else if (ele.value == "csv") {
+                                        // @ts-ignore
+                                        exportFixedCsv(fixed, _values.start.value, _values.end.value);
+                                    }
+                                    else if (ele.value == "pdf") {
+                                        // @ts-ignore
+                                        exportFixedPdf(fixed, _values.start.value, _values.end.value);
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
                 _closeButton.onclick = () => {

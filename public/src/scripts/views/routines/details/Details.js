@@ -553,6 +553,16 @@ export class RoutineRegisters {
                                                 "operator": "=",
                                                 "value": `${_values.customer.dataset.optionid}`
                                             },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": ">=",
+                                                "value": `${_values.start.value}`
+                                            },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": "<=",
+                                                "value": `${_values.end.value}`
+                                            }
                                         ],
                                     },
                                     sort: "-createdDate",

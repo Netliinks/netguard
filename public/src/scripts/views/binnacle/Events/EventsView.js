@@ -416,6 +416,16 @@ export class Events {
                                             "property": "notificationType.name",
                                             "operator": "<>",
                                             "value": `Rutina`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": ">=",
+                                            "value": `${_values.start.value}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": "<=",
+                                            "value": `${_values.end.value}`
                                         }
                                     ],
                                 },

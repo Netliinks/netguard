@@ -370,6 +370,16 @@ export class Notes {
                                                 "operator": "=",
                                                 "value": `${_values.customer.dataset.optionid}`
                                             },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": ">=",
+                                                "value": `${_values.start.value}T00:00:00`
+                                            },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": "<=",
+                                                "value": `${_values.end.value}T23:59:59`
+                                            }
                                         ],
                                     },
                                     sort: "-createdDate",

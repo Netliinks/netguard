@@ -603,6 +603,16 @@ export class AssistControl {
                                             "operator": "=",
                                             "value": `${_values.customer.dataset.optionid}`
                                         },
+                                        {
+                                            "property": "ingressDate",
+                                            "operator": ">=",
+                                            "value": `${_values.start.value}`
+                                        },
+                                        {
+                                            "property": "ingressDate",
+                                            "operator": "<=",
+                                            "value": `${_values.end.value}`
+                                        }
                                     ],
                                 },
                                 sort: "-createdDate",

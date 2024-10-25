@@ -428,6 +428,16 @@ export class Binnacle {
                                             "operator": "<>",
                                             "value": `Botón Pánico`
                                         },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": ">=",
+                                            "value": `${_values.start.value}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": "<=",
+                                            "value": `${_values.end.value}`
+                                        }
                                     ],
                                 },
                                 sort: "-createdDate",
