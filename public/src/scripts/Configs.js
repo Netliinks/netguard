@@ -15,5 +15,6 @@ export const Config = {
     timeReolad: 30000,
     timeOut: null,
     timeRoutineTopBar: null,
-    currentUser: null
+    currentUser: null,
+    limitExport: 100
 };

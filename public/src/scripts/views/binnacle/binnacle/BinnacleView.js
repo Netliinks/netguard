@@ -360,61 +360,91 @@ export class Binnacle {
                         end: document.getElementById('end-date'),
                         exportOption: document.getElementsByName('exportOption')
                     }
-                    let rawExport = JSON.stringify({
-                        "filter": {
-                            "conditions": [
-                                {
-                                    "property": "customer.id",
-                                    "operator": "=",
-                                    "value": `${_values.customer.dataset.optionid}`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `Otro`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `🔥 Fuego`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `🚨 Hombre Caído`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `🚪 Intrusión`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `🏚 Robo`
-                                },
-                                {
-                                    "property": "notificationType.name",
-                                    "operator": "<>",
-                                    "value": `Botón Pánico`
-                                },
-                                {
-                                    "property": "creationDate",
-                                    "operator": ">=",
-                                    "value": `${_values.start.value}`
-                                },
-                                {
-                                    "property": "creationDate",
-                                    "operator": "<=",
-                                    "value": `${_values.end.value}`
-                                }
-                            ],
-                        },
-                        sort: "-createdDate",
-                        fetchPlan: 'full',
-                    });
-                    const events = await getFilterEntityData("Notification", rawExport); //await getEvents();
-                    for (let i = 0; i < _values.exportOption.length; i++) {
+                    let rawToExport=(offset)=>{
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": "customer.id",
+                                        "operator": "=",
+                                        "value": `${_values.customer.dataset.optionid}`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `Otro`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `🔥 Fuego`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `🚨 Hombre Caído`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `🚪 Intrusión`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `🏚 Robo`
+                                    },
+                                    {
+                                        "property": "notificationType.name",
+                                        "operator": "<>",
+                                        "value": `Botón Pánico`
+                                    },
+                                    {
+                                        "property": "creationDate",
+                                        "operator": ">=",
+                                        "value": `${_values.start.value}`
+                                    },
+                                    {
+                                        "property": "creationDate",
+                                        "operator": "<=",
+                                        "value": `${_values.end.value}`
+                                    }
+                                ],
+                            },
+                            sort: "-createdDate",
+                            limit: Config.limitExport,
+                            offset: offset,
+                            fetchPlan: 'full',
+                        });
+                        return rawExport;
+                    }
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("Notification", rawExport);
+                    if(totalRegisters===0){
+                        alert("No hay ningún registro");
+                    }else if(totalRegisters === undefined){
+                        alert("Ocurrió un error al exportar");
+                    }else{
+
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let offset = 0;
+                        let load = 0;
+                        for(let i = 0; i < pages; i++){
+                            rawExport = rawToExport(offset);
+                            array.push(await getFilterEntityData("Notification", rawExport)); //await getEvents();
+                            load += array.length;
+                            offset = Config.limitExport + offset;
+                            console.log(load);
+                        }
+                        let events = [];
+                        console.log(load)
+                        for(let i = 0; i < array; i++){
+
+                        }
+                        
+
+                    /*for (let i = 0; i < _values.exportOption.length; i++) {
                         let ele = _values.exportOption[i];
                         if (ele.type = "radio") {
                             if (ele.checked) {
@@ -432,7 +462,9 @@ export class Binnacle {
                                 }
                             }
                         }
+                    }*/
                     }
+                    
                 });
                 _closeButton.onclick = () => {
                     const editor = document.getElementById('entity-editor-container');
