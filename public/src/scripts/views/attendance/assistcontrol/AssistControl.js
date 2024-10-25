@@ -497,10 +497,13 @@ export class AssistControl {
                     <!-- EDITOR BODY -->
                     <div class="entity_editor_body">
                         <div class="material_input">
-                        <input type="text" id="entity-customer" class="input_filled" autocomplete="none" value="Actual" data-optionid="${customerId}" disabled>
-                        <label for="entity-customer"><i class="fa-solid fa-car"></i> Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
+                        <input type="text" id="entity-customer" autocomplete="none" value="Actual" data-optionid="${customerId}" disabled>
+                        <label for="entity-customer">Seleccionar otra empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
                         </div>
-
+                        <br>
+                        <br>
+                        <br>
+                        <br>
                         <div class="form_group">
                             <div class="form_input">
                                 <label class="form_label" for="start-date">Desde:</label>
