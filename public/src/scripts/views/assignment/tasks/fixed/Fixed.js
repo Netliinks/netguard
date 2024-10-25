@@ -56,7 +56,7 @@ const getTakFixed = async () => {
                     }
                 ],
             },
-            sort: "+execTime",
+            sort: "-createdDate",
             limit: Config.tableRows,
             offset: infoPage.offset,
             fetchPlan: 'full',
@@ -92,7 +92,7 @@ const getTakFixed = async () => {
                         }
                     ]
                 },
-                sort: "+execTime",
+                sort: "-createdDate",
                 limit: Config.tableRows,
                 offset: infoPage.offset,
                 fetchPlan: 'full',
@@ -207,13 +207,13 @@ export class Fixed {
                                 </div>
 
                                 <div class="dialog_message padding_8" style="text-align: center;">
-                                    <p style="text-align: justify;">${data.description ?? ""}</p>
+                                    <p style="text-align: justify;">${data?.description ?? ""}</p>
                                 </div>
-                                <div class="dialog_message padding_8" style="display: flex; justify-content: center;">
+                                <!-- <div class="dialog_message padding_8" style="display: flex; justify-content: center;">
                                    
-                                    <div style="padding:20px;background:#dfdfdf""><span><i class="fa-solid fa-clock"  style="font-size:15px"></i> ${data.execTime}</span></div>
+                                    <div style="padding:20px;background:#dfdfdf""><span><i class="fa-solid fa-clock"  style="font-size:15px"></i> ${data?.execTime ?? ''}</span></div>
                                     
-                                </div>
+                                </div> -->
                                 
                                 <div class="dialog_footer" style="text-align: center;">
                                     <button class="btn btn_primary" id="cancel-modal">Cerrar</button>
@@ -259,10 +259,10 @@ export class Fixed {
                 let row = document.createElement('tr');
                 //row.setAttribute("id", `row${i}`);
                 //row.setAttribute("onclick","alerta()")
+                
                 row.innerHTML += `
-          <td>${taskFixed.name}</dt>
-          
-          <td>${taskFixed.execTime}</dt>`;
+          <td>${taskFixed.name}</dt>`;
+          //<td>${taskFixed.execTime}</dt>`;
                 row.innerHTML += `<td>${taskFixed.isReadDate ?? ''} </dt>`;
                 row.innerHTML += `<td>${taskFixed.isReadTime ?? ''}</dt>`;
 
@@ -391,14 +391,14 @@ export class Fixed {
                 <label for="entity-description" class="form_label"></i> Descripción:</label>
                 <textarea id="entity-description" name="entity-description" row="30" class="input_textarea"></textarea>
             </div>
-            <div class="form_group">
+            <!-- <div class="form_group">
                 <div class="form_input">
                     <label class="form_label" for="execution-time">Hora de Ejecución:</label>
                     <input type="time" class="input_time input_time-execution" id="execution-time" name="execution-time">
                 </div>
 
                
-            </div> 
+            </div>  -->
            
             
             
@@ -419,7 +419,7 @@ export class Fixed {
             const agregarCeros = (numero) => {
                 return numero < 10 ? `0${numero}` : numero;
             };
-            const _fileHandler = document.getElementById('file-handler');
+            //const _fileHandler = document.getElementById('file-handler');
             const registerButton = document.getElementById('register-entity');
             const fecha = new Date();
 
@@ -445,11 +445,11 @@ export class Fixed {
                 }else{
                     const name = document.getElementById('entity-name')
                     const description = document.getElementById('entity-description')
-                    const executionTime = document.getElementById('execution-time')
+                    //const executionTime = document.getElementById('execution-time')
 
                     const inputsCollection = {
                         name: name,
-                        executionTime: executionTime,
+                        //executionTime: executionTime,
                         description: description
 
                     };
@@ -462,12 +462,12 @@ export class Fixed {
                         "description": `${inputsCollection.description.value}`,
                         "execDate": `${dateFormat}`,
                         "user": {
-                            "id": `${Config.currentUser.id}` //`${_userInfo['attributes']['id']}`
+                            "id": `${_userInfo['attributes']['id']}`
                         },
                         "customer": {
                             "id": `${customerId}`
                         },
-                        "execTime": `${inputsCollection.executionTime.value}`,
+                        //"execTime": `${inputsCollection.executionTime.value}`,
                         "startTime": `${hourFormat}`,
                         "startDate": `${dateFormat}`,
 
@@ -475,9 +475,9 @@ export class Fixed {
                     if (name.value.trim() === '' || name.value.trim() === null) {
                         alert('Nombre del consigna fija vacío')
                     }
-                    if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
+                    /*if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
                         alert('Debe especificar la hora de ejecución de la consigna')
-                    }
+                    }*/
                     else {
                         reg(raw);
                         let rawUser = JSON.stringify({
@@ -505,18 +505,59 @@ export class Fixed {
                                     }
                                 ],
                             },
+                            "customer": {
+                                "id": `${customerId}`
+                            },
+                            "execTime": `${inputsCollection.executionTime.value}`,
+                            "startTime": `${hourFormat}`,
+                            "startDate": `${dateFormat}`,
+
                         });
-                        const dataUser = await getFilterEntityData("User", rawUser);
-                        for (let i = 0; i < dataUser.length; i++) {
-
-                            const data = { "token": dataUser[i]['token'], "title": "General", "body": `${inputsCollection.name.value}` }
-                            const envioPush = await postNotificationPush(data);
+                        if (name.value.trim() === '' || name.value.trim() === null) {
+                            alert('Nombre del consigna fija vacío')
                         }
+                        if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
+                            alert('Debe especificar la hora de ejecución de la consigna')
+                        }
+                        else {
+                            reg(raw);
+                            let rawUser = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": "customer.id",
+                                            "operator": "=",
+                                            "value": `${customerId}`
+                                        },
+                                        {
+                                            "property": "userType",
+                                            "operator": "=",
+                                            "value": `GUARD`
+                                        },
+                                        {
+                                            "property": "state.name",
+                                            "operator": "=",
+                                            "value": `Enabled`
+                                        },
+                                        {
+                                            "property": "token",
+                                            "operator": "<>",
+                                            "value": ``
+                                        }
+                                    ],
+                                },
+                            });
+                            const dataUser = await getFilterEntityData("User", rawUser);
+                            for (let i = 0; i < dataUser.length; i++) {
 
+                                const data = { "token": dataUser[i]['token'], "title": "General", "body": `${inputsCollection.name.value}` }
+                                const envioPush = await postNotificationPush(data);
+                            }
+
+                        }
                     }
+
                 }
-
-
             });
 
 
@@ -524,6 +565,7 @@ export class Fixed {
                 registerEntity(raw, 'Task_')
                     .then((res) => {
                         let parse = JSON.parse(raw);
+                        //"description": `${parse.description} | ${parse.execTime}`,
                         const notify = JSON.stringify({
                             "user": {
                                 "id": `${currentUser.id}`
@@ -535,10 +577,10 @@ export class Fixed {
                                 "id": `${currentUser.business.id}`
                             },
                             "title": `${parse.name} | [CONSIGNA]`,
-                            "description": `${parse.description} | ${parse.execTime}`,
+                            "description": `${parse.description}`,
                             "creationDate": `${dateFormat}`,
                             "creationTime": `${hourFormat}`,
-                            "firebaseId": `${currentDateTime().date}T${currentDateTime().timeHHMMSS}`,
+                            //"firebaseId": `${currentDateTime().date}T${currentDateTime().timeHHMMSS}`,
                             "notificationType": {
                                 "id": `${notification[0].id}`
                             },
@@ -588,14 +630,14 @@ export class Fixed {
                     </div>
                     <div class="form_input">
                         <label for="entity-description" class="form_label"></i> Descripción:</label>
-                        <textarea id="entity-description" name="entity-description" row="30" class="input_textarea">${data.description}</textarea>
+                        <textarea id="entity-description" name="entity-description" row="30" class="input_textarea">${data?.description ?? ''}</textarea>
                     </div>
-                    <div class="form_group">
+                    <!-- <div class="form_group">
                         <div class="form_input">
                             <label class="form_label" for="execution-time">Hora de ejecución:</label>
-                            <input type="time" class="input_time input_time-execution" id="execution-time" name="execution-time" value="${data.execTime}">
+                            <input type="time" class="input_time input_time-execution" id="execution-time" name="execution-time" value="${data?.execTime ?? ''}">
                         </div>
-                    </div>
+                    </div> -->
               </div>
               <!-- END EDITOR BODY -->
 
@@ -619,7 +661,7 @@ export class Fixed {
                 // @ts-ignore
                 description: document.getElementById('entity-description'),
                 // @ts-ignore
-                execTime: document.getElementById('execution-time'),
+                //execTime: document.getElementById('execution-time'),
                 // @ts-ignore
 
 
@@ -633,16 +675,16 @@ export class Fixed {
                 }else if (name.value.trim() === '' || name.value.trim() === null) {
                     alert('Nombre del consigna fija vacío')
                 }
-                else if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
+                /*else if (executionTime.value.trim() === '' || executionTime.value.trim() === null) {
                     alert('Debe especificar la hora de ejecución de la consigna')
-                }
+                }*/
                 else {
                     let raw = JSON.stringify({
                         // @ts-ignore
                         "name": `${$value.name.value}`,
                         "description": `${$value.description.value}`,
                         // @ts-ignore
-                        "execTime": `${$value.execTime.value}`,
+                        //"execTime": `${$value.execTime.value}`,
                         "isRead": false,
                         "isReadDate": '',
                         "isReadTime": '',
@@ -658,6 +700,7 @@ export class Fixed {
                 updateEntity('Task_', entityId, raw)
                     .then((res) => {
                         let parse = JSON.parse(raw);
+                        //"description": `${parse.description} | ${parse.execTime}`,
                         const notify = JSON.stringify({
                             "user": {
                                 "id": `${currentUser.id}`
@@ -669,10 +712,10 @@ export class Fixed {
                                 "id": `${currentUser.business.id}`
                             },
                             "title": `${parse.name} | [CONSIGNA]`,
-                            "description": `${parse.description} | ${parse.execTime}`,
+                            "description": `${parse.description}`,
                             "creationDate": `${currentDateTime().date}`,
                             "creationTime": `${currentDateTime().timeHHMM}`,
-                            "firebaseId": `${currentDateTime().date}T${currentDateTime().timeHHMMSS}`,
+                            //"firebaseId": `${currentDateTime().date}T${currentDateTime().timeHHMMSS}`,
                             "notificationType": {
                                 "id": `${notification[0].id}`
                             },
@@ -800,16 +843,16 @@ export class Fixed {
                                 <h2>Seleccionar la hora</h2>
                             </div>
 
-                            <div class="dialog_message padding_8">
-                                <div class="form_group">
-                                    <div class="form_input">
+                          <div class="dialog_message padding_8">
+                              <div class="form_group">
+                                  <div class="form_input">
                                         <label class="form_label" for="start-date">Desde:</label>
-                                        <input type="time" class="input_date input_time-start" id="start-time" name="start-time">
+                                        <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
                                     </div>
                     
                                     <div class="form_input">
                                         <label class="form_label" for="end-date">Hasta:</label>
-                                        <input type="time" class="input_date input_time-end" id="end-time" name="end-time">
+                                        <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
                                     </div>
 
                                     <label for="exportCsv">
@@ -826,24 +869,35 @@ export class Fixed {
                                 </div>
                             </div>
 
-                            <div class="dialog_footer">
-                                <button class="btn btn_primary" id="cancel">Cancelar</button>
-                                <button class="btn btn_danger" id="export-data">Exportar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-                const fecha = new Date();
+                          <div class="dialog_footer">
+                              <button class="btn btn_primary" id="cancel">Cancelar</button>
+                              <button class="btn btn_danger" id="export-data">Exportar</button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+                `;
+                let fecha = new Date(); //Fecha actual
+                let mes = fecha.getMonth()+1; //obteniendo mes
+                let dia = fecha.getDate(); //obteniendo dia
+                let anio = fecha.getFullYear(); //obteniendo año
+                if(dia<10)
+                    dia='0'+dia; //agrega cero si el menor de 10
+                if(mes<10)
+                    mes='0'+mes //agrega cero si el menor de 10
 
-                const hour = fecha.getHours();
-                const minutes = fecha.getMinutes();
-                const seconds = fecha.getSeconds();
+                document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
+                document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
+                //const fecha = new Date();
+                
+                //const hour = fecha.getHours();
+                //const minutes = fecha.getMinutes();
+                //const seconds = fecha.getSeconds();
 
-                const hourFormat = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                //const hourFormat = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 
-                document.getElementById("start-time").value = "00:00"
-                document.getElementById("end-time").value = hourFormat
+                //document.getElementById("start-time").value = "00:00"
+                //document.getElementById("end-time").value = hourFormat
                 inputObserver();
                 const _closeButton = document.getElementById('cancel');
                 const exportButton = document.getElementById('export-data');
@@ -852,64 +906,7 @@ export class Fixed {
                     if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
                         alert("Usuario no tiene permiso de exportar.");
                     }else{
-                        const _values = {
-                            start: document.getElementById('start-time'),
-                            end: document.getElementById('end-time'),
-                            exportOption: document.getElementsByName('exportOption')
-                        }
-                        let rawExport = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": "taskType",
-                                        "operator": "=",
-                                        "value": `FIJAS`
-                                    },
-                                    {
-                                        "property": "user.userType",
-                                        "operator": "=",
-                                        "value": `GUARD`
-                                    },
-                                    {
-                                        "property": "customer.id",
-                                        "operator": "=",
-                                        "value": `${customerId}`
-                                    },
-                                    {
-                                        "property": "execTime",
-                                        "operator": ">=",
-                                        "value": `${_values.start.value}`
-                                    },
-                                    {
-                                        "property": "execTime",
-                                        "operator": "<=",
-                                        "value": `${_values.end.value}`
-                                    }
-                                ],
-                            },
-                            sort: "+execTime",
-                            fetchPlan: 'full',
-                        });
-                        const fixed = await getFilterEntityData("Task_", rawExport);
-                        for (let i = 0; i < _values.exportOption.length; i++) {
-                            let ele = _values.exportOption[i];
-                            if (ele.type = "radio") {
-                                if (ele.checked) {
-                                    if (ele.value == "xls") {
-                                        // @ts-ignore
-                                        exportFixedXls(fixed, _values.start.value, _values.end.value);
-                                    }
-                                    else if (ele.value == "csv") {
-                                        // @ts-ignore
-                                        exportFixedCsv(fixed, _values.start.value, _values.end.value);
-                                    }
-                                    else if (ele.value == "pdf") {
-                                        // @ts-ignore
-                                        exportFixedPdf(fixed, _values.start.value, _values.end.value);
-                                    }
-                                }
-                            }
-                        }
+                    
                     }
                 });
                 _closeButton.onclick = () => {
