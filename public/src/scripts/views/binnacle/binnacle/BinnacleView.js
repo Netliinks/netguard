@@ -371,6 +371,11 @@ export class Binnacle {
                                                 <input type="text" id="export-total" class="input_filled" readonly>
                                                 <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
                                             </div>
+
+                                            <div class="input_detail">
+                                                <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                                <input type="text" id="message-export" class="input_filled" readonly>
+                                            </div>
                                         </div>
 
                                         <div class="dialog_footer">
@@ -383,6 +388,7 @@ export class Binnacle {
                         `;
                         inputObserver();
                         const message1 = document.getElementById("export-total");
+                        const message2 = document.getElementById("message-export");
                         const _closeButton = document.getElementById('cancel');
                         _closeButton.onclick = () => {
                             const _dialog = document.getElementById('dialog-content');
@@ -468,20 +474,21 @@ export class Binnacle {
                             let events = [];
                             let offset = 0;
                             for(let i = 0; i < pages; i++){
-                                rawExport = rawToExport(offset);
-                                array[i] = await getFilterEntityData("Notification", rawExport); //await getEvents();
-                                for(let y=0; y<array[i].length; y++){
-                                    events.push(array[i][y]);
+                                if(onPressed){
+                                    rawExport = rawToExport(offset);
+                                    array[i] = await getFilterEntityData("Notification", rawExport); //await getEvents();
+                                    for(let y=0; y<array[i].length; y++){
+                                        events.push(array[i][y]);
+                                    }
+                                    message1.value = `${events.length} / ${totalRegisters}`;
                                 }
-                                message1.value = `${events.length} / ${totalRegisters}`;
-                                offset = Config.limitExport + offset;
                             }
                             
-
-                            /*for (let i = 0; i < _values.exportOption.length; i++) {
+                            for (let i = 0; i < _values.exportOption.length; i++) {
                                 let ele = _values.exportOption[i];
                                 if (ele.type = "radio") {
                                     if (ele.checked) {
+                                        message2.value = `Generando archivo ${ele.value}, esto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
                                             exportBinnacleXls(events, _values.start.value, _values.end.value);
@@ -494,16 +501,18 @@ export class Binnacle {
                                             // @ts-ignore
                                             exportBinnaclePdf(events, _values.start.value, _values.end.value);
                                         }
+                                        const _dialog = document.getElementById('dialog-content');
+                                        new CloseDialog().x(_dialog);
                                     }
                                 }
-                            }*/
-
-                                onPressed = false;
+                            }
+                            onPressed = false;
                         }
                     }
                     
                 });
                 _closeButton.onclick = () => {
+                    onPressed = false;
                     const editor = document.getElementById('entity-editor-container');
                     new CloseDialog().x(editor);
                 };
