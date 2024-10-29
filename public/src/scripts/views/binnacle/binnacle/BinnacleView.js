@@ -355,42 +355,43 @@ export class Binnacle {
                 const exportButton = document.getElementById('export-data');
                 let onPressed = false;
                 exportButton.addEventListener('click', async() => {
-                    onPressed = true;
-                    if(onPressed){
+                    if(!onPressed){
+                        onPressed = true;
                         this.dialogContainer.style.display = 'block';
-                            this.dialogContainer.innerHTML = `
-                            <div class="dialog_content" id="dialog-content">
-                                <div class="dialog">
-                                    <div class="dialog_container padding_8">
-                                        <div class="dialog_header">
-                                            <h2>Exportando...</h2>
+                        this.dialogContainer.innerHTML = `
+                        <div class="dialog_content" id="dialog-content">
+                            <div class="dialog">
+                                <div class="dialog_container padding_8">
+                                    <div class="dialog_header">
+                                        <h2>Exportando...</h2>
+                                    </div>
+
+                                    <div class="dialog_message padding_8">
+                                        <div class="material_input">
+                                            <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                            <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
                                         </div>
 
-                                        <div class="dialog_message padding_8">
-                                            <div class="material_input">
-                                                <input type="text" id="export-total" class="input_filled" readonly>
-                                                <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
-                                            </div>
-
-                                            <div class="input_detail">
-                                                <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
-                                                <input type="text" id="message-export" class="input_filled" readonly>
-                                            </div>
+                                        <div class="input_detail">
+                                            <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                            <p id="message-export" class="input_filled" readonly></p>
                                         </div>
+                                    </div>
 
-                                        <div class="dialog_footer">
-                                            <button class="btn btn_primary" id="cancel">Cancelar</button>
-                                            <button class="btn btn_danger" id="export-data">Exportar</button>
-                                        </div>
+                                    <div class="dialog_footer">
+                                        <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                        <button class="btn btn_danger" id="export-data">Exportar</button>
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         `;
                         inputObserver();
                         const message1 = document.getElementById("export-total");
                         const message2 = document.getElementById("message-export");
                         const _closeButton = document.getElementById('cancel');
                         _closeButton.onclick = () => {
+                            onPressed = false;
                             const _dialog = document.getElementById('dialog-content');
                             new CloseDialog().x(_dialog);
                         };
@@ -461,13 +462,13 @@ export class Binnacle {
                         }
                         let rawExport = rawToExport(0);
                         const totalRegisters = await getFilterEntityCount("Notification", rawExport);
-                        if(totalRegisters===0){
-                            alert("No hay ningún registro");
+                        if(totalRegisters === undefined){
                             onPressed = false;
-                        }else if(totalRegisters === undefined){
                             alert("Ocurrió un error al exportar");
+                        }else if(totalRegisters===0){
                             onPressed = false;
-                        }else{
+                            alert("No hay ningún registro");  
+                        }else {
                             message1.value = `0 / ${totalRegisters}`;
                             const pages = Math.ceil(totalRegisters / Config.limitExport);
                             let array = [];
@@ -488,7 +489,7 @@ export class Binnacle {
                                 let ele = _values.exportOption[i];
                                 if (ele.type = "radio") {
                                     if (ele.checked) {
-                                        message2.value = `Generando archivo ${ele.value}, esto puede tomar un momento.`;
+                                        message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
                                             exportBinnacleXls(events, _values.start.value, _values.end.value);

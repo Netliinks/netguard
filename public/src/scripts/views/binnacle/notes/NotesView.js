@@ -322,84 +322,160 @@ export class Notes {
                     document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
                     const _closeButton = document.getElementById('close');
                     const exportButton = document.getElementById('export-data');
+                    let onPressed = false;
                     exportButton.addEventListener('click', async() => {
-                        const _values = {
-                            customer: document.getElementById('entity-customer'),
-                            start: document.getElementById('start-date'),
-                            end: document.getElementById('end-date'),
-                            exportOption: document.getElementsByName('exportOption')
-                        }
-                        //console.log(_values.start.value)
-                        //console.log(_values.end.value)
-                        //const headers = ['Título', 'Contenido', 'Autor', 'Fecha', 'Hora']
-                        let rawExport = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": "customer.id",
-                                        "operator": "=",
-                                        "value": `${_values.customer.dataset.optionid}`
+                        if(!onPressed){
+                            onPressed = true;
+                            this.dialogContainer.style.display = 'block';
+                            this.dialogContainer.innerHTML = `
+                            <div class="dialog_content" id="dialog-content">
+                                <div class="dialog">
+                                    <div class="dialog_container padding_8">
+                                        <div class="dialog_header">
+                                            <h2>Exportando...</h2>
+                                        </div>
+    
+                                        <div class="dialog_message padding_8">
+                                            <div class="material_input">
+                                                <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                                <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                            </div>
+    
+                                            <div class="input_detail">
+                                                <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                                <p id="message-export" class="input_filled" readonly></p>
+                                            </div>
+                                        </div>
+    
+                                        <div class="dialog_footer">
+                                            <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                            <button class="btn btn_danger" id="export-data">Exportar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                            inputObserver();
+                            const message1 = document.getElementById("export-total");
+                            const message2 = document.getElementById("message-export");
+                            const _closeButton = document.getElementById('cancel');
+                            _closeButton.onclick = () => {
+                                onPressed = false;
+                                const _dialog = document.getElementById('dialog-content');
+                                new CloseDialog().x(_dialog);
+                            };
+                            const _values = {
+                                customer: document.getElementById('entity-customer'),
+                                start: document.getElementById('start-date'),
+                                end: document.getElementById('end-date'),
+                                exportOption: document.getElementsByName('exportOption')
+                            }
+                            //console.log(_values.start.value)
+                            //console.log(_values.end.value)
+                            //const headers = ['Título', 'Contenido', 'Autor', 'Fecha', 'Hora']
+                            let rawToExport=(offset)=>{
+                                let rawExport = JSON.stringify({
+                                    "filter": {
+                                        "conditions": [
+                                            {
+                                                "property": "customer.id",
+                                                "operator": "=",
+                                                "value": `${_values.customer.dataset.optionid}`
+                                            },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": ">=",
+                                                "value": `${_values.start.value}T00:00:00`
+                                            },
+                                            {
+                                                "property": "creationDate",
+                                                "operator": "<=",
+                                                "value": `${_values.end.value}T23:59:59`
+                                            }
+                                        ],
                                     },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": ">=",
-                                        "value": `${_values.start.value}T00:00:00`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": "<=",
-                                        "value": `${_values.end.value}T23:59:59`
-                                    }
-                                ],
-                            },
-                            sort: "-createdDate",
-                            fetchPlan: 'full',
-                        });
-                        const notes = await getFilterEntityData("Note", rawExport); //await GetNotes();
-                        for (let i = 0; i < _values.exportOption.length; i++) {
-                            let ele = _values.exportOption[i];
-                            if (ele.type = "radio") {
-                                if (ele.checked) {
-                                    if (ele.value == "xls") {
-                                        // @ts-ignore
-                                        exportReportXls(notes, _values.start.value, _values.end.value);
-                                    }
-                                    else if (ele.value == "csv") {
-                                        // @ts-ignore
-                                        exportReportCsv(notes, _values.start.value, _values.end.value);
-                                    }
-                                    else if (ele.value == "pdf") {
-                                        let rows = [];
-                                        for (let i = 0; i < notes.length; i++) {
-                                            let note = notes[i];
-                                            let noteCreationDateAndTime = note.creationDate.split('T');
-                                            let noteCreationDate = noteCreationDateAndTime[0];
-                                            let noteCreationTime = noteCreationDateAndTime[1];
-                                            // @ts-ignore
-                                            //if (noteCreationDate >= _values.start.value && noteCreationDate <= _values.end.value) {
-                                                let image = '';
-                                                if (note.attachment !== undefined) {
-                                                    image = await getFile(note.attachment);
-                                                }
-                                                let obj = {
-                                                    "titulo": `${note.title.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
-                                                    "fecha": `${noteCreationDate}`,
-                                                    "hora": `${noteCreationTime}`,
-                                                    "usuario": `${note.user?.firstName ?? ''} ${note.user?.lastName ?? ''}`,
-                                                    "contenido": `${note.content.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
-                                                    "imagen": `${image}`
-                                                };
-                                                rows.push(obj);
-                                            //}
+                                    sort: "-createdDate",
+                                    limit: Config.limitExport,
+                                    offset: offset,
+                                    fetchPlan: 'full',
+                                });
+                                return rawExport;
+                            }
+                            let rawExport = rawToExport(0);
+                            const totalRegisters = await getFilterEntityCount("Note", rawExport);
+                            if(totalRegisters === undefined){
+                                onPressed = false;
+                                alert("Ocurrió un error al exportar");
+                            }else if(totalRegisters===0){
+                                onPressed = false;
+                                alert("No hay ningún registro");  
+                            }else {
+                                message1.value = `0 / ${totalRegisters}`;
+                                const pages = Math.ceil(totalRegisters / Config.limitExport);
+                                let array = [];
+                                let notes = [];
+                                let offset = 0;
+                                for(let i = 0; i < pages; i++){
+                                    if(onPressed){
+                                        rawExport = rawToExport(offset);
+                                        array[i] = await getFilterEntityData("Note", rawExport); //await getEvents();
+                                        for(let y=0; y<array[i].length; y++){
+                                            notes.push(array[i][y]);
                                         }
-                                        // @ts-ignore
-                                        exportReportPdf(rows, _values.start.value, _values.end.value);
+                                        message1.value = `${notes.length} / ${totalRegisters}`;
                                     }
                                 }
+                                for (let i = 0; i < _values.exportOption.length; i++) {
+                                    let ele = _values.exportOption[i];
+                                    if (ele.type = "radio") {
+                                        if (ele.checked) {
+                                            message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                            if (ele.value == "xls") {
+                                                // @ts-ignore
+                                                exportReportXls(notes, _values.start.value, _values.end.value);
+                                            }
+                                            else if (ele.value == "csv") {
+                                                // @ts-ignore
+                                                exportReportCsv(notes, _values.start.value, _values.end.value);
+                                            }
+                                            else if (ele.value == "pdf") {
+                                                let rows = [];
+                                                for (let i = 0; i < notes.length; i++) {
+                                                    let note = notes[i];
+                                                    let noteCreationDateAndTime = note.creationDate.split('T');
+                                                    let noteCreationDate = noteCreationDateAndTime[0];
+                                                    let noteCreationTime = noteCreationDateAndTime[1];
+                                                    // @ts-ignore
+                                                    //if (noteCreationDate >= _values.start.value && noteCreationDate <= _values.end.value) {
+                                                        let image = '';
+                                                        if (note.attachment !== undefined) {
+                                                            image = await getFile(note.attachment);
+                                                        }
+                                                        let obj = {
+                                                            "titulo": `${note.title.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                                            "fecha": `${noteCreationDate}`,
+                                                            "hora": `${noteCreationTime}`,
+                                                            "usuario": `${note.user?.firstName ?? ''} ${note.user?.lastName ?? ''}`,
+                                                            "contenido": `${note.content.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                                            "imagen": `${image}`
+                                                        };
+                                                        rows.push(obj);
+                                                    //}
+                                                }
+                                                // @ts-ignore
+                                                exportReportPdf(rows, _values.start.value, _values.end.value);
+                                            }
+                                            const _dialog = document.getElementById('dialog-content');
+                                            new CloseDialog().x(_dialog);
+                                        }
+                                    }
+                                }
+                                onPressed = false;
                             }
                         }
                     });
                     _closeButton.onclick = () => {
+                        onPressed = false;
                         const editor = document.getElementById('entity-editor-container');
                         new CloseDialog().x(editor);
                     };

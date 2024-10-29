@@ -363,61 +363,115 @@ export class AssistGestion {
                 document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
                 const _closeButton = document.getElementById('close');
                 const exportButton = document.getElementById('export-data');
+                let onPressed = false;
                 exportButton.addEventListener('click', async() => {
-                    const _values = {
-                        customer: document.getElementById('entity-customer'),
-                        start: document.getElementById('start-date'),
-                        end: document.getElementById('end-date'),
-                        exportOption: document.getElementsByName('exportOption')
-                    }
-                    let rawExport = JSON.stringify({
-                        "filter": {
-                            "conditions": [
-                                {
-                                    "property": "customer.id",
-                                    "operator": "=",
-                                    "value": `${_values.customer.dataset.optionid}`
-                                },
-                                {
-                                    "property": "ingressDate",
-                                    "operator": ">=",
-                                    "value": `${_values.start.value}`
-                                },
-                                {
-                                    "property": "ingressDate",
-                                    "operator": "<=",
-                                    "value": `${_values.end.value}`
-                                }
-                            ],
-                        },
-                        sort: "-createdDate",
-                        fetchPlan: 'full',
-                    });
-                    const dataRaw = await getFilterEntityData("Marcation", rawExport); //await GetAssistControl();
-                    const marcations = await calculateGestionMarcation(dataRaw);
-                    for (let i = 0; i < _values.exportOption.length; i++) {
-                        let ele = _values.exportOption[i];
-                        if (ele.type = "radio") {
-                            if (ele.checked) {
-                                if (ele.value == "xls") {
-                                    // @ts-ignore
-                                    exportMarcationsXls(marcations, _values.start.value, _values.end.value);
-                                }
-                                else if (ele.value == "csv") {
-                                    // @ts-ignore
-                                    exportMarcationsCsv(marcations, _values.start.value, _values.end.value);
-                                }
-                                else if (ele.value == "pdf") {
-                                    // @ts-ignore
-                                    exportMarcationsPdf(marcations, _values.start.value, _values.end.value);
+                    if(!onPressed){
+                        onPressed = true;
+                        this.dialogContainer.style.display = 'block';
+                        this.dialogContainer.innerHTML = `
+                        <div class="dialog_content" id="dialog-content">
+                            <div class="dialog">
+                                <div class="dialog_container padding_8">
+                                    <div class="dialog_header">
+                                        <h2>Exportando...</h2>
+                                    </div>
+
+                                    <div class="dialog_message padding_8">
+                                        <div class="material_input">
+                                            <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                            <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                        </div>
+
+                                        <div class="input_detail">
+                                            <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                            <p id="message-export" class="input_filled" readonly></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="dialog_footer">
+                                        <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                        <button class="btn btn_danger" id="export-data">Exportar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        inputObserver();
+                        const message1 = document.getElementById("export-total");
+                        const message2 = document.getElementById("message-export");
+                        const _closeButton = document.getElementById('cancel');
+                        _closeButton.onclick = () => {
+                            onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        };
+                        const _values = {
+                            customer: document.getElementById('entity-customer'),
+                            start: document.getElementById('start-date'),
+                            end: document.getElementById('end-date'),
+                            exportOption: document.getElementsByName('exportOption')
+                        }
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": "customer.id",
+                                        "operator": "=",
+                                        "value": `${_values.customer.dataset.optionid}`
+                                    },
+                                    {
+                                        "property": "ingressDate",
+                                        "operator": ">=",
+                                        "value": `${_values.start.value}`
+                                    },
+                                    {
+                                        "property": "ingressDate",
+                                        "operator": "<=",
+                                        "value": `${_values.end.value}`
+                                    }
+                                ],
+                            },
+                            sort: "-createdDate",
+                            fetchPlan: 'full',
+                        });
+                        const dataRaw = await getFilterEntityData("Marcation", rawExport); //await GetAssistControl();
+                        if(dataRaw === undefined){
+                            onPressed = false;
+                            alert("Ocurrió un error al exportar");
+                        }else if(dataRaw.length===0){
+                            onPressed = false;
+                            alert("No hay ningún registro");  
+                        }else {
+                            message1.value = `Calculando ${dataRaw.length} m.`;
+                            const marcations = await calculateGestionMarcation(dataRaw);
+                            for (let i = 0; i < _values.exportOption.length; i++) {
+                                let ele = _values.exportOption[i];
+                                if (ele.type = "radio") {
+                                    if (ele.checked) {
+                                        message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                        if (ele.value == "xls") {
+                                            // @ts-ignore
+                                            exportMarcationsXls(marcations, _values.start.value, _values.end.value);
+                                        }
+                                        else if (ele.value == "csv") {
+                                            // @ts-ignore
+                                            exportMarcationsCsv(marcations, _values.start.value, _values.end.value);
+                                        }
+                                        else if (ele.value == "pdf") {
+                                            // @ts-ignore
+                                            exportMarcationsPdf(marcations, _values.start.value, _values.end.value);
+                                        }
+                                        const _dialog = document.getElementById('dialog-content');
+                                        new CloseDialog().x(_dialog);
+                                    }
                                 }
                             }
+                            onPressed = false;
                         }
                     }
-                    
-                    
                 });
                 _closeButton.onclick = () => {
+                    onPressed = false;
                     const editor = document.getElementById('entity-editor-container');
                     new CloseDialog().x(editor);
                 };
