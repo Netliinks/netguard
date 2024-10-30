@@ -417,7 +417,6 @@ export class Vehiculars {
 
                                     <div class="dialog_footer">
                                         <button class="btn btn_primary" id="cancel">Cancelar</button>
-                                        <button class="btn btn_danger" id="export-data">Exportar</button>
                                     </div>
                                 </div>
                             </div>
