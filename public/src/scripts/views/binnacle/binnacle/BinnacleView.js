@@ -464,9 +464,13 @@ export class Binnacle {
                         const totalRegisters = await getFilterEntityCount("Notification", rawExport);
                         if(totalRegisters === undefined){
                             onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
                             alert("Ocurrió un error al exportar");
                         }else if(totalRegisters===0){
                             onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
                             alert("No hay ningún registro");  
                         }else {
                             message1.value = `0 / ${totalRegisters}`;

@@ -437,9 +437,13 @@ export class AssistGestion {
                         const dataRaw = await getFilterEntityData("Marcation", rawExport); //await GetAssistControl();
                         if(dataRaw === undefined){
                             onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
                             alert("Ocurrió un error al exportar");
                         }else if(dataRaw.length===0){
                             onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
                             alert("No hay ningún registro");  
                         }else {
                             message1.value = `Calculando ${dataRaw.length} m.`;
