@@ -515,6 +515,7 @@ export class Binnacle {
                                                 events.push(array[i][y]);
                                             }
                                             message1.value = `${events.length} / ${totalRegisters}`;
+                                            offset = Config.limitExport + (offset);
                                         }
                                     }
                                     
@@ -545,13 +546,12 @@ export class Binnacle {
                             }
                         }
                     });
-                
                     _closeButton.onclick = () => {
                         onPressed = false;
                         const editor = document.getElementById('entity-editor-container');
                         new CloseDialog().x(editor);
                     };
-                }
+                }   
             });
         };
     }

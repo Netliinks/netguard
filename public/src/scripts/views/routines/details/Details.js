@@ -639,55 +639,117 @@ export class RoutineRegisters {
                                                     registers.push(array[i][y]);
                                                 }
                                                 message1.value = `${registers.length} / ${totalRegisters}`;
+                                                offset = Config.limitExport + (offset);
                                             }
-                                        }
-                                    
-                                        for (let i = 0; i < _values.exportOption.length; i++) {
-                                            let ele = _values.exportOption[i];
-                                            if (ele.type = "radio") {
-                                                if (ele.checked) {
-                                                    message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
-                                                    if (ele.value == "xls") {
-                                                        // @ts-ignore
-                                                        exportRoutineDetailXls(registers, _values.start.value, _values.end.value);
-                                                    }
-                                                    else if (ele.value == "csv") {
-                                                        // @ts-ignore
-                                                        exportRoutineDetailCsv(registers, _values.start.value, _values.end.value);
-                                                    }
-                                                    else if (ele.value == "pdf") {
-                                                        let rows = [];
-                                                        for (let i = 0; i < registers.length; i++) {
-                                                            let register = registers[i];
-                                                            // @ts-ignore
-                                                            //if (noteCreationDate >= _values.start.value && noteCreationDate <= _values.end.value) {
-                                                                let image = '';
-                                                                if (register.attachment !== undefined) {
-                                                                    image = await getFile(register.attachment);
-                                                                }
-                                                                let obj = {
-                                                                    "rutina": `${register?.routine?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
-                                                                    "ubicacion": `${register?.routineSchedule?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
-                                                                    "fecha": `${register.creationDate}`,
-                                                                    "hora": `${register.creationTime}`,
-                                                                    "estado": `${register?.routineState?.name ?? ''}`,
-                                                                    "cords": `${register?.cords ?? ''}`,
-                                                                    "usuario": `${register.user?.firstName ?? ''} ${register.user?.lastName ?? ''}`,
-                                                                    "observacion": `${register?.observation?.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim() ?? ''}`,
-                                                                    "imagen": `${image}`
-                                                                };
-                                                                rows.push(obj);
-                                                            //}
+                                            //console.log(_values.start.value)
+                                            //console.log(_values.end.value)
+                                            //const headers = ['Título', 'Contenido', 'Autor', 'Fecha', 'Hora']
+                                            let rawToExport=(offset)=>{
+                                                let rawExport = JSON.stringify({
+                                                    "filter": {
+                                                        "conditions": [
+                                                            {
+                                                                "property": "customer.id",
+                                                                "operator": "=",
+                                                                "value": `${_values.customer.dataset.optionid}`
+                                                            },
+                                                            {
+                                                                "property": "creationDate",
+                                                                "operator": ">=",
+                                                                "value": `${_values.start.value}`
+                                                            },
+                                                            {
+                                                                "property": "creationDate",
+                                                                "operator": "<=",
+                                                                "value": `${_values.end.value}`
+                                                            }
+                                                        ],
+                                                    },
+                                                    sort: "-createdDate",
+                                                    limit: Config.limitExport,
+                                                    offset: offset,
+                                                    fetchPlan: 'full',
+                                                });
+                                                return rawExport;
+                                            }
+                                            let rawExport = rawToExport(0);
+                                            const totalRegisters = await getFilterEntityCount("RoutineRegister", rawExport);
+                                            if(totalRegisters === undefined){
+                                                onPressed = false;
+                                                const _dialog = document.getElementById('dialog-content');
+                                                new CloseDialog().x(_dialog);
+                                                alert("Ocurrió un error al exportar");
+                                            }else if(totalRegisters===0){
+                                                onPressed = false;
+                                                const _dialog = document.getElementById('dialog-content');
+                                                new CloseDialog().x(_dialog);
+                                                alert("No hay ningún registro");  
+                                            }else {
+                                                message1.value = `0 / ${totalRegisters}`;
+                                                const pages = Math.ceil(totalRegisters / Config.limitExport);
+                                                let array = [];
+                                                let registers = [];
+                                                let offset = 0;
+                                                for(let i = 0; i < pages; i++){
+                                                    if(onPressed){
+                                                        rawExport = rawToExport(offset);
+                                                        array[i] = await getFilterEntityData("RoutineRegister", rawExport); //await getEvents();
+                                                        for(let y=0; y<array[i].length; y++){
+                                                            registers.push(array[i][y]);
                                                         }
-                                                        // @ts-ignore
-                                                        exportRoutineDetailPdf(rows, _values.start.value, _values.end.value);
+                                                        message1.value = `${registers.length} / ${totalRegisters}`;
+                                                        offset = Config.limitExport + (offset);
                                                     }
-                                                    const _dialog = document.getElementById('dialog-content');
-                                                    new CloseDialog().x(_dialog);
                                                 }
+                                            
+                                                for (let i = 0; i < _values.exportOption.length; i++) {
+                                                    let ele = _values.exportOption[i];
+                                                    if (ele.type = "radio") {
+                                                        if (ele.checked) {
+                                                            message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                                            if (ele.value == "xls") {
+                                                                // @ts-ignore
+                                                                exportRoutineDetailXls(registers, _values.start.value, _values.end.value);
+                                                            }
+                                                            else if (ele.value == "csv") {
+                                                                // @ts-ignore
+                                                                exportRoutineDetailCsv(registers, _values.start.value, _values.end.value);
+                                                            }
+                                                            else if (ele.value == "pdf") {
+                                                                let rows = [];
+                                                                for (let i = 0; i < registers.length; i++) {
+                                                                    let register = registers[i];
+                                                                    // @ts-ignore
+                                                                    //if (noteCreationDate >= _values.start.value && noteCreationDate <= _values.end.value) {
+                                                                        let image = '';
+                                                                        if (register.attachment !== undefined) {
+                                                                            image = await getFile(register.attachment);
+                                                                        }
+                                                                        let obj = {
+                                                                            "rutina": `${register?.routine?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                                                            "ubicacion": `${register?.routineSchedule?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                                                            "fecha": `${register.creationDate}`,
+                                                                            "hora": `${register.creationTime}`,
+                                                                            "estado": `${register?.routineState?.name ?? ''}`,
+                                                                            "cords": `${register?.cords ?? ''}`,
+                                                                            "usuario": `${register.user?.firstName ?? ''} ${register.user?.lastName ?? ''}`,
+                                                                            "observacion": `${register?.observation?.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim() ?? ''}`,
+                                                                            "imagen": `${image}`
+                                                                        };
+                                                                        rows.push(obj);
+                                                                    //}
+                                                                }
+                                                                // @ts-ignore
+                                                                exportRoutineDetailPdf(rows, _values.start.value, _values.end.value);
+                                                            }
+                                                            const _dialog = document.getElementById('dialog-content');
+                                                            new CloseDialog().x(_dialog);
+                                                        }
+                                                    }
+                                                }
+                                                onPressed = false;
                                             }
                                         }
-                                        onPressed = false;
                                     }
                                 }
                             }
