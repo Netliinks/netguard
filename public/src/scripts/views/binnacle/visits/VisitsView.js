@@ -619,6 +619,7 @@ export class Visits {
                                         visits.push(array[i][y]);
                                     }
                                     message1.value = `${visits.length} / ${totalRegisters}`;
+                                    offset = Config.limitExport + (offset);
                                 }
                             }
              

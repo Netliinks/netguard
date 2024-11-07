@@ -609,6 +609,7 @@ export class RoutineRegisters {
                                             registers.push(array[i][y]);
                                         }
                                         message1.value = `${registers.length} / ${totalRegisters}`;
+                                        offset = Config.limitExport + (offset);
                                     }
                                 }
                                

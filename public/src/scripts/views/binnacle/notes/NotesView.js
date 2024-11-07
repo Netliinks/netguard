@@ -426,6 +426,7 @@ export class Notes {
                                             notes.push(array[i][y]);
                                         }
                                         message1.value = `${notes.length} / ${totalRegisters}`;
+                                        offset = Config.limitExport + (offset);
                                     }
                                 }
                                 for (let i = 0; i < _values.exportOption.length; i++) {

@@ -659,6 +659,7 @@ export class AssistControl {
                                         marcations.push(array[i][y]);
                                     }
                                     message1.value = `${marcations.length} / ${totalRegisters}`;
+                                    offset = Config.limitExport + (offset);
                                 }
                             }
                         

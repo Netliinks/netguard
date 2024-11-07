@@ -491,6 +491,7 @@ export class Vehiculars {
                                         vehiculars.push(array[i][y]);
                                     }
                                     message1.value = `${vehiculars.length} / ${totalRegisters}`;
+                                    offset = Config.limitExport + (offset);
                                 }
                             }
                         
