@@ -417,62 +417,142 @@ export class Vehiculars {
                     document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
                     const _closeButton = document.getElementById('close');
                     const exportButton = document.getElementById('export-data');
+                    let onPressed = false;
                     exportButton.addEventListener('click', async() => {
                         if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
                             alert("Usuario no tiene permiso de exportar.");
                         }else{
-                            const _values = {
-                                customer: document.getElementById('entity-customer'),
-                                start: document.getElementById('start-date'),
-                                end: document.getElementById('end-date'),
-                                exportOption: document.getElementsByName('exportOption')
-                            }
-                            let rawExport = JSON.stringify({
-                                "filter": {
-                                    "conditions": [
-                                        {
-                                            "property": "customer.id",
-                                            "operator": "=",
-                                            "value": `${_values.customer.dataset.optionid}`
+                            if(!onPressed){
+                                onPressed = true;
+                                this.dialogContainer.style.display = 'block';
+                                this.dialogContainer.innerHTML = `
+                                <div class="dialog_content" id="dialog-content">
+                                    <div class="dialog">
+                                        <div class="dialog_container padding_8">
+                                            <div class="dialog_header">
+                                                <h2>Exportando...</h2>
+                                            </div>
+
+                                            <div class="dialog_message padding_8">
+                                                <div class="material_input">
+                                                    <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                                    <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                                </div>
+
+                                                <div class="input_detail">
+                                                    <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                                    <p id="message-export" class="input_filled" readonly></p>
+                                                </div>
+                                            </div>
+
+                                            <div class="dialog_footer">
+                                                <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+                                inputObserver();
+                                const message1 = document.getElementById("export-total");
+                                const message2 = document.getElementById("message-export");
+                                const _closeButton = document.getElementById('cancel');
+                                _closeButton.onclick = () => {
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                };
+                                const _values = {
+                                    customer: document.getElementById('entity-customer'),
+                                    start: document.getElementById('start-date'),
+                                    end: document.getElementById('end-date'),
+                                    exportOption: document.getElementsByName('exportOption')
+                                }
+                                let rawToExport=(offset)=>{
+                                    let rawExport = JSON.stringify({
+                                        "filter": {
+                                            "conditions": [
+                                                {
+                                                    "property": "customer.id",
+                                                    "operator": "=",
+                                                    "value": `${_values.customer.dataset.optionid}`
+                                                },
+                                                {
+                                                    "property": "ingressDate",
+                                                    "operator": ">=",
+                                                    "value": `${_values.start.value}`
+                                                },
+                                                {
+                                                    "property": "ingressDate",
+                                                    "operator": "<=",
+                                                    "value": `${_values.end.value}`
+                                                }
+                                            ],
                                         },
-                                        {
-                                            "property": "ingressDate",
-                                            "operator": ">=",
-                                            "value": `${_values.start.value}`
-                                        },
-                                        {
-                                            "property": "ingressDate",
-                                            "operator": "<=",
-                                            "value": `${_values.end.value}`
-                                        }
-                                    ],
-                                },
-                                sort: "-createdDate",
-                                fetchPlan: 'full',
-                            });
-                            const vehiculars = await getFilterEntityData("Vehicular", rawExport); //await GetVehiculars();
-                            for (let i = 0; i < _values.exportOption.length; i++) {
-                                let ele = _values.exportOption[i];
-                                if (ele.type = "radio") {
-                                    if (ele.checked) {
-                                        if (ele.value == "xls") {
-                                            // @ts-ignore
-                                            exportVehicularXls(vehiculars, _values.start.value, _values.end.value);
-                                        }
-                                        else if (ele.value == "csv") {
-                                            // @ts-ignore
-                                            exportVehicularCsv(vehiculars, _values.start.value, _values.end.value);
-                                        }
-                                        else if (ele.value == "pdf") {
-                                            // @ts-ignore
-                                            exportVehicularPdf(vehiculars, _values.start.value, _values.end.value);
+                                        sort: "-createdDate",
+                                        limit: Config.limitExport,
+                                        offset: offset,
+                                        fetchPlan: 'full',
+                                    });
+                                    return rawExport;
+                                }
+                                let rawExport = rawToExport(0);
+                                const totalRegisters = await getFilterEntityCount("Vehicular", rawExport);
+                                if(totalRegisters === undefined){
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                    alert("Ocurrió un error al exportar");
+                                }else if(totalRegisters===0){
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                    alert("No hay ningún registro");  
+                                }else {
+                                    message1.value = `0 / ${totalRegisters}`;
+                                    const pages = Math.ceil(totalRegisters / Config.limitExport);
+                                    let array = [];
+                                    let vehiculars = [];
+                                    let offset = 0;
+                                    for(let i = 0; i < pages; i++){
+                                        if(onPressed){
+                                            rawExport = rawToExport(offset);
+                                            array[i] = await getFilterEntityData("Vehicular", rawExport); //await getEvents();
+                                            for(let y=0; y<array[i].length; y++){
+                                                vehiculars.push(array[i][y]);
+                                            }
+                                            message1.value = `${vehiculars.length} / ${totalRegisters}`;
                                         }
                                     }
+                                
+                                    for (let i = 0; i < _values.exportOption.length; i++) {
+                                        let ele = _values.exportOption[i];
+                                        if (ele.type = "radio") {
+                                            if (ele.checked) {
+                                                message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                                if (ele.value == "xls") {
+                                                    // @ts-ignore
+                                                    exportVehicularXls(vehiculars, _values.start.value, _values.end.value);
+                                                }
+                                                else if (ele.value == "csv") {
+                                                    // @ts-ignore
+                                                    exportVehicularCsv(vehiculars, _values.start.value, _values.end.value);
+                                                }
+                                                else if (ele.value == "pdf") {
+                                                    // @ts-ignore
+                                                    exportVehicularPdf(vehiculars, _values.start.value, _values.end.value);
+                                                }
+                                                const _dialog = document.getElementById('dialog-content');
+                                                new CloseDialog().x(_dialog);
+                                            }
+                                        }
+                                    }
+                                    onPressed = false;
                                 }
-                            }    
+                            }
                         }
                     });
                     _closeButton.onclick = () => {
+                        onPressed = false;
                         const editor = document.getElementById('entity-editor-container');
                         new CloseDialog().x(editor);
                     };

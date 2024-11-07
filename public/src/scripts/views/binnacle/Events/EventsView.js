@@ -358,7 +358,7 @@ export class Events {
                             <button class="btn btn_primary btn_widder" id="export-data">Listo</button>
                         </div>
                         </div>
-                    `;
+                    `;     
                     inputObserver();
                     this.selectCustomer();
                     let fecha = new Date(); //Fecha actual
@@ -374,87 +374,167 @@ export class Events {
                     document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
                     const _closeButton = document.getElementById('close');
                     const exportButton = document.getElementById('export-data');
+                    let onPressed = false;
                     exportButton.addEventListener('click', async() => {
                         if(!infoPage.actions.includes("DWN") && !Config.currentUser?.isMaster){
                             alert("Usuario no tiene permiso de exportar.");
                         }else{
-                            const _values = {
-                                customer: document.getElementById('entity-customer'),
-                                start: document.getElementById('start-date'),
-                                end: document.getElementById('end-date'),
-                                exportOption: document.getElementsByName('exportOption')
-                            }
-                            let rawExport = JSON.stringify({
-                                "filter": {
-                                    "conditions": [
-                                        {
-                                            "property": "customer.id",
-                                            "operator": "=",
-                                            "value": `${_values.customer.dataset.optionid}`
+                            if(!onPressed){
+                                onPressed = true;
+                                this.dialogContainer.style.display = 'block';
+                                this.dialogContainer.innerHTML = `
+                                <div class="dialog_content" id="dialog-content">
+                                    <div class="dialog">
+                                        <div class="dialog_container padding_8">
+                                            <div class="dialog_header">
+                                                <h2>Exportando...</h2>
+                                            </div>
+
+                                            <div class="dialog_message padding_8">
+                                                <div class="material_input">
+                                                    <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                                    <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                                </div>
+
+                                                <div class="input_detail">
+                                                    <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                                    <p id="message-export" class="input_filled" readonly></p>
+                                                </div>
+                                            </div>
+
+                                            <div class="dialog_footer">
+                                                <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+                                inputObserver();
+                                const message1 = document.getElementById("export-total");
+                                const message2 = document.getElementById("message-export");
+                                const _closeButton = document.getElementById('cancel');
+                                _closeButton.onclick = () => {
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                };
+                                const _values = {
+                                    customer: document.getElementById('entity-customer'),
+                                    start: document.getElementById('start-date'),
+                                    end: document.getElementById('end-date'),
+                                    exportOption: document.getElementsByName('exportOption')
+                                }
+                                let rawToExport=(offset)=>{
+                                    let rawExport = JSON.stringify({
+                                        "filter": {
+                                            "conditions": [
+                                                {
+                                                    "property": "customer.id",
+                                                    "operator": "=",
+                                                    "value": `${_values.customer.dataset.optionid}`
+                                                },
+                                                {
+                                                    "property": "notificationType.name",
+                                                    "operator": "<>",
+                                                    "value": `Visita`
+                                                },
+                                                {
+                                                    "property": "notificationType.name",
+                                                    "operator": "<>",
+                                                    "value": `Vehicular`
+                                                },
+                                                {
+                                                    "property": "notificationType.name",
+                                                    "operator": "<>",
+                                                    "value": `Nota`
+                                                },
+                                                {
+                                                    "property": "notificationType.name",
+                                                    "operator": "<>",
+                                                    "value": `Consigna`
+                                                },
+                                                {
+                                                    "property": "notificationType.name",
+                                                    "operator": "<>",
+                                                    "value": `Rutina`
+                                                },
+                                                {
+                                                    "property": "creationDate",
+                                                    "operator": ">=",
+                                                    "value": `${_values.start.value}`
+                                                },
+                                                {
+                                                    "property": "creationDate",
+                                                    "operator": "<=",
+                                                    "value": `${_values.end.value}`
+                                                }
+                                            ],
                                         },
-                                        {
-                                            "property": "notificationType.name",
-                                            "operator": "<>",
-                                            "value": `Visita`
-                                        },
-                                        {
-                                            "property": "notificationType.name",
-                                            "operator": "<>",
-                                            "value": `Vehicular`
-                                        },
-                                        {
-                                            "property": "notificationType.name",
-                                            "operator": "<>",
-                                            "value": `Nota`
-                                        },
-                                        {
-                                            "property": "notificationType.name",
-                                            "operator": "<>",
-                                            "value": `Consigna`
-                                        },
-                                        {
-                                            "property": "notificationType.name",
-                                            "operator": "<>",
-                                            "value": `Rutina`
-                                        },
-                                        {
-                                            "property": "creationDate",
-                                            "operator": ">=",
-                                            "value": `${_values.start.value}`
-                                        },
-                                        {
-                                            "property": "creationDate",
-                                            "operator": "<=",
-                                            "value": `${_values.end.value}`
-                                        }
-                                    ],
-                                },
-                                sort: "-createdDate",
-                                fetchPlan: 'full',
-                            });
-                            const events = await getFilterEntityData("Notification", rawExport); //await getEvents();
-                            for (let i = 0; i < _values.exportOption.length; i++) {
-                                let ele = _values.exportOption[i];
-                                if (ele.type = "radio") {
-                                    if (ele.checked) {
-                                        if (ele.value == "xls") {
-                                            // @ts-ignore
-                                            exportEventXls(events, _values.start.value, _values.end.value);
-                                        }
-                                        else if (ele.value == "csv") {
-                                            // @ts-ignore
-                                            exportEventCsv(events, _values.start.value, _values.end.value);
-                                        }
-                                        else if (ele.value == "pdf") {
-                                            // @ts-ignore
-                                            exportEventPdf(events, _values.start.value, _values.end.value);
+                                        sort: "-createdDate",
+                                        limit: Config.limitExport,
+                                        offset: offset,
+                                        fetchPlan: 'full',
+                                    });
+                                    return rawExport;
+                                }
+                                let rawExport = rawToExport(0);
+                                const totalRegisters = await getFilterEntityCount("Notification", rawExport);
+                                if(totalRegisters === undefined){
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                    alert("Ocurrió un error al exportar");
+                                }else if(totalRegisters===0){
+                                    onPressed = false;
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                    alert("No hay ningún registro");  
+                                }else {
+                                    message1.value = `0 / ${totalRegisters}`;
+                                    const pages = Math.ceil(totalRegisters / Config.limitExport);
+                                    let array = [];
+                                    let events = [];
+                                    let offset = 0;
+                                    for(let i = 0; i < pages; i++){
+                                        if(onPressed){
+                                            rawExport = rawToExport(offset);
+                                            array[i] = await getFilterEntityData("Notification", rawExport); //await getEvents();
+                                            for(let y=0; y<array[i].length; y++){
+                                                events.push(array[i][y]);
+                                            }
+                                            message1.value = `${events.length} / ${totalRegisters}`;
                                         }
                                     }
+                                
+                                    for (let i = 0; i < _values.exportOption.length; i++) {
+                                        let ele = _values.exportOption[i];
+                                        if (ele.type = "radio") {
+                                            if (ele.checked) {
+                                                message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                                if (ele.value == "xls") {
+                                                    // @ts-ignore
+                                                    exportEventXls(events, _values.start.value, _values.end.value);
+                                                }
+                                                else if (ele.value == "csv") {
+                                                    // @ts-ignore
+                                                    exportEventCsv(events, _values.start.value, _values.end.value);
+                                                }
+                                                else if (ele.value == "pdf") {
+                                                    // @ts-ignore
+                                                    exportEventPdf(events, _values.start.value, _values.end.value);
+                                                }
+                                                const _dialog = document.getElementById('dialog-content');
+                                                new CloseDialog().x(_dialog);
+                                            }
+                                        }
+                                    }
+                                    onPressed = false;
                                 }
                             }
                         }
                     });
                     _closeButton.onclick = () => {
+                        onPressed = false;
                         const editor = document.getElementById('entity-editor-container');
                         new CloseDialog().x(editor);
                     };
