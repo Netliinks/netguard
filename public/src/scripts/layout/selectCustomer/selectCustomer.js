@@ -189,16 +189,20 @@ export class SelectCustomer {
             openButtons.forEach((openButton) => {
                 const entityId = openButton.dataset.entityid;
                 openButton.addEventListener('click', () => {
-                    const customerId = localStorage.getItem('customer_id');
-                    //console.log(`customerId ${customerId}`)
-                    if (customerId == null) {
-                        localStorage.setItem('customer_id', entityId);
+                    if(!infoPage.actions.includes("CHANGE") && !Config.currentUser?.isMaster){
+                        alert("Usuario no tiene permiso de cambiar de empresa.");
+                    }else{
+                        const customerId = localStorage.getItem('customer_id');
+                        //console.log(`customerId ${customerId}`)
+                        if (customerId == null) {
+                            localStorage.setItem('customer_id', entityId);
+                        }
+                        else {
+                            localStorage.removeItem('customer_id');
+                            localStorage.setItem('customer_id', entityId);
+                        }
+                        window.location.reload();
                     }
-                    else {
-                        localStorage.removeItem('customer_id');
-                        localStorage.setItem('customer_id', entityId);
-                    }
-                    window.location.reload();
                 });
             });
         };
