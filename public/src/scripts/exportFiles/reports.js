@@ -106,6 +106,7 @@ export const exportReportCsv = (ar, start, end) => {
         // @ts-ignore
         //if (noteCreationDate >= start && noteCreationDate <= end) {
             let obj = {
+                "Empresa": `${note.customer?.name.split("\n").join("(salto)")}`,
                 "Título": `${note.title.split("\n").join("(salto)")}`,
                 "Fecha": `${noteCreationDate}`,
                 "Hora": `${noteCreationTime}`,
@@ -127,6 +128,7 @@ export const exportReportXls = (ar, start, end) => {
         // @ts-ignore
         //if (noteCreationDate >= start && noteCreationDate <= end) {
             let obj = {
+                "Empresa": `${note.customer?.name.split("\n").join("(salto)")}`,
                 "Título": `${note.title.split("\n").join("(salto)")}`,
                 "Fecha": `${noteCreationDate}`,
                 "Hora": `${noteCreationTime}`,

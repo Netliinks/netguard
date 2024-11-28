@@ -444,10 +444,14 @@ export class RoutineRegisters {
                         <!-- EDITOR BODY -->
                         <div class="entity_editor_body">
                             <div class="material_input">
-                            <input type="text" id="entity-customer" autocomplete="none" value="Actual" data-optionid="${customerId}" disabled>
-                            <label for="entity-customer">Seleccionar otra empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
+                                <input type="text" id="entity-customer" autocomplete="none" value="Actual" data-optionid="${customerId}" disabled>
+                                <label for="entity-customer">Seleccionar otra empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
                             </div>
-                            <br>
+                            <div class="input_checkbox">
+                                <label for="exportAllCustomers">
+                                    <input type="checkbox" class="checkbox" id="exportAllCustomers" /> Exportar de todas las empresas
+                                </label>
+                            </div>
                             <br>
                             <br>
                             <br>
@@ -505,6 +509,7 @@ export class RoutineRegisters {
                     document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
                     const _closeButton = document.getElementById('close');
                     const exportButton = document.getElementById('export-data');
+                    const exportAllCustomers = document.getElementById('exportAllCustomers');
                     let onPressed = false;
                     exportButton.addEventListener('click', async() => {
                         if(!onPressed){
@@ -556,13 +561,23 @@ export class RoutineRegisters {
                             //console.log(_values.end.value)
                             //const headers = ['Título', 'Contenido', 'Autor', 'Fecha', 'Hora']
                             let rawToExport=(offset)=>{
+                                let condition = {
+                                    property: "customer.id",
+                                    value: `${_values.customer.dataset.optionid}`,
+                                    order: "-createdDate"
+                                }
+                                if(exportAllCustomers.checked){
+                                    condition.property = "business.id";
+                                    condition.value = `${Config.currentUser.business.id}`;
+                                    condition.order = "+customer.name,-createdDate"
+                                }
                                 let rawExport = JSON.stringify({
                                     "filter": {
                                         "conditions": [
                                             {
-                                                "property": "customer.id",
+                                                "property": `${condition.property}`,
                                                 "operator": "=",
-                                                "value": `${_values.customer.dataset.optionid}`
+                                                "value": `${condition.value}`
                                             },
                                             {
                                                 "property": "creationDate",
@@ -576,7 +591,7 @@ export class RoutineRegisters {
                                             }
                                         ],
                                     },
-                                    sort: "-createdDate",
+                                    sort: `${condition.order}`,
                                     limit: Config.limitExport,
                                     offset: offset,
                                     fetchPlan: 'full',

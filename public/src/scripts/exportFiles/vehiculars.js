@@ -94,6 +94,7 @@ export const exportVehicularCsv = (ar, start, end) => {
         // @ts-ignore
         //if (vehicular.ingressDate >= start && vehicular.ingressDate <= end) {
             let obj = {
+                "Empresa": `${vehicular.customer?.name.split("\n").join("(salto)")}`,
                 "Placa": `${vehicular?.licensePlate.split("\n").join("(salto)") ?? ''}`,
                 "Conductor": `${vehicular?.driver.split("\n").join("(salto)") ?? ''}`,
                 "DNI": `${vehicular?.dni ?? ''}`,
@@ -124,6 +125,7 @@ export const exportVehicularXls = (ar, start, end) => {
         // @ts-ignore
         //if (vehicular.ingressDate >= start && vehicular.ingressDate <= end) {
             let obj = {
+                "Empresa": `${vehicular.customer?.name.split("\n").join("(salto)")}`,
                 "Placa": `${vehicular?.licensePlate.split("\n").join("(salto)") ?? ''}`,
                 "Conductor": `${vehicular?.driver.split("\n").join("(salto)") ?? ''}`,
                 "DNI": `${vehicular?.dni ?? ''}`,

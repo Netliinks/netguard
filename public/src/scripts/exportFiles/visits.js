@@ -91,6 +91,7 @@ export const exportVisitCsv = (ar, start, end) => {
         // @ts-ignore
         //if (visit.creationDate >= start && visit.creationDate <= end) {
             let obj = {
+                "Empresa": `${visit.customer?.name.split("\n").join("(salto)")}`,
                 "Nombre": `${visit.firstName} ${visit.firstLastName} ${visit.secondLastName}`,
                 "DNI": `${visit.dni}`,
                 "Fecha Creación": `${visit.creationDate}`,
@@ -123,6 +124,7 @@ export const exportVisitXls = (ar, start, end) => {
         // @ts-ignore
         //if (visit.creationDate >= start && visit.creationDate <= end) {
             let obj = {
+                "Empresa": `${visit.customer?.name.split("\n").join("(salto)")}`,
                 "Nombre": `${visit.firstName} ${visit.firstLastName} ${visit.secondLastName}`,
                 "DNI": `${visit.dni}`,
                 "Fecha Creación": `${visit.creationDate}`,

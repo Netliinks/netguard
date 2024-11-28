@@ -115,6 +115,7 @@ export const exportBinnacleCsv = (ar, start, end) => {
         // @ts-ignore
         //if (event.creationDate >= _values.start.value && event.creationDate <= _values.end.value) {
             let obj = {
+                "Empresa": `${event.customer?.name.split("\n").join("(salto)")}`,
                 "Título": `${event.title.split("\n").join("(salto)")}`,
                 "Fecha": `${event.creationDate}`,
                 "Hora": `${event.creationTime}`,
@@ -133,6 +134,7 @@ export const exportBinnacleXls = (ar, start, end) => {
         // @ts-ignore
         //if (event.creationDate >= start && event.creationDate <= end) {
             let obj = {
+                "Empresa": `${event.customer?.name.split("\n").join("(salto)")}`,
                 "Título": `${event.title.split("\n").join("(salto)")}`,
                 "Fecha": `${event.creationDate}`,
                 "Hora": `${event.creationTime}`,

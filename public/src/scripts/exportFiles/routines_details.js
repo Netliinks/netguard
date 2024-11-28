@@ -123,6 +123,7 @@ export const exportRoutineDetailCsv = (ar, start, end) => {
         // @ts-ignore
         //if (noteCreationDate >= start && noteCreationDate <= end) {
             let obj = {
+                "Empresa": `${register.customer?.name.split("\n").join("(salto)")}`,
                 "Fecha": `${register.creationDate}`,
                 "Hora": `${register.creationTime}`,
                 "Estado": `${register?.routineState?.name ?? ''}`,
@@ -146,6 +147,7 @@ export const exportRoutineDetailXls = (ar, start, end) => {
         // @ts-ignore
         //if (noteCreationDate >= start && noteCreationDate <= end) {
             let obj = {
+                "Empresa": `${register.customer?.name.split("\n").join("(salto)")}`,
                 "Fecha": `${register.creationDate}`,
                 "Hora": `${register.creationTime}`,
                 "Estado": `${register?.routineState?.name ?? ''}`,
