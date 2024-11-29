@@ -530,6 +530,7 @@ export const calculateGestionMarcation = (assistControl) => {
             let fechaSalida = ""
             if(!isNaN(maxDate)) fechaSalida = format(maxDate)
             let obj = {
+            "customer": `${objects[0]?.customer?.name ?? ''}`,    
             "firstName": `${objects[0]?.user?.firstName ?? ''}`,
             "lastName": `${objects[0]?.user?.lastName ?? ''}`,
             "dni": `${objects[0]?.user?.dni ?? ''}`,
