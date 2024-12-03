@@ -1058,6 +1058,7 @@ const createRoutines = async (mode, routineId, scheduleId) => {
     let i = 0;
     do {
       minAdd = parseInt(minAdd) + ubications.frequency;
+      console.log(timesResults)
       if(exceed){
         releaseHour = true;
         releaseMin = true;
@@ -1072,37 +1073,68 @@ const createRoutines = async (mode, routineId, scheduleId) => {
         releaseMin = true;
       }else{
         if(parseInt(minAdd) > 59){
-          minRest = minAdd - 60; //minutos restantes
-          hourAdd += 1;
-          minAdd = minRest;
-          if((parseInt(timeIni[0]) + hourAdd) > 24){
+          if(ubications.frequency <= 60){
+            minRest = minAdd - 60; //minutos restantes
+            hourAdd += 1;
+            minAdd = minRest;
 
-            if(((parseInt(timeIni[0]) + hourAdd)-24)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
-              exceed = true;
+            if((parseInt(timeIni[0]) + hourAdd) > 24){
+
+              if(((parseInt(timeIni[0]) + hourAdd)-24)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minRest)+":00");
+              }
+              
+              
+            }else if((parseInt(timeIni[0]) + hourAdd) == 24){
+              
+              if((equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+              }
+            
             }else{
-              timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minRest)+":00");
+  
+              if((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+              }
+              
             }
-            
-            
-          }else if((parseInt(timeIni[0]) + hourAdd) == 24){
-            
-            if((equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
-              exceed = true;
-            }else{
-              timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
-            }
-          
           }else{
+            console.log(minRest);
+            minRest = minAdd - 120; //minutos restantes
+            hourAdd += 2;
+            minAdd = minRest;
 
-            if((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
-              exceed = true;
-            }else{
-              timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
-            }
+            if((parseInt(timeIni[0]) + hourAdd) > 24){
+              if(((parseInt(timeIni[0]) + hourAdd)-24)>parseInt(timeEnd[0]) || (((parseInt(timeIni[0]) + hourAdd)-24)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1]))){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero((parseInt(timeIni[0]) + hourAdd)-24)+":"+agregarCero(minRest)+":00");
+              }
+              
+            }else if((parseInt(timeIni[0]) + hourAdd) == 24){
+              if((equivalentTime(parseInt(timeIni[0]) + hourAdd))>parseInt(timeEnd[0]) || (equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+              }
             
+            }else{
+              console.log((parseInt(timeIni[0]) + hourAdd));
+              if((parseInt(timeIni[0]) + hourAdd)>parseInt(timeEnd[0]) || ((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1]))){
+                exceed = true;
+              }else{
+                timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+              }
+              
+            }
           }
 
-          
         }else{
           if((parseInt(timeIni[0]) + hourAdd) > 24){
 
