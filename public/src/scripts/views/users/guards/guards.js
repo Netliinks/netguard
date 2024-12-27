@@ -224,6 +224,7 @@ export class Guards {
             for (let i = 0; i < paginatedItems.length; i++) {
                 let client = paginatedItems[i];
                 let row = document.createElement('tr');
+                //<button class="button" id="convert-entity" data-entityId="${client.id}"><i class="fa-solid fa-shield"></i></button>
                 row.innerHTML += `
           <td>${client.firstName} ${client.lastName}</dt>
           <td>${client.username}</dt>
@@ -235,13 +236,12 @@ export class Guards {
               <i class="fa-solid fa-pen"></i>
             </button>
 
+            <button class="button" id="mobile-entity" data-entityId="${client.id}" data-entityName="${client.username}"><i class="fa-solid fa-mobile"></i></button>
+
             <button class="button" id="remove-entity" data-entityId="${client.id}">
               <i class="fa-solid fa-trash"></i>
             </button>
 
-            <button class="button" id="convert-entity" data-entityId="${client.id}">
-                <i class="fa-solid fa-shield"></i>
-            </button>
           </dt>
         `;
                 table.appendChild(row);
@@ -253,7 +253,8 @@ export class Guards {
         this.export();
         this.edit(this.entityDialogContainer, data);
         this.remove();
-        this.convertToSuper();
+        this.mobileUser();
+        //this.convertToSuper();
         this.changeUserPassword();
     }
     register() {
@@ -904,7 +905,160 @@ export class Guards {
             });
         });
     }
-    convertToSuper() {
+    mobileUser() {
+        const mobile = document.querySelectorAll('#mobile-entity');
+        mobile.forEach((element) => {
+            const entityId = element.dataset.entityid;
+            const entityName = element.dataset.entityname;
+            element.addEventListener('click', () => {
+              modalTable(0, entityId, entityName);
+            });
+        });
+        async function modalTable(offset, id, username) {
+            const dialogContainer = document.getElementById('app-dialogs');
+            //const guards = await getDetails('routine.id', routine.id, 'RoutineUser');
+            let raw = JSON.stringify({
+                "filter": {
+                    "conditions": [
+                        {
+                            "property": "user.id",
+                            "operator": "=",
+                            "value": `${id}`
+                        }
+                    ],
+                },
+                sort: "-createdDate",
+                limit: Config.modalRows,
+                offset: offset
+            });
+            let dataModal = await getFilterEntityData("AndroidLogin", raw);
+            dialogContainer.style.display = 'block';
+            dialogContainer.innerHTML = `
+                  <div class="dialog_content" id="dialog-content">
+                      <div class="dialog">
+                          <div class="dialog_container padding_8">
+                              <div class="dialog_header">
+                                  <h2>Sesiones en Netguard:\n${username}</h2>
+                              </div>
+    
+                              <div class="dialog_message padding_8">
+                                  <div class="dashboard_datatable">
+                                      <table class="datatable_content margin_t_16">
+                                      <thead>
+                                          <tr>
+                                            <th>Modelo</th>
+                                            <th>Marca</th>
+                                            <th>Dispositivo</th>
+                                            <th>Hardware</th>
+                                            <th>Alto</th>
+                                            <th>Ancho</th>
+                                            <th>Fabricante</th>
+                                            <th>Producto</th>
+                                            <th>Fecha</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody id="datatable-modal-body">
+                                      </tbody>
+                                      </table>
+                                  </div>
+                                  <br>
+                              </div>
+    
+                              <div class="dialog_footer">
+                                  <button class="btn btn_primary" id="prevModal"><i class="fa-solid fa-arrow-left"></i></button>
+                                  <button class="btn btn_primary" id="nextModal"><i class="fa-solid fa-arrow-right"></i></button>
+                                  <button class="btn btn_primary" id="mobile-cancel">Cancelar</button>
+                                  <button class="btn btn_danger" id="mobile-reset">Permitir dispositivo nuevo</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              `;
+            inputObserver();
+            const datetableBody = document.getElementById('datatable-modal-body');
+            const subtractTimeFromDate = (objDate, intHours) => {
+                var servidorDate = new Date(objDate);
+                var numberOfMlSeconds = servidorDate.getTime();
+                var addMlSeconds = (intHours * 60) * 60000;
+                var newDateObj = new Date(numberOfMlSeconds - addMlSeconds);
+                const addCero = (value) => {
+                    if(value<10){
+                        return '0'+value;
+                    }else{
+                        return value;
+                    }
+                }
+                return `${addCero(newDateObj.getDate())}/${addCero(newDateObj.getMonth()+1)}/${newDateObj.getFullYear()} ${addCero(newDateObj.getHours())}:${addCero(newDateObj.getMinutes())}:${addCero(newDateObj.getSeconds())}`;
+            }
+            if (dataModal.length === 0) {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                      <td>No hay datos</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                  `;
+                datetableBody.appendChild(row);
+            }
+            else {
+                for (let i = 0; i < dataModal.length; i++) {
+                    let register = dataModal[i];
+                    let row = document.createElement('tr');
+                    row.innerHTML += `
+                        <td>${register?.model ?? ''}</td> 
+                        <td>${register?.brand ?? ''}</td>
+                        <td>${register?.device ?? ''}</td>
+                        <td>${register?.hardware ?? ''}</td>
+                        <td>${register?.deviceHeight ?? ''}</td>
+                        <td>${register?.deviceWidth ?? ''}</td>
+                        <td>${register?.manufacturer ?? ''}</td>
+                        <td>${register?.product ?? ''}</td>
+                        <td>${subtractTimeFromDate(register.createdDate, 5)}</td>
+
+                    `;
+                    datetableBody.appendChild(row);
+                }
+            }
+            const _closeButton = document.getElementById('mobile-cancel');
+            const _resetButton = document.getElementById('mobile-reset');
+            const _dialog = document.getElementById('dialog-content');
+            const prevModalButton = document.getElementById('prevModal');
+            const nextModalButton = document.getElementById('nextModal');
+    
+            _closeButton.onclick = () => {
+                new CloseDialog().x(_dialog);
+            };
+            _resetButton.onclick = () => {
+                const raw = JSON.stringify({
+                    "user": {
+                        "id": `${id}`
+                    },
+                    "model": '#NEWMOBILEADD'
+                });
+                registerEntity(raw, 'AndroidLogin').then((res) => {
+                    setTimeout(async () => {
+                        modalTable(0, id, username);
+                    }, 1000);
+                })
+            };
+            nextModalButton.onclick = () => {
+                offset = Config.modalRows + (offset);
+                modalTable(offset, id, username);
+            };
+            prevModalButton.onclick = () => {
+                if(offset > 0){
+                  offset = offset - Config.modalRows;
+                  modalTable(offset, id, username);
+                }
+            };
+        }
+    }
+    /*convertToSuper() {
         const convert = document.querySelectorAll('#convert-entity');
         convert.forEach((convert) => {
             const entityId = convert.dataset.entityid;
@@ -985,7 +1139,7 @@ export class Guards {
                 };
               });
         });
-    }
+    }*/
     export = () => {
         const exportUsers = document.getElementById('export-entities');
         exportUsers.addEventListener('click', async () => {
