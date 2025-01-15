@@ -9,6 +9,11 @@ export const UIContentLayout = `
             <div class="datatable_title"><h1 id="view-title"></h1></div>
             <div class="datatable_tools" id="datatable-tools">
                 <label><input type="checkbox" class="checkbox" id="entity-check"> Todas las empresas  |</label>
+                <select name="status-search" id="status-search">
+                    <option value="Todos" selected>Estado: Todos</option>
+                    <option value="Marcadas">Estado: Marcadas</option>
+                    <option value="NoMarcadas">Estado: No Marcadas</option>
+                </select>
                 <input type="search" class="search_input" placeholder="Buscar" id="search">
                 <button
                     class="datatable_button add_user"
