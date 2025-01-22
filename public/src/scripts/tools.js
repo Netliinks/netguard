@@ -538,7 +538,7 @@ export const calculateGestionMarcation = (assistControl) => {
             "egressDate": `${objects[0].egressDate}`,
             "ingressTime": `${format(minDate)}`,
             "egressTime": `${fechaSalida}`,
-            "username": `${objects[0]?.user?.username ?? ''}`,
+            "username": `${objects[0]?.user?.username ?? ''}`
         };
         arrayAssist.push(obj);
     }
