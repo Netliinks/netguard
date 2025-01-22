@@ -39,6 +39,10 @@ export const UIContentLayout = `
             </span></th>
 
             <th><span data-type="user">
+            Nombre <i class="fa-regular fa-filter"></i>
+            </span></th>
+
+            <th><span data-type="username">
             Usuario <i class="fa-regular fa-filter"></i>
             </span></th>
 

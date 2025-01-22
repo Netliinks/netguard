@@ -288,7 +288,8 @@ export class RoutineRegisters {
                     <td>${calculateLine(register?.customer?.name, 40)}</td>
                     <td>${calculateLine(register?.routine?.name, 40)}</td>
                     <td>${calculateLine(register?.routineSchedule?.name, 40)}</td>
-                    <td>${calculateLine(`${register?.user?.firstName ?? ''} ${register?.user?.lastName ?? ''}`, 60)}</td>
+                    <td>${calculateLine(`${register?.user?.firstName ?? ''} ${register?.user?.lastName ?? ''}`, 40)}</td>
+                    <td>${register?.user?.username ?? ''}</td>
                     <td class="tag"><span>${register?.routineState?.name ?? ''}</span></td>
                     <td id="table-date">${register?.creationDate ?? ''} ${register?.creationTime ?? ''}</td>
                     <td>${register?.observation == undefined ? 'No' : 'Si'}</td>
