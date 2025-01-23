@@ -23,7 +23,8 @@ let infoPage = {
     counter: 10,
     table: "RoutineRegister",
     newRegister: false,
-    countNewRegister: 0
+    countNewRegister: 0,
+    statusSearch: "Todos"
 };
 let dataPage;
 let raw;
@@ -37,6 +38,14 @@ const GetRoutinesDetails = async () => {
     //const notes = notesRaw.filter((data) => data.customer?.id === `${customerId}`);
     infoPage.counter = 10;
     clearTimeout(Config.timeOut);
+    let status = false;
+    let condition = '<>';
+    if(infoPage.statusSearch == 'Marcadas'){
+        status = true;
+    }else if(infoPage.statusSearch == 'NoMarcadas'){
+        status = true;
+        condition = '=';
+    }
     if(infoPage.check == true){
         const businessData = await currentBusiness();
         raw = JSON.stringify({
@@ -46,6 +55,11 @@ const GetRoutinesDetails = async () => {
                         "property": "business.id",
                         "operator": "=",
                         "value": `${businessData.business.id}`
+                    },
+                    {
+                        "property": "routineState.name",
+                        "operator": `${condition}`,
+                        "value": `${status ? 'No cumplido' : ""}`
                     }
                 ],
             },
@@ -97,6 +111,11 @@ const GetRoutinesDetails = async () => {
                             "property": "business.id",
                             "operator": "=",
                             "value": `${businessData.business.id}`
+                        },
+                        {
+                            "property": "routineState.name",
+                            "operator": `${condition}`,
+                            "value": `${status ? 'No cumplido' : ""}`
                         }
                     ]
                 },
@@ -114,6 +133,11 @@ const GetRoutinesDetails = async () => {
                         "property": "customer.id",
                         "operator": "=",
                         "value": `${customerId}`
+                    },
+                    {
+                        "property": "routineState.name",
+                        "operator": `${condition}`,
+                        "value": `${status ? 'No cumplido' : ""}`
                     }
                 ],
             },
@@ -160,6 +184,11 @@ const GetRoutinesDetails = async () => {
                             "property": "customer.id",
                             "operator": "=",
                             "value": `${customerId}`
+                        },
+                        {
+                            "property": "routineState.name",
+                            "operator": `${condition}`,
+                            "value": `${status ? 'No cumplido' : ""}`
                         }
                     ]
                 },
@@ -170,7 +199,7 @@ const GetRoutinesDetails = async () => {
             });
         }
     }
-    
+
     infoPage.count = await getFilterEntityCount("RoutineRegister", raw);
     dataPage = await getFilterEntityData("RoutineRegister", raw);
     return dataPage;
@@ -180,12 +209,13 @@ export class RoutineRegisters {
         this.dialogContainer = document.getElementById('app-dialogs');
         this.siebarDialogContainer = document.getElementById('entity-editor-container');
         this.appContainer = document.getElementById('datatable-container');
-        this.render = async (offset, actualPage, search, check, countNewRegister) => {
+        this.render = async (offset, actualPage, search, check, countNewRegister, statusSearch) => {
             infoPage.offset = offset;
             infoPage.currentPage = actualPage;
             infoPage.search = search;
             infoPage.check = check;
             infoPage.countNewRegister = countNewRegister;
+            infoPage.statusSearch = statusSearch;
             this.appContainer.innerHTML = '';
             this.appContainer.innerHTML = UIContentLayout;
             // Getting interface elements
@@ -206,7 +236,7 @@ export class RoutineRegisters {
                             console.log("updates detected")
                             infoPage.newRegister = true;
                             infoPage.countNewRegister = newRegisters - infoPage.count;
-                            new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check, infoPage.countNewRegister);
+                            new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check, infoPage.countNewRegister, infoPage.statusSearch);
                         }else{
                             console.log("no updates")
                             Config.timeOut = setTimeout(change, infoPage.counter);
@@ -258,7 +288,8 @@ export class RoutineRegisters {
                     <td>${calculateLine(register?.customer?.name, 40)}</td>
                     <td>${calculateLine(register?.routine?.name, 40)}</td>
                     <td>${calculateLine(register?.routineSchedule?.name, 40)}</td>
-                    <td>${calculateLine(`${register?.user?.firstName ?? ''} ${register?.user?.lastName ?? ''}`, 60)}</td>
+                    <td>${calculateLine(`${register?.user?.firstName ?? ''} ${register?.user?.lastName ?? ''}`, 40)}</td>
+                    <td>${register?.user?.username ?? ''}</td>
                     <td class="tag"><span>${register?.routineState?.name ?? ''}</span></td>
                     <td id="table-date">${register?.creationDate ?? ''} ${register?.creationTime ?? ''}</td>
                     <td>${register?.observation == undefined ? 'No' : 'Si'}</td>
@@ -314,8 +345,10 @@ export class RoutineRegisters {
             const check = document.getElementById('entity-check');
             const search = document.getElementById('search');
             const btnSearch = document.getElementById('btnSearch');
+            const statusSearch = document.getElementById('status-search');
             check.checked = infoPage.check;
             search.value = infoPage.search;
+            statusSearch.value = infoPage.statusSearch;
             await search.addEventListener('keyup', () => {
                 /*const arrayNotes = notes.filter((note) => `${note.title}
                 ${note.content}
@@ -331,7 +364,7 @@ export class RoutineRegisters {
                 // Rendering icons*/
             });
             btnSearch.addEventListener('click', async () => {
-                new RoutineRegisters().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked, 0);
+                new RoutineRegisters().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked, 0, statusSearch.value);
             });
         };
         /*this.obtainDelay = async (register) =>{
@@ -453,6 +486,17 @@ export class RoutineRegisters {
                                 </label>
                             </div>
                             <br>
+                            <div class="material_input">
+                                <label for="status-export">Estados de rutina</label>
+                                <br>
+                                <br>
+                                <select name="status-export" id="status-export">
+                                    <option value="Todos" selected>Todos</option>
+                                    <option value="Marcadas">Marcadas</option>
+                                    <option value="NoMarcadas">No Marcadas</option>
+                                </select>
+                            </div>
+                            <br>
                             <br>
                             <br>
                             <div class="form_group">
@@ -510,6 +554,7 @@ export class RoutineRegisters {
                     const _closeButton = document.getElementById('close');
                     const exportButton = document.getElementById('export-data');
                     const exportAllCustomers = document.getElementById('exportAllCustomers');
+                    const statusExport = document.getElementById('status-export');
                     let onPressed = false;
                     exportButton.addEventListener('click', async() => {
                         if(!onPressed){
@@ -543,6 +588,14 @@ export class RoutineRegisters {
                             </div>
                             `;
                             inputObserver();
+                            let status = false;
+                            let conditionStatus = '<>';
+                            if(statusExport.value == 'Marcadas'){
+                                status = true;
+                            }else if(statusExport.value == 'NoMarcadas'){
+                                status = true;
+                                conditionStatus = '=';
+                            }
                             const message1 = document.getElementById("export-total");
                             const message2 = document.getElementById("message-export");
                             const _closeButton = document.getElementById('cancel');
@@ -588,6 +641,11 @@ export class RoutineRegisters {
                                                 "property": "creationDate",
                                                 "operator": "<=",
                                                 "value": `${_values.end.value}`
+                                            },
+                                            {
+                                                "property": "routineState.name",
+                                                "operator": `${conditionStatus}`,
+                                                "value": `${status ? 'No cumplido' : ""}`
                                             }
                                         ],
                                     },
@@ -742,7 +800,7 @@ export class RoutineRegisters {
             button.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (page - 1);
                 currentPage = page;
-                new RoutineRegisters().render(infoPage.offset, currentPage, infoPage.search, infoPage.check, 0); //new RoutineRegisters().load(tableBody, page, items)
+                new RoutineRegisters().render(infoPage.offset, currentPage, infoPage.search, infoPage.check, 0, infoPage.statusSearch); //new RoutineRegisters().load(tableBody, page, items)
             });
             return button;
         }
@@ -768,11 +826,11 @@ export class RoutineRegisters {
         }
         function setupButtonsEvents(prevButton, nextButton) {
             prevButton.addEventListener('click', () => {
-                new RoutineRegisters().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check, 0);
+                new RoutineRegisters().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check, 0, infoPage.statusSearch);
             });
             nextButton.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (pageCount - 1);
-                new RoutineRegisters().render(infoPage.offset, pageCount, infoPage.search, infoPage.check, 0);
+                new RoutineRegisters().render(infoPage.offset, pageCount, infoPage.search, infoPage.check, 0, infoPage.statusSearch);
             });
         }
     };
