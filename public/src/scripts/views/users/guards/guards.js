@@ -950,8 +950,6 @@ export class Guards {
                                             <th>Marca</th>
                                             <th>Dispositivo</th>
                                             <th>Hardware</th>
-                                            <th>Alto</th>
-                                            <th>Ancho</th>
                                             <th>Fabricante</th>
                                             <th>Producto</th>
                                             <th>Fecha</th>
@@ -1000,8 +998,6 @@ export class Guards {
                       <td></td>
                       <td></td>
                       <td></td>
-                      <td></td>
-                      <td></td>
                   `;
                 datetableBody.appendChild(row);
             }
@@ -1009,13 +1005,12 @@ export class Guards {
                 for (let i = 0; i < dataModal.length; i++) {
                     let register = dataModal[i];
                     let row = document.createElement('tr');
+                    console.log(register?.id);
                     row.innerHTML += `
                         <td>${register?.model ?? ''}</td> 
                         <td>${register?.brand ?? ''}</td>
                         <td>${register?.device ?? ''}</td>
                         <td>${register?.hardware ?? ''}</td>
-                        <td>${register?.deviceHeight ?? ''}</td>
-                        <td>${register?.deviceWidth ?? ''}</td>
                         <td>${register?.manufacturer ?? ''}</td>
                         <td>${register?.product ?? ''}</td>
                         <td>${subtractTimeFromDate(register.createdDate, 5)}</td>
