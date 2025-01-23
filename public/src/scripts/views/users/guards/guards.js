@@ -1005,7 +1005,6 @@ export class Guards {
                 for (let i = 0; i < dataModal.length; i++) {
                     let register = dataModal[i];
                     let row = document.createElement('tr');
-                    console.log(register?.id);
                     row.innerHTML += `
                         <td>${register?.model ?? ''}</td> 
                         <td>${register?.brand ?? ''}</td>
