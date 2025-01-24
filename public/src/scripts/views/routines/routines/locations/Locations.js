@@ -1058,7 +1058,7 @@ const createRoutines = async (mode, routineId, scheduleId) => {
     let i = 0;
     do {
       minAdd = parseInt(minAdd) + ubications.frequency;
-      console.log(timesResults)
+      //console.log(timesResults)
       if(exceed){
         releaseHour = true;
         releaseMin = true;
@@ -1118,20 +1118,34 @@ const createRoutines = async (mode, routineId, scheduleId) => {
               }
               
             }else if((parseInt(timeIni[0]) + hourAdd) == 24){
-              if((equivalentTime(parseInt(timeIni[0]) + hourAdd))>parseInt(timeEnd[0]) || (equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
-                exceed = true;
+              if(parseInt(timeIni[0])<parseInt(timeEnd[0])){
+                if((equivalentTime(parseInt(timeIni[0]) + hourAdd))<parseInt(timeEnd[0]) || (equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                  exceed = true;
+                }else{
+                  timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+                }
               }else{
-                timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+                if((equivalentTime(parseInt(timeIni[0]) + hourAdd))>parseInt(timeEnd[0]) || (equivalentTime(parseInt(timeIni[0]) + hourAdd))==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1])){
+                  exceed = true;
+                }else{
+                  timesResults.push(agregarCero(equivalentTime(parseInt(timeIni[0]) + hourAdd))+":"+agregarCero(minRest)+":00");
+                }
               }
-            
             }else{
-              console.log((parseInt(timeIni[0]) + hourAdd));
-              if((parseInt(timeIni[0]) + hourAdd)>parseInt(timeEnd[0]) || ((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1]))){
-                exceed = true;
+              //console.log((parseInt(timeIni[0]) + hourAdd));
+              if(parseInt(timeIni[0])>parseInt(timeEnd[0])){
+                if((parseInt(timeIni[0]) + hourAdd)<parseInt(timeEnd[0]) || ((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1]))){
+                  exceed = true;
+                }else{
+                  timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+                }
               }else{
-                timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+                if((parseInt(timeIni[0]) + hourAdd)>parseInt(timeEnd[0]) || ((parseInt(timeIni[0]) + hourAdd)==parseInt(timeEnd[0]) && minRest > parseInt(timeEnd[1]))){
+                  exceed = true;
+                }else{
+                  timesResults.push(agregarCero(parseInt(timeIni[0]) + hourAdd)+":"+agregarCero(minRest)+":00");
+                }
               }
-              
             }
           }
 
