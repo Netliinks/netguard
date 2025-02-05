@@ -16,5 +16,6 @@ export const Config = {
     timeOut: null,
     timeRoutineTopBar: null,
     currentUser: null,
-    limitExport: 100
+    limitExport: 100,
+    idEsmeraldas: "5f13b0bc-95e7-721e-62de-90b58ce56002"
 };
