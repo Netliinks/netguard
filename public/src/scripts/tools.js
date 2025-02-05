@@ -654,3 +654,29 @@ export const getRoutinesTopBar =async(id)=> {
     return await getFilterEntityCount("RoutineRegister", raw);
 
 }
+
+export const searchUniversalValue = async (param, operator, value, table) => {
+    const raw = JSON.stringify({
+        "filter": {
+          "conditions": [
+            {
+              "property": `${param}`,
+              "operator": `${operator}`,
+              "value": `${value}`
+            },
+            {
+                "property": `customer.id`,
+                "operator": `=`,
+                "value": ``
+              },
+          ]
+        },
+        sort: "createdDate",
+    });
+    const data = await getFilterEntityData(`${table}`, raw);
+    if(data == undefined || data.length == 0){
+        alert(`${param} ${value} no obtenido(a)`);
+    }else{
+        return data;
+    }
+}
