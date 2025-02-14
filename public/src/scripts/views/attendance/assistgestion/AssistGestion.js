@@ -470,15 +470,15 @@ export class AssistGestion {
                                         message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
-                                            exportMarcationsXls(marcations, _values.start.value, _values.end.value);
+                                            await exportMarcationsXls(marcations, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "csv") {
                                             // @ts-ignore
-                                            exportMarcationsCsv(marcations, _values.start.value, _values.end.value);
+                                            await exportMarcationsCsv(marcations, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "pdf") {
                                             // @ts-ignore
-                                            exportMarcationsPdf(marcations, _values.start.value, _values.end.value);
+                                            await exportMarcationsPdf(marcations, _values.start.value, _values.end.value);
                                         }
                                         const _dialog = document.getElementById('dialog-content');
                                         new CloseDialog().x(_dialog);

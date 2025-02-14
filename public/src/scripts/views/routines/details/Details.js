@@ -693,11 +693,11 @@ export class RoutineRegisters {
                                             message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                             if (ele.value == "xls") {
                                                 // @ts-ignore
-                                                exportRoutineDetailXls(registers, _values.start.value, _values.end.value);
+                                                await exportRoutineDetailXls(registers, _values.start.value, _values.end.value);
                                             }
                                             else if (ele.value == "csv") {
                                                 // @ts-ignore
-                                                exportRoutineDetailCsv(registers, _values.start.value, _values.end.value);
+                                                await exportRoutineDetailCsv(registers, _values.start.value, _values.end.value);
                                             }
                                             else if (ele.value == "pdf") {
                                                 let rows = [];
@@ -724,7 +724,7 @@ export class RoutineRegisters {
                                                     //}
                                                 }
                                                 // @ts-ignore
-                                                exportRoutineDetailPdf(rows, _values.start.value, _values.end.value);
+                                                await exportRoutineDetailPdf(rows, _values.start.value, _values.end.value);
                                             }
                                             const _dialog = document.getElementById('dialog-content');
                                             new CloseDialog().x(_dialog);

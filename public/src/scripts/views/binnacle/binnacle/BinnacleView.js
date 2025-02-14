@@ -517,15 +517,15 @@ export class Binnacle {
                                         message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
-                                            exportBinnacleXls(events, _values.start.value, _values.end.value);
+                                            await exportBinnacleXls(events, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "csv") {
                                             // @ts-ignore
-                                            exportBinnacleCsv(events, _values.start.value, _values.end.value);
+                                            await exportBinnacleCsv(events, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "pdf") {
                                             // @ts-ignore
-                                            exportBinnaclePdf(events, _values.start.value, _values.end.value);
+                                            await exportBinnaclePdf(events, _values.start.value, _values.end.value);
                                         }
                                         const _dialog = document.getElementById('dialog-content');
                                         new CloseDialog().x(_dialog);

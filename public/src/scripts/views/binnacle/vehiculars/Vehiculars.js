@@ -517,15 +517,15 @@ export class Vehiculars {
                                         message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
-                                            exportVehicularXls(vehiculars, _values.start.value, _values.end.value);
+                                            await exportVehicularXls(vehiculars, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "csv") {
                                             // @ts-ignore
-                                            exportVehicularCsv(vehiculars, _values.start.value, _values.end.value);
+                                            await exportVehicularCsv(vehiculars, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "pdf") {
                                             // @ts-ignore
-                                            exportVehicularPdf(vehiculars, _values.start.value, _values.end.value);
+                                            await exportVehicularPdf(vehiculars, _values.start.value, _values.end.value);
                                         }
                                         const _dialog = document.getElementById('dialog-content');
                                         new CloseDialog().x(_dialog);

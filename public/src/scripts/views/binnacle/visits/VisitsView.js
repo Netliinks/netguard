@@ -651,15 +651,15 @@ export class Visits {
                                         message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
-                                            exportVisitXls(visits, _values.start.value, _values.end.value);
+                                            await exportVisitXls(visits, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "csv") {
                                             // @ts-ignore
-                                            exportVisitCsv(visits, _values.start.value, _values.end.value);
+                                            await exportVisitCsv(visits, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "pdf") {
                                             // @ts-ignore
-                                            exportVisitPdf(visits, _values.start.value, _values.end.value);
+                                            await exportVisitPdf(visits, _values.start.value, _values.end.value);
                                         }
                                         const _dialog = document.getElementById('dialog-content');
                                         new CloseDialog().x(_dialog);

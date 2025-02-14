@@ -505,15 +505,15 @@ export class Events {
                                         message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
                                         if (ele.value == "xls") {
                                             // @ts-ignore
-                                            exportEventXls(events, _values.start.value, _values.end.value);
+                                            await exportEventXls(events, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "csv") {
                                             // @ts-ignore
-                                            exportEventCsv(events, _values.start.value, _values.end.value);
+                                            await exportEventCsv(events, _values.start.value, _values.end.value);
                                         }
                                         else if (ele.value == "pdf") {
                                             // @ts-ignore
-                                            exportEventPdf(events, _values.start.value, _values.end.value);
+                                            await exportEventPdf(events, _values.start.value, _values.end.value);
                                         }
                                         const _dialog = document.getElementById('dialog-content');
                                         new CloseDialog().x(_dialog);
