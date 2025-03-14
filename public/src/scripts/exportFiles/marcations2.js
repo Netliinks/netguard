@@ -83,7 +83,8 @@ export const exportMarcationsCsv = (ar, start, end) => {
             let obj = {
                 "Empresa": `${marcation?.customer.split("\n").join("(salto)")}`,
                 "DNI": `${marcation?.dni ?? ''}`,
-                "Usuario": `${marcation?.firstName ?? ''} ${marcation?.lastName ?? ''}`,
+                "Nombre": `${marcation?.firstName ?? ''} ${marcation?.lastName ?? ''}`,
+                "Usuario": `${marcation?.username ?? ''}`,
                 "Fecha": `${marcation.ingressDate}`,
                 "Primera Marcación": `${marcation.ingressTime}`,
                 "última Marcación": `${marcation?.egressTime ?? ''}`,
@@ -102,7 +103,8 @@ export const exportMarcationsXls = (ar, start, end) => {
             let obj = {
                 "Empresa": `${marcation?.customer.split("\n").join("(salto)")}`,
                 "DNI": `${marcation?.dni ?? ''}`,
-                "Usuario": `${marcation?.firstName ?? ''} ${marcation?.lastName ?? ''}`,
+                "Nombre": `${marcation?.firstName ?? ''} ${marcation?.lastName ?? ''}`,
+                "Usuario": `${marcation?.username ?? ''}`,
                 "Fecha": `${marcation.ingressDate}`,
                 "Primera Marcación": `${marcation.ingressTime}`,
                 "última Marcación": `${marcation?.egressTime ?? ''}`,

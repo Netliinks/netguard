@@ -111,7 +111,8 @@ export const exportEventCsv = (ar, start, end) => {
                 "Título": `${event.title.split("\n").join("(salto)")}`,
                 "Fecha": `${event.creationDate}`,
                 "Hora": `${event.creationTime}`,
-                "Usuario": `${event.user?.firstName ?? ''} ${event.user?.lastName ?? ''}`,
+                "Nombre": `${event.user?.firstName ?? ''} ${event.user?.lastName ?? ''}`,
+                "Usuario": `${event.user?.username ?? ''}`,
                 "Descripción": `${event.description.split("\n").join("(salto)")}`
             };
             rows.push(obj);
@@ -130,7 +131,8 @@ export const exportEventXls = (ar, start, end) => {
                 "Título": `${event.title.split("\n").join("(salto)")}`,
                 "Fecha": `${event.creationDate}`,
                 "Hora": `${event.creationTime}`,
-                "Usuario": `${event.user?.firstName ?? ''} ${event.user?.lastName ?? ''}`,
+                "Nombre": `${event.user?.firstName ?? ''} ${event.user?.lastName ?? ''}`,
+                "Usuario": `${event.user?.username ?? ''}`,
                 "Descripción": `${event.description.split("\n").join("(salto)")}`
             };
             rows.push(obj);
