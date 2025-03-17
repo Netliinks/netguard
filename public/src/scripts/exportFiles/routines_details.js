@@ -132,7 +132,6 @@ export const exportRoutineDetailCsv = (ar, start, end) => {
                 "Nombre": `${register.user?.firstName ?? ''} ${register.user?.lastName ?? ''}`,
                 "Usuario": `${register.user?.username ?? ''}`,
                 "Coordenadas (Lat, Long)": `${register?.cords ?? ''}`,
-                "Coordenadas (Lat, Long)": `${register?.cords ?? ''}`,
                 "Fecha desde:": `${register?.targetDate ?? ''} ${register?.targetTime ?? ''}`,
                 "Fecha hasta:": `${register?.targetDate2 ?? ''} ${register?.targetTime2 ?? ''}`,
                 "Observación": `${register?.observation?.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim() ?? ''}`,
