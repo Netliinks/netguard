@@ -729,17 +729,17 @@ export class Employees {
                 <!-- EDITOR BODY -->
                 <div class="entity_editor_body">
                     <div class="material_input">
-                    <input type="text" id="entity-firstname" class="input_filled" value="${data.firstName}" readonly>
+                    <input type="text" id="entity-firstname" class="input_filled" value="${data.firstName}">
                     <label for="entity-firstname">Nombre</label>
                     </div>
 
                     <div class="material_input">
-                    <input type="text" id="entity-lastname" class="input_filled" value="${data.lastName}" readonly>
+                    <input type="text" id="entity-lastname" class="input_filled" value="${data.lastName}">
                     <label for="entity-lastname">Apellido</label>
                     </div>
 
                     <div class="material_input">
-                    <input type="text" id="entity-secondlastname" class="input_filled" value="${data.secondLastName}" readonly>
+                    <input type="text" id="entity-secondlastname" class="input_filled" value="${data.secondLastName}">
                     <label for="entity-secondlastname">2do Apellido</label>
                     </div>
 
@@ -893,9 +893,9 @@ export class Employees {
             updateButton = document.getElementById('update-changes');
             updateButton.addEventListener('click', async() => {
                 const _values = {
-                    //firstName: document.getElementById('entity-firstname'),
-                    //lastName: document.getElementById('entity-lastname'),
-                    //secondLastName: document.getElementById('entity-secondlastname'),
+                    firstName: document.getElementById('entity-firstname'),
+                    lastName: document.getElementById('entity-lastname'),
+                    secondLastName: document.getElementById('entity-secondlastname'),
                     phone: document.getElementById('entity-phone'),
                     dni: document.getElementById('entity-dni'),
                     status: document.getElementById('entity-state'),
@@ -906,10 +906,10 @@ export class Employees {
                     //email: document.getElementById('entity-email'),
                 };
                 let employeeRaw = JSON.stringify({
-                    //"lastName": `${_values.lastName.value}`,
-                    //"secondLastName": `${_values.secondLastName.value}`,
+                    "firstName": `${_values.firstName.value}`,
+                    "lastName": `${_values.lastName.value}`,
+                    "secondLastName": `${_values.secondLastName.value}`,
                     "active": true,
-                    //"firstName": `${_values.firstName.value}`,
                     "state": {
                         "id": `${_values.status.dataset.optionid}`
                     },
