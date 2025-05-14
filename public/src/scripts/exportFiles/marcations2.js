@@ -12,7 +12,7 @@ export const exportMarcationsPdf = (ar, start) => {
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'italic');
-    doc.text(130, 40, `Fecha: Hasta ${start}`);
+    doc.text(160, 40, `Fecha: Hasta ${start}`);
     //construimos cabecera del csv
     doc.setFont(undefined, 'bold');
     doc.line(5, 45, 200, 45);
