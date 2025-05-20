@@ -130,7 +130,7 @@ export class Routines {
             for (let i = 0; i < paginatedItems.length; i++) {
                 let routine = paginatedItems[i];
                 let row = document.createElement('tr');
-                if(routine.customer.id == "2dd22d6d-a61f-5a11-b9ad-b1afc0dc1603"){
+                if(routine.customer.id == "2dd22d6d-a61f-5a11-b9ad-b1afc0dc1603" || routine.customer.id == "c7afa17d-0544-7351-f50f-b5630a6a93c7"){
                   row.innerHTML += `
                     <td>${routine?.name ?? ''}</dt>
                     <td>${routine?.isActive ? 'Sí' : 'No'}</dt>
