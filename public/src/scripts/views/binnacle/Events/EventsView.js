@@ -1,6 +1,6 @@
 // @filename: EvetnsView.ts
 import { Config } from "../../../Configs.js";
-import { getEntityData, getFilterEntityData, getFile, getFilterEntityCount } from "../../../endpoints.js";
+import { getEntityData, getFilterEntityData, getFile, getFilterEntityCount, getUserInfo } from "../../../endpoints.js";
 import { CloseDialog, renderRightSidebar, filterDataByHeaderType, inputObserver, pageNumbers, fillBtnPagination, calculateLine } from "../../../tools.js";
 import { UIContentLayout, UIRightSidebar } from "./Layout.js";
 import { UITableSkeletonTemplate } from "./Template.js";
@@ -14,9 +14,15 @@ let infoPage = {
     count: 0,
     offset: Config.offset,
     currentPage: currentPage,
-    search: ""
+    search: "",
+    check: false,
 };
 let dataPage;
+const currentBusiness = async () => {
+    const currentUser = await getUserInfo();
+    const business = await getEntityData('User', `${currentUser.attributes.id}`);
+    return business;
+};
 const getEvents = async () => {
     /*const eventsRaw = await getEntitiesData('Notification');
     const events = eventsRaw.filter((data) => data.customer?.id === `${customerId}`);
@@ -24,13 +30,16 @@ const getEvents = async () => {
     const removeVisitsFromList = events.filter((data) => data.notificationType.name !== "Visita");
     const removeVehicularFromList = removeVisitsFromList.filter((data) => data.notificationType.name !== 'Vehicular');
     const removeNoteFromList = removeVehicularFromList.filter((data) => data.notificationType.name !== 'Nota');*/
+    let businessData = '';
+    if(infoPage.check)
+        businessData = await currentBusiness();
     let raw = JSON.stringify({
         "filter": {
             "conditions": [
                 {
-                    "property": "customer.id",
+                    "property": infoPage.check ? "business.id" : "customer.id",
                     "operator": "=",
-                    "value": `${customerId}`
+                    "value": infoPage.check ? `${businessData.business.id}` : `${customerId}`
                 },
                 {
                     "property": "notificationType.name",
@@ -85,13 +94,18 @@ const getEvents = async () => {
                                 "property": "user.username",
                                 "operator": "contains",
                                 "value": `${infoPage.search.toLowerCase()}`
+                            },
+                            {
+                                "property": "customer.name",
+                                "operator": infoPage.check ? "contains" : "doesNotContain",
+                                "value": infoPage.check ? `${infoPage.search.toLowerCase()}` : ""
                             }
-                        ]
+                    ]
                     },
                     {
-                        "property": "customer.id",
+                        "property": infoPage.check ? "business.id" : "customer.id",
                         "operator": "=",
-                        "value": `${customerId}`
+                        "value": infoPage.check ? `${businessData.business.id}` : `${customerId}`
                     },
                     {
                         "property": "notificationType.name",
@@ -135,10 +149,11 @@ export class Events {
         this.dialogContainer = document.getElementById('app-dialogs');
         this.siebarDialogContainer = document.getElementById('entity-editor-container');
         this.appContainer = document.getElementById('datatable-container');
-        this.render = async (offset, actualPage, search) => {
+        this.render = async (offset, actualPage, search, check) => {
             infoPage.offset = offset;
             infoPage.currentPage = actualPage;
             infoPage.search = search;
+            infoPage.check = check;
             this.appContainer.innerHTML = '';
             this.appContainer.innerHTML = UIContentLayout;
             // Getting interface elements
@@ -182,6 +197,7 @@ export class Events {
                     let event = paginatedItems[i]; // getting note items
                     let row = document.createElement('TR');
                     row.innerHTML += `
+                    <td>${calculateLine(event?.customer?.name, 40)}</td>
                     <td>${calculateLine(event?.title ?? '', 40)}</td>
                     <td>${calculateLine(event?.description ?? '', 40)}</td>
                     <td>${event?.user?.username ?? ''}</td>
@@ -201,8 +217,10 @@ export class Events {
             }
         };
         this.searchNotes = async (tableBody /*, events: any*/) => {
+            const check = document.getElementById('entity-check');
             const search = document.getElementById('search');
             const btnSearch = document.getElementById('btnSearch');
+            check.checked = infoPage.check;
             search.value = infoPage.search;
             await search.addEventListener('keyup', () => {
                 /*const arrayEvents = events.filter((event) => `${event.title}
@@ -219,7 +237,7 @@ export class Events {
                 // Rendering icons*/
             });
             btnSearch.addEventListener('click', async () => {
-                new Events().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim());
+                new Events().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked);
             });
         };
         this.previewEvent = async () => {
@@ -579,7 +597,7 @@ export class Events {
             button.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (page - 1);
                 currentPage = page;
-                new Events().render(infoPage.offset, currentPage, infoPage.search);
+                new Events().render(infoPage.offset, currentPage, infoPage.search, infoPage.check);
             });
             return button;
         }
@@ -605,11 +623,11 @@ export class Events {
         }
         function setupButtonsEvents(prevButton, nextButton) {
             prevButton.addEventListener('click', () => {
-                new Events().render(Config.offset, Config.currentPage, infoPage.search);
+                new Events().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check);
             });
             nextButton.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (pageCount - 1);
-                new Events().render(infoPage.offset, pageCount, infoPage.search);
+                new Events().render(infoPage.offset, pageCount, infoPage.search, infoPage.check);
             });
         }
     }
