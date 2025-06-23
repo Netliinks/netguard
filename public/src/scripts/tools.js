@@ -684,3 +684,30 @@ export const searchUniversalValue = async (param, operator, value, table) => {
         return data;
     }
 }
+
+
+export const searchCustomerbyName = async (name, business) => {
+    const raw = JSON.stringify({
+        "filter": {
+          "conditions": [
+            {
+              "property": `customer.name`,
+              "operator": `contains`,
+              "value": `${name}`
+            },
+            {
+              "property": `business.id`,
+              "operator": `=`,
+              "value": `${business}`
+            },
+          ]
+        },
+        sort: "createdDate",
+    });
+    const data = await getFilterEntityData(`Customer`, raw);
+    if(data == undefined || data.length == 0){
+        alert(`Nombre empresa: ${name}, no encontrado.`);
+    }else{
+        return data[0];
+    }
+}

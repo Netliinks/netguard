@@ -328,7 +328,7 @@ export class Visits {
                 if (entityData?.checkBlacklist === true) {
                     checkboxBlackList?.setAttribute('checked', 'true');
                 }
-                if (entityData?.image !== undefined || entityData?.image3 !== undefined || entityData?.camera1 !== undefined || entityData?.camera2 !== undefined || entityData?.camera3 !== undefined || entityData?.camera4 !== undefined) {
+                if (entityData?.image !== undefined || entityData?.image2 !== undefined || entityData?.image3 !== undefined || entityData?.image4 !== undefined || entityData?.camera1 !== undefined || entityData?.camera2 !== undefined || entityData?.camera3 !== undefined || entityData?.camera4 !== undefined) {
                     let images = [];
                     if (entityData?.image !== undefined) {
                         let details = {
@@ -339,12 +339,30 @@ export class Visits {
                         };
                         images.push(details);
                     }
+                    if (entityData?.image2 !== undefined) {
+                        let details = {
+                            "image": `${await getFile(entityData.image2)}`,
+                            "description": `Adjunto 2 - ${entityData?.dni ?? ''}`,
+                            "icon": "mobile",
+                            "id": "image2"
+                        };
+                        images.push(details);
+                    }
                     if (entityData?.image3 !== undefined) {
                         let details = {
                             "image": `${await getFile(entityData.image3)}`,
-                            "description": `Adjunto 2 - ${entityData?.dni ?? ''}`,
+                            "description": `Adjunto 3 - ${entityData?.dni ?? ''}`,
                             "icon": "mobile",
                             "id": "image3"
+                        };
+                        images.push(details);
+                    }
+                    if (entityData?.image4 !== undefined) {
+                        let details = {
+                            "image": `${await getFile(entityData.image4)}`,
+                            "description": `Adjunto 4 - ${entityData?.dni ?? ''}`,
+                            "icon": "mobile",
+                            "id": "image4"
                         };
                         images.push(details);
                     }
