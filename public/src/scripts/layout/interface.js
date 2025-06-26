@@ -13,6 +13,7 @@ import { Config } from "../Configs.js";
 import { ChangePassword } from "./changePassword/changePassword.js";
 import { CloseDialog } from "../tools.js";
 import { FirebaseCtrl } from "../services/FirebaseCtrl.js";
+import { Events } from "../views/binnacle/Events/EventsView.js";
 let infoPage = {
     count: 0,
     counter: 10,
@@ -38,11 +39,19 @@ export class RenderApplicationUI {
       this.topbar.style.justifyContent = 'space-between';
       this.renderTopbar();
       new Sidebar().render();
-      new Dashboard().render();
+      const currentPage = localStorage.getItem('current_page');
+      if(currentPage == 'Event'){
+        localStorage.removeItem('current_page');
+        new Events().render(Config.offset, Config.currentPage, "", false);
+      }else{
+        localStorage.removeItem('current_page');
+        new Dashboard().render();
+      }
+      
       //new SelectCustomer().render();
   }
   async renderTopbar() {
-    const customerId = localStorage.getItem('customer_id')
+    const customerId = localStorage.getItem('customer_id');
     const tokenMessaging = localStorage.getItem('libreriasjs-notification-token');
     const currentUser = await getUserInfo();
     const user = await getEntityData('User', currentUser.attributes.id);
@@ -160,14 +169,23 @@ export class RenderApplicationUI {
                 infoPage.timeColorNoti = setTimeout(change, counter);
             }
             infoPage.timeColorNoti = setTimeout(change, counter);
-            button.addEventListener('click', () => {
+            button.addEventListener('click', async () => {
                 infoPage.audioNoti.pause();
                 infoPage.audioNoti.currentTime = 0;
                 clearTimeout(infoPage.timeColorNoti);
                 //this.renderTopbar();
-                //const customerName = notificationData.notification.title.replace("ALERTA EN ","");
-                //const customerData = await searchCustomerbyName(customerName,customer.business.id);
-                defaultMenu();
+                const customerName = notificationData.notification.title.replace("ALERTA EN ","");
+                const customerData = await searchCustomerbyName(customerName,customer.business.id);
+                if(customerData != null && customerId != customerData.id){
+                    localStorage.removeItem('customer_id');
+                    localStorage.setItem('customer_id', customerData.id);
+                    window.location.reload();
+                    localStorage.setItem('current_page', 'Event');
+                }else{
+                    defaultMenu();
+                    new Events().render(Config.offset, Config.currentPage, "", false);
+                }
+                
             });
         });
         const options = document.getElementById('settings-button');

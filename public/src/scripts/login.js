@@ -255,6 +255,7 @@ export class SignIn {
         localStorage.removeItem('email');
         localStorage.removeItem('password');
         localStorage.removeItem('libreriasjs-notification-token');
+        localStorage.removeItem('current_page');
         clearTimeout(Config.timeOut);
         clearTimeout(Config.timeRoutineTopBar);
         Config.currentUser = null;

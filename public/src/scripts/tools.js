@@ -691,7 +691,7 @@ export const searchCustomerbyName = async (name, business) => {
         "filter": {
           "conditions": [
             {
-              "property": `customer.name`,
+              "property": `name`,
               "operator": `contains`,
               "value": `${name}`
             },
@@ -707,6 +707,7 @@ export const searchCustomerbyName = async (name, business) => {
     const data = await getFilterEntityData(`Customer`, raw);
     if(data == undefined || data.length == 0){
         alert(`Nombre empresa: ${name}, no encontrado.`);
+        return null;
     }else{
         return data[0];
     }
