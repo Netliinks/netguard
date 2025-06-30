@@ -16,8 +16,13 @@ let infoPage = {
     currentPage: currentPage,
     search: "",
     check: false,
+    counter: 10,
+    table: "Notification",
+    newRegister: false,
+    countNewRegister: 0,
 };
 let dataPage;
+let raw;
 const currentBusiness = async () => {
     const currentUser = await getUserInfo();
     const business = await getEntityData('User', `${currentUser.attributes.id}`);
@@ -30,10 +35,12 @@ const getEvents = async () => {
     const removeVisitsFromList = events.filter((data) => data.notificationType.name !== "Visita");
     const removeVehicularFromList = removeVisitsFromList.filter((data) => data.notificationType.name !== 'Vehicular');
     const removeNoteFromList = removeVehicularFromList.filter((data) => data.notificationType.name !== 'Nota');*/
+    infoPage.counter = 10;
+    clearTimeout(Config.timeOut);
     let businessData = '';
     if(infoPage.check)
         businessData = await currentBusiness();
-    let raw = JSON.stringify({
+    raw = JSON.stringify({
         "filter": {
             "conditions": [
                 {
@@ -149,11 +156,12 @@ export class Events {
         this.dialogContainer = document.getElementById('app-dialogs');
         this.siebarDialogContainer = document.getElementById('entity-editor-container');
         this.appContainer = document.getElementById('datatable-container');
-        this.render = async (offset, actualPage, search, check) => {
+        this.render = async (offset, actualPage, search, check, countNewRegister) => {
             infoPage.offset = offset;
             infoPage.currentPage = actualPage;
             infoPage.search = search;
             infoPage.check = check;
+            infoPage.countNewRegister = countNewRegister;
             this.appContainer.innerHTML = '';
             this.appContainer.innerHTML = UIContentLayout;
             // Getting interface elements
@@ -163,6 +171,32 @@ export class Events {
             viewTitle.innerText = pageName;
             tableBody.innerHTML = '.Cargando...';
             let eventsArray = await getEvents();
+            if(infoPage.currentPage == 1){
+                const change = async () => {
+                    clearTimeout(Config.timeOut);
+                    if(infoPage.counter == Config.timeReolad){
+                        const newRegisters = await getFilterEntityCount(infoPage.table, raw);
+                        //console.log(infoPage.count);
+                        //console.log(newRegisters);
+                        if(newRegisters > infoPage.count){
+                            console.log("updates detected")
+                            infoPage.newRegister = true;
+                            infoPage.countNewRegister = newRegisters - infoPage.count;
+                            new Events().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check, infoPage.countNewRegister);
+                        }else{
+                            console.log("no updates")
+                            Config.timeOut = setTimeout(change, infoPage.counter);
+                        }
+                        
+                    }else if(infoPage.counter == 10){
+                        infoPage.counter = Config.timeReolad;
+                        Config.timeOut = setTimeout(change, infoPage.counter);
+                    }
+                }
+                Config.timeOut = setTimeout(change, infoPage.counter);
+            }else{
+                clearTimeout(Config.timeOut);
+            }
             tableBody.innerHTML = UITableSkeletonTemplate.repeat(tableRows);
             // Exec functions
             this.load(tableBody, currentPage, eventsArray);
@@ -202,6 +236,7 @@ export class Events {
                     <td>${calculateLine(event?.description ?? '', 40)}</td>
                     <td>${event?.user?.username ?? ''}</td>
                     <td id="table-date">${event.creationDate}</td>
+                    <td id="td-alert-${event.id}"></td>
                     <td>
                         <button class="button" id="entity-details" data-entityId="${event.id}">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -212,6 +247,33 @@ export class Events {
                     
                     // TODO: Corret this fixer
                     // fixDate()
+                    if(i+1 <= infoPage.countNewRegister){
+                        let divNewRegister = document.getElementById(`td-alert-${event.id}`);
+                        divNewRegister.innerHTML = `
+                            <button class="button" id="entity-alert" data-entityId="${event.id}">
+                                <i class="fa-solid fa-circle-exclamation" id="btnAlarm-${event.id}"></i>
+                            </button>
+                        `;
+                        let color = 1;
+                        //const audio = new Audio("./public/src/assets/sounds/alarm.mp3");
+                        let timeTemp = 1000;
+                        let btnAlarm = document.getElementById(`btnAlarm-${event.id}`);
+                        let alarmIcon = async () => {
+                            //audio.pause();
+                            if(color == 1){
+                                btnAlarm.style.color = "red";
+                                color = 2;
+                            }else{
+                                btnAlarm.style.color = "orange";
+                                color = 1;
+                            }
+                            setTimeout(alarmIcon, timeTemp);
+                        }
+                        setTimeout(alarmIcon, timeTemp);
+                        //audio.play();
+                        infoPage.newRegister = false;
+
+                    }
                 }
                 this.previewEvent();
             }
@@ -237,7 +299,7 @@ export class Events {
                 // Rendering icons*/
             });
             btnSearch.addEventListener('click', async () => {
-                new Events().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked);
+                new Events().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), check.checked, 0);
             });
         };
         this.previewEvent = async () => {
@@ -597,7 +659,7 @@ export class Events {
             button.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (page - 1);
                 currentPage = page;
-                new Events().render(infoPage.offset, currentPage, infoPage.search, infoPage.check);
+                new Events().render(infoPage.offset, currentPage, infoPage.search, infoPage.check, 0);
             });
             return button;
         }
@@ -623,11 +685,11 @@ export class Events {
         }
         function setupButtonsEvents(prevButton, nextButton) {
             prevButton.addEventListener('click', () => {
-                new Events().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check);
+                new Events().render(Config.offset, Config.currentPage, infoPage.search, infoPage.check, 0);
             });
             nextButton.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (pageCount - 1);
-                new Events().render(infoPage.offset, pageCount, infoPage.search, infoPage.check);
+                new Events().render(infoPage.offset, pageCount, infoPage.search, infoPage.check, 0);
             });
         }
     }

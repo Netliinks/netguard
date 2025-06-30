@@ -302,7 +302,7 @@ renders() {
     // render AssistControl
     document.getElementById('render-events')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
-        new Events().render(Config.offset, Config.currentPage, "", false);
+        new Events().render(Config.offset, Config.currentPage, "", false, 0);
     });
     // render AssistControl
     document.getElementById('render-vehiculars')?.addEventListener('click', () => {

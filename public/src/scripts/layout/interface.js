@@ -42,7 +42,7 @@ export class RenderApplicationUI {
       const currentPage = localStorage.getItem('current_page');
       if(currentPage == 'Event'){
         localStorage.removeItem('current_page');
-        new Events().render(Config.offset, Config.currentPage, "", false);
+        new Events().render(Config.offset, Config.currentPage, "", false, 0);
       }else{
         localStorage.removeItem('current_page');
         new Dashboard().render();
@@ -183,7 +183,7 @@ export class RenderApplicationUI {
                     localStorage.setItem('current_page', 'Event');
                 }else{
                     defaultMenu();
-                    new Events().render(Config.offset, Config.currentPage, "", false);
+                    new Events().render(Config.offset, Config.currentPage, "", false, 0);
                 }
                 
             });
