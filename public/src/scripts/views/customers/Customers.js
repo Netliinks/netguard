@@ -304,7 +304,7 @@ export class Customers {
                     "permitVehicular": `${inputsCollection.vehicular.checked ? true : false}`,
                     "permitRoutine": `${inputsCollection.routine.checked ? true : false}`,
                 });
-                const exist = await searchUniversalSingle2('name', '=', inputsCollection.name.value, 'business.id', '=', businessData.business.id, 'Customer');
+                const exist = await searchUniversalSingle2('name', 'contains', inputsCollection.name.value, 'business.id', '=', businessData.business.id, 'Customer');
                 //const exist = await searchCustomerbyName(inputsCollection.name.value, businessId)
                 if(inputsCollection.name.value === '' || inputsCollection.name.value === undefined){
                     alert("¡Nombre vacío!")
