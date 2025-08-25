@@ -1,6 +1,6 @@
 // @filename: Customers.ts
 import { registerEntity, getUserInfo, getEntityData, updateEntity, getFilterEntityData, getFilterEntityCount } from "../../endpoints.js";
-import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination } from "../../tools.js";
+import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination, searchUniversalSingle2 } from "../../tools.js";
 import { Config } from "../../Configs.js";
 import { tableLayout, UIContact } from "./Layout.js";
 import { tableLayoutTemplate } from "./Template.js";
@@ -304,12 +304,22 @@ export class Customers {
                     "permitVehicular": `${inputsCollection.vehicular.checked ? true : false}`,
                     "permitRoutine": `${inputsCollection.routine.checked ? true : false}`,
                 });
-                registerEntity(raw, 'Customer');
-                setTimeout(() => {
-                    const container = document.getElementById('entity-editor-container');
-                    new CloseDialog().x(container);
-                    new Customers().render(Config.offset, Config.currentPage, infoPage.search);
-                }, 1000);
+                const exist = await searchUniversalSingle2('name', '=', inputsCollection.name.value, 'business.id', '=', businessData.business.id, 'Customer');
+                //const exist = await searchCustomerbyName(inputsCollection.name.value, businessId)
+                if(inputsCollection.name.value === '' || inputsCollection.name.value === undefined){
+                    alert("¡Nombre vacío!")
+                }else if(businessData.business.id == undefined || businessData.business.id == null){
+                    alert("¡Id empresa seguridad vacío!")
+                }else if(exist == undefined || exist != 'none'){
+                    alert("¡Nombre de empresa ya existente o no se ha podido comprobar!")
+                }else{
+                  registerEntity(raw, 'Customer');
+                  setTimeout(() => {
+                      const container = document.getElementById('entity-editor-container');
+                      new CloseDialog().x(container);
+                      new Customers().render(Config.offset, Config.currentPage, infoPage.search);
+                  }, 1000);
+                }    
             });
         };
         const reg = async (raw) => {
