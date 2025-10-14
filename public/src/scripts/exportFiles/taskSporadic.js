@@ -82,6 +82,7 @@ export const exportSporadicCsv = (ar, start, end) => {
         // @ts-ignore
         //if (sporadic.creationDate >= start && sporadic.creationDate <= end) {
             let obj = {
+                "Empresa": `${sporadic.customer?.name.split("\n").join("(salto)")}`,
                 "Nombre": `${sporadic.name}`,
                 "Fecha Ejecución": `${sporadic.execDate}`,
                 "Hora Ejecución": `${sporadic.execTime}`,
@@ -101,6 +102,7 @@ export const exportSporadicXls = (ar, start, end) => {
         // @ts-ignore
         //if (sporadic.creationDate >= start && sporadic.creationDate <= end) {
             let obj = {
+                "Empresa": `${sporadic.customer?.name.split("\n").join("(salto)")}`,
                 "Nombre": `${sporadic.name} `,
                 "Fecha Ejecución": `${sporadic.execDate}`,
                 "Hora Ejecución": `${sporadic.execTime}`,

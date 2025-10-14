@@ -31,6 +31,9 @@ export const tableLayout = `
         <th><span data-type="name">
         Generales <i class="fa-regular fa-filter"></i>
         </span></th>
+        <th><span data-type="execDate">
+        Fecha <i class="fa-regular fa-filter"></i>
+        </span></th>
         <!-- <th><span data-type="execTime">
         Hora de ejecución <i class="fa-regular fa-filter"></i>
         </span></th> -->

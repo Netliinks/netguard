@@ -806,131 +806,244 @@ export class Sporadic {
         });
     }
     export = () => {
-      const exportNotes = document.getElementById('export-entities');
-      exportNotes.addEventListener('click', async() => {
-          this.dialogContainer.style.display = 'block';
-          this.dialogContainer.innerHTML = `
-              <div class="dialog_content" id="dialog-content">
-                  <div class="dialog">
-                      <div class="dialog_container padding_8">
-                          <div class="dialog_header">
-                              <h2>Seleccionar la fecha</h2>
-                          </div>
+        const exportNotes = document.getElementById('export-entities');
+        exportNotes.addEventListener('click', async() => {
+            this.entityDialogContainer.innerHTML = '';
+            this.entityDialogContainer.style.display = 'flex';
+            this.entityDialogContainer.innerHTML = `
+                <div class="entity_editor" id="entity-editor">
+                <div class="entity_editor_header">
+                    <div class="user_info">
+                    <div class="avatar"><i class="fa-regular fa-file-export"></i></div>
+                    <h1 class="entity_editor_title">Exportar<br><small>Datos</small></h1>
+                    </div>
 
-                          <div class="dialog_message padding_8">
-                              <div class="form_group">
-                                  <div class="form_input">
-                                      <label class="form_label" for="start-date">Desde:</label>
-                                      <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
-                                  </div>
-                  
-                                  <div class="form_input">
-                                      <label class="form_label" for="end-date">Hasta:</label>
-                                      <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
-                                  </div>
+                    <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+                </div>
 
-                                  <label for="exportCsv">
-                                      <input type="radio" id="exportCsv" name="exportOption" value="csv" /> CSV
-                                  </label>
+                <!-- EDITOR BODY -->
+                <div class="entity_editor_body">
+                    <div class="input_checkbox">
+                        <label for="exportAllCustomers">
+                            <input type="checkbox" class="checkbox" id="exportAllCustomers" /> Exportar de todas las empresas
+                        </label>
+                    </div>
+                    <br>
+                    <br>
+                    <br>
+                    <div class="form_group">
+                        <div class="form_input">
+                            <label class="form_label" for="start-date">Desde:</label>
+                            <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
+                        </div>
+        
+                        <div class="form_input">
+                            <label class="form_label" for="end-date">Hasta:</label>
+                            <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
+                        </div>
 
-                                  <label for="exportXls">
-                                      <input type="radio" id="exportXls" name="exportOption" value="xls" checked /> XLS
-                                  </label>
+                    </div>
 
-                                  <label for="exportPdf">
-                                      <input type="radio" id="exportPdf" name="exportOption" value="pdf" /> PDF
-                                  </label>
-                              </div>
-                          </div>
+                    <div class="input_checkbox">
+                        <label for="exportCsv">
+                            <input type="radio" class="checkbox" id="exportCsv" name="exportOption" value="csv" /> CSV
+                        </label>
+                    </div>
 
-                          <div class="dialog_footer">
-                              <button class="btn btn_primary" id="cancel">Cancelar</button>
-                              <button class="btn btn_danger" id="export-data">Exportar</button>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          `;
-          let fecha = new Date(); //Fecha actual
-          let mes = fecha.getMonth()+1; //obteniendo mes
-          let dia = fecha.getDate(); //obteniendo dia
-          let anio = fecha.getFullYear(); //obteniendo año
-          if(dia<10)
-              dia='0'+dia; //agrega cero si el menor de 10
-          if(mes<10)
-              mes='0'+mes //agrega cero si el menor de 10
+                    <div class="input_checkbox">
+                        <label for="exportXls">
+                            <input type="radio" class="checkbox" id="exportXls" name="exportOption" value="xls" checked /> XLS
+                        </label>
+                    </div>
 
-          document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
-          document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
-          inputObserver();
-          const _closeButton = document.getElementById('cancel');
-          const exportButton = document.getElementById('export-data');
-          const _dialog = document.getElementById('dialog-content');
-          exportButton.addEventListener('click', async() => {
-              const _values = {
-                  start: document.getElementById('start-date'),
-                  end: document.getElementById('end-date'),
-                  exportOption: document.getElementsByName('exportOption')
-              }
-              let rawExport = JSON.stringify({
-                  "filter": {
-                      "conditions": [
-                        {
-                            "property": "taskType",
-                            "operator": "=",
-                            "value": `ESPORADICAS`
-                        },
-                        {
-                        "property": "user.userType",
-                        "operator": "=",
-                        "value": `GUARD`
-                        },
-                        {
-                            "property": "customer.id",
-                            "operator": "=",
-                            "value": `${customerId}`
-                        },
-                        {
-                            "property": "execDate",
-                            "operator": ">=",
-                            "value": `${_values.start.value}`
-                        },
-                        {
-                            "property": "execDate",
-                            "operator": "<=",
-                            "value": `${_values.end.value}`
+                    <div class="input_checkbox">
+                        <label for="exportPdf">
+                            <input type="radio" class="checkbox" id="exportPdf" name="exportOption" value="pdf" /> PDF
+                        </label>
+                    </div>
+
+                </div>
+                <!-- END EDITOR BODY -->
+
+                <div class="entity_editor_footer">
+                    <button class="btn btn_primary btn_widder" id="export-data">Listo</button>
+                </div>
+                </div>
+            `;
+            inputObserver();
+            let fecha = new Date(); //Fecha actual
+            let mes = fecha.getMonth()+1; //obteniendo mes
+            let dia = fecha.getDate(); //obteniendo dia
+            let anio = fecha.getFullYear(); //obteniendo año
+            if(dia<10)
+                dia='0'+dia; //agrega cero si el menor de 10
+            if(mes<10)
+                mes='0'+mes //agrega cero si el menor de 10
+
+            document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
+            document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
+            const _closeButton = document.getElementById('close');
+            const exportButton = document.getElementById('export-data');
+            const exportAllCustomers = document.getElementById('exportAllCustomers');
+            let onPressed = false;
+            exportButton.addEventListener('click', async() => {
+                if(!onPressed){
+                    onPressed = true;
+                    this.dialogContainer.style.display = 'block';
+                    this.dialogContainer.innerHTML = `
+                    <div class="dialog_content" id="dialog-content">
+                        <div class="dialog">
+                            <div class="dialog_container padding_8">
+                                <div class="dialog_header">
+                                    <h2>Exportando...</h2>
+                                </div>
+
+                                <div class="dialog_message padding_8">
+                                    <div class="material_input">
+                                        <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                        <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                    </div>
+
+                                    <div class="input_detail">
+                                        <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                        <p id="message-export" class="input_filled" readonly></p>
+                                    </div>
+                                </div>
+
+                                <div class="dialog_footer">
+                                    <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    inputObserver();
+                    const message1 = document.getElementById("export-total");
+                    const message2 = document.getElementById("message-export");
+                    const _closeButton = document.getElementById('cancel');
+                    _closeButton.onclick = () => {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                    };
+                    const _values = {
+                        start: document.getElementById('start-date'),
+                        end: document.getElementById('end-date'),
+                        exportOption: document.getElementsByName('exportOption')
+                    }
+                    let rawToExport=(offset)=>{
+                        let condition = {
+                            property: "customer.id",
+                            value: `${customerId}`,
+                            order: "-createdDate"
                         }
-                      ],
-                  },
-                  sort: "+execDate",
-                  fetchPlan: 'full',
-              });
-              const sporadic = await getFilterEntityData("Task_", rawExport); 
-              for (let i = 0; i < _values.exportOption.length; i++) {
-                  let ele = _values.exportOption[i];
-                  if (ele.type = "radio") {
-                      if (ele.checked) {
-                          if (ele.value == "xls") {
-                              // @ts-ignore
-                              exportSporadicXls(sporadic, _values.start.value, _values.end.value);
-                          }
-                          else if (ele.value == "csv") {
-                              // @ts-ignore
-                              exportSporadicCsv(sporadic, _values.start.value, _values.end.value);
-                          }
-                          else if (ele.value == "pdf") {
-                              // @ts-ignore
-                              exportSporadicPdf(sporadic, _values.start.value, _values.end.value);
-                          }
-                      }
-                  }
-              }
-          });
-          _closeButton.onclick = () => {
-              new CloseDialog().x(_dialog);
-          };
-      });
-  };
+                        if(exportAllCustomers.checked){
+                            condition.property = "customer.business.id";
+                            condition.value = `${Config.currentUser.business.id}`;
+                            condition.order = "+customer.name,-createdDate"
+                        }
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": `${condition.property}`,
+                                        "operator": "=",
+                                        "value": `${condition.value}`
+                                    },
+                                    {
+                                        "property": "taskType",
+                                        "operator": "=",
+                                        "value": `ESPORADICAS`
+                                    },
+                                    {
+                                        "property": "user.userType",
+                                        "operator": "=",
+                                        "value": `GUARD`
+                                    },
+                                    {
+                                        "property": "execDate",
+                                        "operator": ">=",
+                                        "value": `${_values.start.value}`
+                                    },
+                                    {
+                                        "property": "execDate",
+                                        "operator": "<=",
+                                        "value": `${_values.end.value}`
+                                    }
+                                ],
+                            },
+                            sort: `${condition.order}`,
+                            limit: Config.limitExport,
+                            offset: offset,
+                            fetchPlan: 'full',
+                        });
+                        return rawExport;
+                    }
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("Task_", rawExport);
+                    if(totalRegisters === undefined){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("Ocurrió un error al exportar");
+                    }else if(totalRegisters===0){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("No hay ningún registro");  
+                    }else {
+                        message1.value = `0 / ${totalRegisters}`;
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let tasks = [];
+                        let offset = 0;
+                        for(let i = 0; i < pages; i++){
+                            if(onPressed){
+                                rawExport = rawToExport(offset);
+                                array[i] = await getFilterEntityData("Task_", rawExport); //await getEvents();
+                                for(let y=0; y<array[i].length; y++){
+                                    tasks.push(array[i][y]);
+                                }
+                                message1.value = `${tasks.length} / ${totalRegisters}`;
+                                offset = Config.limitExport + (offset);
+                            }
+                        }
+                    
+                        for (let i = 0; i < _values.exportOption.length; i++) {
+                            let ele = _values.exportOption[i];
+                            if (ele.type = "radio") {
+                                if (ele.checked) {
+                                    message2.innerText = `Generando archivo ${ele.value},\nesto puede tomar un momento.`;
+                                    if (ele.value == "xls") {
+                                        // @ts-ignore
+                                        await exportSporadicXls(tasks, _values.start.value, _values.end.value);
+                                    }
+                                    else if (ele.value == "csv") {
+                                        // @ts-ignore
+                                        await exportSporadicCsv(tasks, _values.start.value, _values.end.value);
+                                    }
+                                    else if (ele.value == "pdf") {
+                                        // @ts-ignore
+                                        exportSporadicPdf(tasks, _values.start.value, _values.end.value);
+                                    }
+                                    const _dialog = document.getElementById('dialog-content');
+                                    new CloseDialog().x(_dialog);
+                                }
+                            }
+                        }
+                        onPressed = false;
+                    }
+                }
+                
+                
+            });
+            _closeButton.onclick = () => {
+                onPressed = false;
+                const editor = document.getElementById('entity-editor-container');
+                new CloseDialog().x(editor);
+            };
+        });
+    };
 }
 export const setNewPassword = async () => {
     const users = await getEntitiesData('User');
