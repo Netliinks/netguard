@@ -237,6 +237,12 @@ export class Sidebar {
 
               </div>
             </div>
+
+            <div class="sidebar_item" id="render-ubications-crime">
+              <span class="sidebar_item_label">
+                <i class="fa-regular fa-location-exclamation"></i> <div class="label">Ubicaciones Delitos</div>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -348,6 +354,11 @@ renders() {
     document.getElementById('render-routineDetails')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
       new RoutineRegisters().render(Config.offset, Config.currentPage, "", false, 0, "Todos");
+    });
+
+    document.getElementById('render-ubications-crime')?.addEventListener('click', () => {
+      //clearTimeout(Config.timeOut);
+      window.open('https://netliinkssa.pythonanywhere.com/mapa/', "_blank");
     });
   }
 }
