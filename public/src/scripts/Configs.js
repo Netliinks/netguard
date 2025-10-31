@@ -18,5 +18,5 @@ export const Config = {
     currentUser: null,
     limitExport: 100,
     idEsmeraldas: "5f13b0bc-95e7-721e-62de-90b58ce56002",
-    idFloralVillaClub: "246f24fa-5ac3-fdf9-954c-b576663f451a"
+    idUrbFloralVillaClub: "58813c84-cf95-20cd-d9f9-bbd4c90399b4"
 };
