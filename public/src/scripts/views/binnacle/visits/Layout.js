@@ -72,6 +72,14 @@ export const UIContentLayout = `
             <div class="datatable_pagination" id="pagination-container"></div>
         </div>
         `;
+
+        /*
+<button
+                  class="datatable_button import_user"
+                  id="import-entities">
+                  Importar
+                </button>
+        */
 export const UIRightSidebar = `
 <div class="entity_editor" id="entity-editor">
 <div class="entity_editor_header">

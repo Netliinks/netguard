@@ -120,6 +120,7 @@ export class Visits {
             new filterDataByHeaderType().filter();
             this.pagination(visitsArray, tableRows, infoPage.currentPage);
             this.export();
+            //this.import()
             // Rendering icons
         };
         this.load = (tableBody, currentPage, visits) => {
@@ -471,6 +472,137 @@ export class Visits {
                 date.innerText = separateDateAndTime[0];
             });
         };*/
+        this.import() = () => {
+            const importClients = document.getElementById('import-entities');
+            importClients.addEventListener('click', async () => {
+                const naDepartment = await searchUniversalValue("name", "=", "N/A", "Department");
+                const naVisitState = await searchUniversalValue("name", "=", "Finalizado", "VisitState");
+                this.siebarDialogContainer.innerHTML = '';
+                this.siebarDialogContainer.style.display = 'flex';
+                this.siebarDialogContainer.innerHTML = `
+                <div class="entity_editor" id="entity-editor">
+                    <div class="entity_editor_header">
+                    <div class="user_info">
+                        <div class="avatar"><i class="fa-regular fa-up-from-line"></i></div>
+                        <h1 class="entity_editor_title">Importar <br><small>Clientes</small></h1>
+                    </div>
+    
+                    <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+                    </div>
+    
+                    <!-- EDITOR BODY -->
+                    <div class="entity_editor_body padding_t_8_important">
+                    <div class="sidebar_section">
+                        <div class="file_template">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <div class="description">
+                                <p class="filename">Plantilla de Clientes</p>
+                                <a
+                                href="./public/src/templates/NetguardClients.csv"
+                                download="./public/src/templates/NetguardClients.csv"
+                                rel="noopener"
+                                target="_self" class="filelink">Descargar</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="sidebar_section" style="display: none">
+                        <label class="drop_zone" id="drop-zone" draggable="true">
+                            Seleccione o arrastre <br>su archivo aquí
+                        </label>
+                    </div>
+    
+                    <div class="sidebar_section">
+                        <input type="file" id="file-handler">
+                    </div>
+                    </div>
+                    <!-- END EDITOR BODY -->
+    
+                    <div class="entity_editor_footer">
+                    <button class="btn btn_primary btn_widder" id="button-import">Importar</button>
+                    </div>
+                </div>
+                `;
+                const _fileHandler = document.getElementById('file-handler');
+                _fileHandler.addEventListener('change', () => {
+                    readFile(_fileHandler.files[0]);
+                });
+                async function readFile(file) {
+                    //const customer = await getEntitiesData('Customer');
+                    //const citadel = await getEntitiesData('Citadel');
+                    //const deparment = await getEntitiesData('Department');
+                    //const contractor = await getEntitiesData('Contractor');
+                    const fileReader = new FileReader();
+                    fileReader.readAsText(file);
+                    fileReader.addEventListener('load', (e) => {
+                        let result = e.srcElement.result;
+                        let resultSplit = result.split('\r');
+                        let rawFile;
+                        let elem = [];
+                        for (let i = 1; i < resultSplit.length-1; i++) {
+                            let userData = resultSplit[i].split(';');
+                            rawFile = JSON.stringify({
+                                "firstName": `${userData[0]?.replace(/\n/g, '')}`,
+                                "firstLastName": `${userData[1]?.replace(/\n/g, '')}`,
+                                "secondLastName": `${userData[2]?.replace(/\n/g, '')}`,
+                                "type": "Guardia",
+                                "dni": `${userData[3]?.replace(/\n/g, '')}`,
+                                "checkBlacklist": false,
+                                "visitState": {
+                                    "id": `${naVisitState[0]?.id ?? ''}`
+                                },
+                                "customer": {
+                                    "id": `${customerId}`
+                                },
+                                "citadel": {
+                                    "id": `${Config.currentUser.citadel.id}`
+                                },
+                                "department": {
+                                    "id": `${naDepartment[0]?.id ?? ''}`
+                                },
+                                "business": {
+                                    "id": `${Config.currentUser.business.id}`
+                                },
+                                "user": {
+                                    "id": `${Config.currentUser.user.id}`
+                                },
+                                'creationDate': `${currentDateTime().date}`,
+                                'creationTime': `${currentDateTime().timeHHMM}`,
+                                'ingressDate': `${currentDateTime().date}`,
+                                'ingressTime': `${currentDateTime().timeHHMM}`,
+                                'ingressIssued': `${Config.currentUser.user.firstName} ${Config.currentUser.user.lastName}`,
+                                "egressIssuedId": {
+                                    "id": `${Config.currentUser.user.id}`
+                                },
+                                'egressDate': `${currentDateTime().date}`,
+                                'egressTime': `${currentDateTime().timeHHMM}`,
+                                'egressIssued': `${Config.currentUser.user.firstName} ${Config.currentUser.user.lastName}`,
+                                "egressIssuedId": {
+                                    "id": `${Config.currentUser.user.id}`
+                                },
+                            });
+                            elem.push(rawFile);
+                        }
+                        const importToBackend = document.getElementById('button-import');
+                        importToBackend.addEventListener('click', () => {
+                            elem.forEach((el) => {
+                                registerEntity(el, 'User')
+                                    .then((res) => {
+                                    setTimeout(async () => {
+                                        //let data = await getUsers();
+                                        const tableBody = document.getElementById('datatable-body');
+                                        const container = document.getElementById('entity-editor-container');
+                                        new CloseDialog().x(container);
+                                        new Clients().render(Config.offset, Config.currentPage, '');
+                                    }, 1000);
+                                });
+                            });
+                        });
+                    });
+                }
+                this.close();
+            });
+        }
         this.export = () => {
             const exportNotes = document.getElementById('export-entities');
             exportNotes.addEventListener('click', async() => {
