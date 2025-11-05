@@ -472,7 +472,7 @@ export class Visits {
                 date.innerText = separateDateAndTime[0];
             });
         };*/
-        this.import() = () => {
+        /*this.import = () => {
             const importClients = document.getElementById('import-entities');
             importClients.addEventListener('click', async () => {
                 const naDepartment = await searchUniversalValue("name", "=", "N/A", "Department");
@@ -602,7 +602,7 @@ export class Visits {
                 }
                 this.close();
             });
-        }
+        }*/
         this.export = () => {
             const exportNotes = document.getElementById('export-entities');
             exportNotes.addEventListener('click', async() => {
