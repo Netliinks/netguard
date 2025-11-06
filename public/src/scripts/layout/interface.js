@@ -176,14 +176,14 @@ export class RenderApplicationUI {
                 //this.renderTopbar();
                 const customerName = notificationData.notification.title.replace("ALERTA EN ","");
                 const customerData = await searchCustomerbyName(customerName,customer.business.id);
-                if(customerData != null && customerId != customerData.id){
+                if(customerData != undefined && customerId != customerData.id){
                     localStorage.removeItem('customer_id');
                     localStorage.setItem('customer_id', customerData.id);
                     window.location.reload();
                     localStorage.setItem('current_page', 'Event');
                 }else{
                     defaultMenu();
-                    new Events().render(Config.offset, Config.currentPage, "", false, 0);
+                    new Events().render(Config.offset, Config.currentPage, "", true, 0);
                 }
                 
             });

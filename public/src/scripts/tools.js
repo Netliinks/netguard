@@ -739,6 +739,12 @@ export const searchCustomerbyName = async (name, business) => {
         alert(`Nombre empresa: ${name}, no encontrado.`);
         return null;
     }else{
-        return data[0];
+        let response = undefined;
+        for(let i=0; i < data.length; i++){
+            if(data[i].name.toLowerCase() === name.toLowerCase()){
+                response = data[i]
+            }
+        }
+        return response;
     }
 }
