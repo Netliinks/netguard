@@ -181,6 +181,9 @@ export class RenderApplicationUI {
                     localStorage.setItem('customer_id', customerData.id);
                     window.location.reload();
                     localStorage.setItem('current_page', 'Event');
+                }else if(customerData != undefined && customerId == customerData.id){
+                    defaultMenu();
+                    new Events().render(Config.offset, Config.currentPage, "", false, 0);
                 }else{
                     defaultMenu();
                     new Events().render(Config.offset, Config.currentPage, "", true, 0);
