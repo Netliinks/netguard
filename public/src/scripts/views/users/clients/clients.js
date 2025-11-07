@@ -14,7 +14,7 @@ const currentPage = Config.currentPage;
 let currentUserInfo; 
 let currentCustomer;
 const customerId = localStorage.getItem('customer_id');
-let isSame = customerId == Config.idEsmeraldas ? true : customerId == Config.idUrbFloralVillaClub ? true : false;
+let isSame = customerId == Config.idEsmeraldas ? true : customerId == Config.idFloralVC ? true : false;
 let infoPage = {
     count: 0,
     offset: Config.offset,
