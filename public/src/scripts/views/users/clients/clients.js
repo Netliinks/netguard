@@ -227,6 +227,7 @@ export class Clients {
                 let row = document.createElement('tr');
                 row.innerHTML += `
           <td>${client.firstName} ${client.lastName}</td>
+          <td>${client?.dni ?? ''}</td>
           <td>${client.username}</td>
           <td class="key"><button class="button" data-userid="${client.id}" id="change-user-password"><i class="fa-regular fa-key"></i></button></td>
           <td class="tag"><span>${client.state.name}</span></td>

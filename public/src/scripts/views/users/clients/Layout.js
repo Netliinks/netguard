@@ -39,6 +39,10 @@ export const tableLayout = `
         Nombre <i class="fa-regular fa-filter"></i>
       </span></th>
 
+      <th><span data-type="dni">
+        DNI <i class="fa-regular fa-filter"></i>
+      </span></th>
+
       <th colspan="2"><span data-type="id">
         ID <i class="fa-regular fa-filter"></i>
       </span></th>
