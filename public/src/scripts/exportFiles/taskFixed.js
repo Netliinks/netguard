@@ -80,12 +80,12 @@ export const exportFixedCsv = (ar, start, end) => {
         // @ts-ignore
         //if (fixed.creationDate >= start && fixed.creationDate <= end) {
             let obj = {
-                "Empresa": `${fixed.customer?.name.split("\n").join("(salto)")}`,
-                "Nombre": `${fixed.name}`,
+                "Empresa": `${fixed?.customer?.name.split("\n").join("(salto)")}`,
+                "Fecha ingreso": `${fixed?.startDate ?? ''}`,
+                "Hora ingreso": `${fixed?.startTime ?? ''}`,
+                "Usuario": `${fixed?.user?.username ?? ''}`,
                 //"Hora Ejecución": `${fixed.execTime}`,
-                "Usuario": `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`,
-                "Tipo": `${verifyUserType(fixed.user.userType)}`,
-
+                "Observación": `${fixed?.name ?? ''}`,
             };
             rows.push(obj);
         //}
@@ -99,12 +99,12 @@ export const exportFixedXls = (ar, start, end) => {
         // @ts-ignore
         //if (fixed.creationDate >= start && fixed.creationDate <= end) {
             let obj = {
-                "Empresa": `${fixed.customer?.name.split("\n").join("(salto)")}`,
-                "Nombre": `${fixed.name} `,
+                "Empresa": `${fixed?.customer?.name.split("\n").join("(salto)")}`,
+                "Fecha ingreso": `${fixed?.startDate ?? ''}`,
+                "Hora ingreso": `${fixed?.startTime ?? ''}`,
+                "Usuario": `${fixed?.user?.username ?? ''}`,
                 //"Hora Ejecución": `${fixed.execTime}`,
-                "Usuario": `${fixed.user?.firstName ?? ''} ${fixed.user?.lastName ?? ''}`,
-                "Tipo": `${verifyUserType(fixed.user.userType)}`,
-                
+                "Observación": `${fixed?.name ?? ''}`,
             };
             rows.push(obj);
         //}
