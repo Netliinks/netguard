@@ -42,7 +42,11 @@
 
     .sidebar_subitems {
       display: none;
-      padding-top: 4px;
+      padding: 8px;
+      margin-top: 4px;
+      background-color: darken($dark, 3%);
+      border-radius: 6px;
+      border-left: 3px solid $blue;
 
       .fa-regular {
         font-size: 16px;
@@ -53,9 +57,34 @@
       }
 
       .sidebar_subitem {
-        margin: 4px;
+        margin: 4px 0;
         border-radius: 4px;
-        text-align: center;
+        text-align: left;
+
+        .sidebar_subitem_label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          padding: 10px 12px;
+          color: lighten($slategray, 20%);
+          border-radius: 4px;
+          transition: 0.2s all ease-in-out;
+
+          .fa-regular {
+            color: inherit;
+          }
+        }
+
+        &:hover .sidebar_subitem_label {
+          background-color: lighten($dark, 12%);
+          color: $white;
+        }
+
+        &.isActive .sidebar_subitem_label {
+          background-color: lighten($dark, 18%);
+          color: $blue;
+        }
       }
     }
 
@@ -71,7 +100,7 @@
 
       & .sidebar_subitems {
         display: block !important;
-        background-color: darken($dark, 3%);
+        background-color: darken($dark, 6%);
       }
     }
 

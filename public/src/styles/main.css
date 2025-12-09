@@ -1407,18 +1407,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 .app .sidebar_item .sidebar_subitems {
   display: none;
-  padding-top: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  background-color: #201d30;
+  border-radius: 6px;
+  border-left: 3px solid #6F7ADD;
 }
 .app .sidebar_item .sidebar_subitems .fa-regular {
   font-size: 16px;
 }
-.app .sidebar_item .sidebar_subitems .isActive {
-  background-color: #50497a;
-}
+
 .app .sidebar_item .sidebar_subitems .sidebar_subitem {
-  margin: 4px;
+  margin: 4px 0;
   border-radius: 4px;
-  text-align: center;
+  text-align: left;
+}
+.app .sidebar_item .sidebar_subitems .sidebar_subitem .sidebar_subitem_label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  color: #a9a8bb;
+  border-radius: 4px;
+  transition: 0.2s all ease-in-out;
+}
+.app .sidebar_item .sidebar_subitems .sidebar_subitem .sidebar_subitem_label .fa-regular {
+  color: inherit;
+}
+.app .sidebar_item .sidebar_subitems .sidebar_subitem:hover .sidebar_subitem_label {
+  background-color: #3f3a60;
+  color: #FFFFFF;
+}
+.app .sidebar_item .sidebar_subitems .sidebar_subitem.isActive .sidebar_subitem_label {
+  background-color: #4c4673;
+  color: #6F7ADD;
 }
 .app .sidebar_item.isActive {
   background-color: #50497a;
@@ -1431,7 +1454,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 .app .sidebar_item.isActive .sidebar_subitems {
   display: block !important;
-  background-color: #201d30;
+  background-color: #191727;
 }
 .app .sidebar_item .sidebar_subitem_label {
   font-size: 14px;
