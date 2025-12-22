@@ -152,8 +152,8 @@ export class Visits {
                     <td>${visit?.user?.username ?? ''}</td>
                     <td id="table-date">${visit.creationDate}</td>
                     <td id="table-time" style="white-space: nowrap">${visit.creationTime}</td>
-                    <td>${verifyUserType(visit.user.userType)}</td>
-                    <td class="tag"><span>${visit.visitState.name}</span></td>
+                    <td>${verifyUserType(visit?.user?.userType ?? '')}</td>
+                    <td class="tag"><span>${visit.visitState?.name ?? ''}</span></td>
 
                     <td>
                         <button class="button" id="entity-details" data-entityId="${visit.id}">
@@ -299,15 +299,15 @@ export class Visits {
                 const visitAutorizedBy = document.getElementById('visit-authorizedby');
                 visitAutorizedBy.value = entityData.authorizer;
                 const visitStatus = document.getElementById('visit-status');
-                visitStatus.innerText = entityData.visitState.name;
+                visitStatus.innerText = entityData?.visitState?.name ?? '';
                 const vehicularPlate = document.getElementById('vehicular-plate');
                 vehicularPlate.value = entityData?.vehicularPlate ?? "";
                 const visitCitadel = document.getElementById('visit-citadel');
-                visitCitadel.value = entityData.citadel.description;
+                visitCitadel.value = entityData?.citadel.description ?? '';
                 const visitCitadelID = document.getElementById('visit-citadelid');
-                visitCitadelID.value = entityData.citadel.name;
+                visitCitadelID.value = entityData?.citadel?.name ?? '';
                 const visitDepartment = document.getElementById('visit-department');
-                visitDepartment.value = entityData.department.name;
+                visitDepartment.value = entityData?.department?.name ?? '';
                 //console.log(entityData.citadel.name);
                 // Start marking
                 const ingressDate = document.getElementById('ingress-date');
