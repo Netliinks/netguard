@@ -137,6 +137,7 @@ export class Customers {
           <td>${customer?.permitMarcation ? 'Si' : 'No'}</td>
           <td>${customer?.permitVehicular ? 'Si' : 'No'}</td>
           <td>${customer?.permitRoutine ? 'Si' : 'No'}</td>
+          <td>${customer?.permitVisitStatic ? 'Si' : 'No'}</td>
           <td class="entity_options">
               <button class="button" id="edit-entity" data-entityId="${customer.id}">
                 <i class="fa-solid fa-pen"></i>
@@ -268,6 +269,10 @@ export class Customers {
                 <label><input type="checkbox" class="checkbox" id="entity-routine"> Permitir Rutina</label>
             </div>
 
+            <div class="input_checkbox">
+                <label><input type="checkbox" class="checkbox" id="entity-qr-static"> Permitir QR estático para visita</label>
+            </div>
+
           </div>
           <!-- END EDITOR BODY -->
 
@@ -289,7 +294,8 @@ export class Customers {
                     state: document.getElementById('entity-state'),
                     marcation: document.getElementById('entity-marcation'),
                     vehicular: document.getElementById('entity-vehicular'),
-                    routine: document.getElementById('entity-routine')
+                    routine: document.getElementById('entity-routine'),
+                    qrstatic: document.getElementById('entity-qr-static'),
                 };
                 const raw = JSON.stringify({
                     "name": `${inputsCollection.name.value}`,
@@ -303,6 +309,7 @@ export class Customers {
                     "permitMarcation": `${inputsCollection.marcation.checked ? true : false}`,
                     "permitVehicular": `${inputsCollection.vehicular.checked ? true : false}`,
                     "permitRoutine": `${inputsCollection.routine.checked ? true : false}`,
+                    'permitVisitStatic': `${inputsCollection.qrstatic.checked ? true : false}`,
                 });
                 const exist = await searchUniversalSingle2('name', 'contains', inputsCollection.name.value, 'business.id', '=', businessData.business.id, 'Customer');
                 //const exist = await searchCustomerbyName(inputsCollection.name.value, businessId)
@@ -379,6 +386,10 @@ export class Customers {
                 <label><input type="checkbox" class="checkbox" id="entity-routine"> Permitir Rutina</label>
             </div>
 
+            <div class="input_checkbox">
+                <label><input type="checkbox" class="checkbox" id="entity-qr-static"> Permitir QR estático para visita</label>
+            </div>
+
           </div>
           <!-- END EDITOR BODY -->
 
@@ -401,6 +412,11 @@ export class Customers {
             if (data.permitRoutine === true) {
               checkboxRoutine?.setAttribute('checked', 'true');
             }
+
+            const checkboxQRStatic = document.getElementById('entity-qr-static');
+            if (data?.permitVisitStatic === true) {
+              checkboxQRStatic?.setAttribute('checked', 'true');
+            }
             inputObserver();
             inputSelect('State', 'entity-state', data.state.name);
             this.close();
@@ -418,7 +434,8 @@ export class Customers {
               // @ts-ignore
               vehicular: document.getElementById('entity-vehicular'),
               // @ts-ignore
-              routine: document.getElementById('entity-routine')
+              routine: document.getElementById('entity-routine'),
+              qrstatic: document.getElementById('entity-qr-static'),
           };
             updateButton.addEventListener('click', () => {
               let raw = JSON.stringify({
@@ -430,6 +447,7 @@ export class Customers {
                   "permitMarcation": `${$value.marcation.checked ? true : false}`,
                   "permitVehicular": `${$value.vehicular.checked ? true : false}`,
                   "permitRoutine": `${$value.routine.checked ? true : false}`,
+                  'permitVisitStatic': `${$value.qrstatic.checked ? true : false}`,
               });
               update(raw);
             });
