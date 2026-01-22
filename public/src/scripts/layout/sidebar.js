@@ -25,6 +25,7 @@ import { Procedures } from "../views/assignment/procedures/Procedures.js";
 //import { Tasks } from "../views/assignment/tasks/Tasks.js";
 import { Routines } from "../views/routines/routines/Routines.js";
 import { RoutineRegisters } from "../views/routines/details/Details.js";
+import { CredentialsView } from "../views/credentials/credentials.js";
 export class Sidebar {
   constructor() {
       this.sidebarContainer = document.getElementById('app-sidebar');
@@ -238,6 +239,12 @@ export class Sidebar {
               </div>
             </div>
 
+            <div class="sidebar_item" id="render-credentials">
+              <span class="sidebar_subitem_label">
+                <i class="fa-regular fa-table"></i> <div class="label">Licencias</div>
+              </span>
+            </div>
+
           </div>
         </div>
       </div>
@@ -349,6 +356,11 @@ renders() {
     document.getElementById('render-routineDetails')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
       new RoutineRegisters().render(Config.offset, Config.currentPage, "", false, 0, "Todos");
+    });
+
+    document.getElementById('render-credentials')?.addEventListener('click', () => {
+      clearTimeout(Config.timeOut);
+      new CredentialsView().render(currentDateTime().date, currentDateTime().date);
     });
 
   }
