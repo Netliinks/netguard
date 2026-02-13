@@ -26,6 +26,7 @@ import { Procedures } from "../views/assignment/procedures/Procedures.js";
 import { Routines } from "../views/routines/routines/Routines.js";
 import { RoutineRegisters } from "../views/routines/details/Details.js";
 import { CredentialsView } from "../views/credentials/credentials.js";
+import { Audits } from "../views/audit/audit.js";
 export class Sidebar {
   constructor() {
       this.sidebarContainer = document.getElementById('app-sidebar');
@@ -236,6 +237,12 @@ export class Sidebar {
                   </span>
                 </div>
 
+                <div class="sidebar_subitem" id="render-audit">
+                  <span class="sidebar_subitem_label">
+                    <i class="fa-regular fa-abacus"></i> <div class="label">Reportes estadísticos</div>
+                  </span>
+                </div>
+
               </div>
             </div>
 
@@ -363,6 +370,10 @@ renders() {
       new CredentialsView().render(currentDateTime().date, currentDateTime().date);
     });
 
+    document.getElementById('render-audit')?.addEventListener('click', () => {
+        clearTimeout(Config.timeOut);
+        new Audits().render(currentDateTime().date, currentDateTime().date);
+    });
   }
 }
 // new Clients().render()

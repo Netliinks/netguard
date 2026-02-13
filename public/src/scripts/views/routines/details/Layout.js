@@ -92,7 +92,13 @@ export const UIRightSidebar = `
 
         </div>
 
-        <p id="register-content" style="word-break: break-all">Por favor espere...</p><br><br>
+        <p id="register-content1" style="word-break: break-all; display: none;">Por favor espere...</p><br><br>
+
+        <div class="material_input" style="display: none;" id="register-obs">
+        <br>
+        <textarea id="register-content2" rows="8" cols="50" class="input_filled"></textarea>
+        <label for="register-content2"><i class="fa-solid fa-memo-circle-info" readonly></i> Observación</label>
+        </div>
 
         <div class="input_detail">
             <label for="register-routine"><i class="fa-solid fa-alarm-clock"></i></label>
@@ -134,6 +140,23 @@ export const UIRightSidebar = `
             <input type="status" id="target-status" class="input_filled" readonly>
         </div>
         <br>
+        <h3>Consola</h3>
+        <br>
+        <div class="input_detail">
+            <label for="console-date"><i class="fa-solid fa-calendar"></i></label>
+            <input type="date" id="console-date" class="input_filled" readonly>
+        </div>
+        <br>
+        <div class="input_detail">
+            <label for="console-time"><i class="fa-solid fa-clock"></i></label>
+            <input type="time" id="console-time" class="input_filled" readonly>
+        </div>
+        <br>
+        <div class="input_detail">
+            <label for="console-author"><i class="fa-solid fa-user"></i></label>
+            <input type="text" id="console-author" class="input_filled" readonly>
+        </div>
+        <br>
         <h3>Tiempo Objetivo Desde</h3>
         <br>
         <div class="input_detail">
@@ -160,5 +183,8 @@ export const UIRightSidebar = `
 
     </div>
     <!-- END EDITOR BODY -->
+        <div class="entity_editor_footer">
+            <button class="btn btn_primary btn_widder" id="register-entity" style="display:none;">Guardar</button>
+        </div>
     </div>
     `;

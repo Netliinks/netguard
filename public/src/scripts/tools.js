@@ -1,3 +1,4 @@
+import { Config } from "./Configs.js";
 import { getEntitiesData, getUserInfo, getFilterEntityData, getFilterEntityCount, getEntityData, registerEntity, _userAgent } from "./endpoints.js";
 //
 export const inputObserver = () => {
@@ -748,3 +749,710 @@ export const searchCustomerbyName = async (name, business) => {
         return response;
     }
 }
+
+export const inputSelectTypeAudit = async (selectId, currentType, statsCustomer, statsUser, element /*, service: InterfaceElement*/) => {
+    //const data = ['GUARDIA', 'CONSOLA', 'CLIENTE']
+    const data = ['GUARDIA'];
+    const type = await currentType;
+    const select = document.querySelector(`#${selectId}`);
+    const inputParent = select.parentNode;
+    const optionsContent = inputParent.querySelector('#input-options');
+    const optionsContainer = document.createElement('div');
+    optionsContainer.classList.add('input_options_container');
+    optionsContent.appendChild(optionsContainer);
+    for (let i = 0; i < data.length; i++) {
+        const inputOption = document.createElement('div');
+        select.setAttribute('value', data[0]);
+        inputOption.classList.add('input_option');
+        inputOption.setAttribute('value', data[i]);
+        let nameData = data[i];
+        inputOption.innerHTML = nameData;
+        optionsContainer.appendChild(inputOption);
+    }
+    const options = optionsContainer.querySelectorAll('.input_option');
+    select.value = data[0];
+    select.addEventListener('click', () => {
+        inputParent.classList.toggle('select_active');
+    });
+    options.forEach((option) => {
+        option.addEventListener('click', () => {
+            select.value = option.innerText;
+            select.removeAttribute('value');
+            select.setAttribute('value', option.getAttribute('value'));
+            inputParent.classList.remove('select_active');
+            element.removeAttribute('value');
+            element.removeAttribute('data-optionid');
+            //service.removeAttribute('value');
+            //service.removeAttribute('data-optionid');
+            if (option.getAttribute('value') === "CLIENTE") {
+                //console.log("es cliente")
+                statsCustomer.style.display = "flex";
+                statsUser.style.display = "none";
+            }
+            else {
+                //console.log("no es cliente")
+                statsCustomer.style.display = "none";
+                statsUser.style.display = "none";//"flex";
+            }
+        });
+    });
+};
+export const padTo2Digits = (num) => {
+    return num.toString().padStart(2, '0');
+};
+export const msToHHMMSS = (ms) => {
+    if (ms < 0)
+        ms = 0; // Prevent negative times
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${padTo2Digits(hours)}:${padTo2Digits(minutes)}:${padTo2Digits(seconds)}`;
+};
+export const averageTime = (times) => {
+    let valueReturn;
+    if (!Array.isArray(times) || times.length === 0) {
+        //throw new Error("Input must be a non-empty array of numbers.");
+        return valueReturn = 'N/A';
+    }
+    // Validate all entries
+    for (const t of times) {
+        if (typeof t !== "number" || isNaN(t) || t < 0) {
+            //throw new Error("All time values must be non-negative numbers.");
+            return valueReturn = 'ERROR -';
+        }
+    }
+    const sum = times.reduce((acc, val) => acc + val, 0);
+    const avgMs = sum / times.length;
+    valueReturn = msToHHMMSS(avgMs);
+    return valueReturn;
+};
+export const breakAudit = (conditions) => {
+    const objAudit = {};
+    const objUser = {};
+    let rawAudits = [];
+    if (conditions.objetive == "CONSOLA") {
+        rawAudits = [...conditions.registers, ...conditions.registersNot];
+    }
+    else if (conditions.objetive == "GUARDIA") {
+        rawAudits = [...conditions.registers, ...conditions.registersNot, ...conditions.registersAlert];
+    }
+    else if (conditions.objetive == "CLIENTE") {
+        rawAudits = [...conditions.registers, ...conditions.registersNot];
+    }
+    const audits = [];
+    rawAudits.forEach((rawAudit) => {
+        const routine = rawAudit['routine']['id'];
+        if (objAudit[routine]) {
+            objAudit[routine].push(rawAudit);
+        }
+        else {
+            objAudit[routine] = [rawAudit];
+        }
+        if (conditions.objetive == "CONSOLA") {
+            if (rawAudit["consoleDate"] != undefined) {
+                const consoleUser = rawAudit['consoleUserId']['id'];
+                objUser[consoleUser] = [{
+                        routine: '', // Solo para guia, no usar para mostrar
+                        id: rawAudit['consoleUserId']['id'],
+                        name: `${rawAudit['consoleUserId']['firstName']} ${rawAudit['consoleUserId']['lastName']} ${rawAudit['consoleUserId']['secondLastName']}`,
+                        username: rawAudit['consoleUserId']['username'],
+                        serviciosAtendidos: 0,
+                        averageRaw: [],
+                        promedio: ''
+                    }];
+            }
+        }
+        else if (conditions.objetive == "GUARDIA") {
+            const user = rawAudit['user']['id'];
+            objUser[user] = [{
+                    routine: '', // Solo para guia, no usar para mostrar
+                    routine1: '', // Solo para guia, no usar para mostrar
+                    routine2: '', // Solo para guia, no usar para mostrar
+                    routine3: '', // Solo para guia, no usar para mostrar
+                    id: rawAudit['user']['id'],
+                    name: `${rawAudit['user']['firstName']} ${rawAudit['user']['lastName']} ${rawAudit['user']['secondLastName']}`,
+                    username: rawAudit['user']['username'],
+                    cant_servicios: 0,
+                    servicios_marcados: 0,
+                    servicios_alerta: 0,
+                    servicios_no_marcados: 0,
+                }];
+        }
+    });
+    const countGeneral = {
+        sinNoCumplida: 0,
+        totalNoMarcadas: 0,
+        contestadas: 0,
+        noContestadas: 0
+    };
+    let key = Object.keys(objAudit);
+    let key2 = Object.keys(objUser);
+    for (let i = 0; i < key.length; i++) {
+        if (conditions.objetive == "CONSOLA") {
+            const rawUser = [];
+            const onlyNames = [];
+            let objects = objAudit[key[i]];
+            //console.log(objects)
+            //console.log(objects.length)
+            const counts = {
+                marcadas: 0,
+                noMarcadas: 0
+            };
+            const responseConsole = [];
+            // @ts-ignore
+            objects.map(element => {
+                if (element['routineRegisterState']['name'] == 'Cumplido') {
+                    counts.marcadas += 1;
+                }
+                else if (element['routineRegisterState']['name'] == 'No cumplido') {
+                    counts.noMarcadas += 1;
+                    let observation = element["observation"] ?? "";
+                    if (observation != "") {
+                        if (element["consoleDate"] != undefined) {
+                            const creationDateTime = new Date(`${element["creationDate"]}T${element["creationTime"]}`);
+                            const consoleDateTime = new Date(`${element["consoleDate"]}T${element["consoleTime"]}`);
+                            const avg = consoleDateTime.getTime() - creationDateTime.getTime();
+                            responseConsole.push(avg);
+                            const index = key2.findIndex(filterElement => filterElement === element['consoleUserId']['id']);
+                            let objects2 = objUser[key2[index]];
+                            // @ts-ignore
+                            objects2.map(element2 => {
+                                if (element['consoleUserId']['id'] == element2['id']) {
+                                    element2["averageRaw"].push(avg);
+                                    // @ts-ignore
+                                    const existUser = onlyNames.some(user => user === element2["name"]);
+                                    if (!existUser) {
+                                        onlyNames.push(element2["name"]);
+                                    }
+                                    if (element2['routine'] == "" || element2['routine'] != objects[0]['routine']['id']) {
+                                        element2['serviciosAtendidos'] += 1;
+                                        element2['routine'] = objects[0]['routine']['id'];
+                                    }
+                                }
+                            });
+                            /*for(let y = 0; y < key2.length; y++){
+                                let objects2 = objUser[key2[y]]
+                                // @ts-ignore
+                                objects2.map(element2 => {
+                                    if(element['consoleUserId']['id'] == element2['id']){
+                                        element2["averageRaw"].push(avg)
+                                        if(element2['routine'] == "" || element2['routine'] != objects[0]['routine']['id']){
+                                            element2['serviciosAtendidos'] += 1
+                                            element2['routine'] = objects[0]['routine']['id']
+                                        }
+                                    }
+                                })
+                            }*/
+                        }
+                    }
+                }
+            });
+            if (counts.noMarcadas == 0) {
+                countGeneral.sinNoCumplida += 1;
+            }
+            else {
+                countGeneral.totalNoMarcadas += 1;
+                if (responseConsole.length == 0) {
+                    countGeneral.noContestadas += 1;
+                }
+                else {
+                    countGeneral.contestadas += 1;
+                }
+            }
+            //Estadisticas generales de usuarios de consola
+            for (let y = 0; y < key2.length; y++) {
+                let objects2 = objUser[key2[y]];
+                // @ts-ignore
+                objects2.map(element2 => {
+                    const averageDateUser = averageTime(element2["averageRaw"]);
+                    element2["promedio"] = averageDateUser;
+                    // @ts-ignore
+                    const existUser = rawUser.some(user => user.id === element2['id']);
+                    if (!existUser) {
+                        rawUser.push(element2);
+                        //onlyNames.push(element2["name"])
+                    }
+                });
+            }
+            const averageDate = averageTime(responseConsole);
+            let nameService = `${objects[0]['routine']['name'] ?? ''}`;
+            const deletedBy = `${objects[0]['routine']['deletedBy'] ?? ''}`;
+            if (deletedBy != '') {
+                nameService = `${nameService} (ELIMINADO)`;
+            }
+            const obj = {
+                "Cantidad_Servicios": key.length,
+                "Servicios_Atendidos_Completo": countGeneral.sinNoCumplida, //servicios sin ningun no cumplido
+                "Servicios_No_Marcados": countGeneral.totalNoMarcadas, //servicios con algun registro no cumplido
+                "Servicios_Atendidos": countGeneral.contestadas, //servicios con algun registro no cumplido contestado
+                "Servicios_No_Atendidos": countGeneral.noContestadas, //servicios con algun registro no cumplido no contestado
+                "Usuarios": rawUser.sort((a, b) => a.name - b.name),
+                "Servicio": `${nameService}`,
+                "Fecha": `${objects[0]['routine']['creationDate'] ?? ''}`,
+                "Marcadas": `${counts.marcadas}`,
+                "No_Marcadas": `${counts.noMarcadas}`,
+                "Resp_Consola": `${responseConsole.length}`,
+                "Prom_Consola": `${averageDate}`,
+                "atendido": onlyNames
+            };
+            audits.push(obj);
+        }
+        else if (conditions.objetive == "GUARDIA") {
+            const rawUser = [];
+            const onlyNames = [];
+            let objects = objAudit[key[i]];
+            //console.log(objects)
+            //console.log(objects.length)
+            const counts = {
+                alertas: 0,
+                marcadas: 0,
+                noMarcadas: 0
+            };
+            const responseConsole = [];
+            // @ts-ignore
+            objects.map(element => {
+                let countLocal = {
+                    marcadas: 0,
+                    noMarcadas: 0,
+                    alertas: 0,
+                };
+                if (element['routineRegisterState']['name'] == 'Cumplido') {
+                    counts.marcadas += 1;
+                    countLocal.marcadas += 1;
+                }
+                else if (element['routineRegisterState']['name'] == 'No cumplido') {
+                    counts.noMarcadas += 1;
+                    countLocal.noMarcadas += 1;
+                    let observation = element["observation"] ?? "";
+                    if (observation != "") {
+                        if (element["consoleDate"] != undefined) {
+                            const creationDateTime = new Date(`${element["creationDate"]}T${element["creationTime"]}`);
+                            const consoleDateTime = new Date(`${element["consoleDate"]}T${element["consoleTime"]}`);
+                            const avg = consoleDateTime.getTime() - creationDateTime.getTime();
+                            responseConsole.push(avg);
+                        }
+                    }
+                }
+                else if (element['routineRegisterState']['name'] == 'Alerta') {
+                    counts.alertas += 1;
+                    countLocal.alertas += 1;
+                }
+                let index = key2.findIndex(filterElement => filterElement === element['user']['id']);
+                let objects2 = objUser[key2[index]];
+                // @ts-ignore
+                objects2.map(element2 => {
+                    if (element['user']['id'] == element2['id']) {
+                        if (element2['routine'] == "" || element2['routine'] != objects[0]['routine']['id']) {
+                            element2['cant_servicios'] += 1;
+                            element2['routine'] = objects[0]['routine']['id'];
+                        }
+                        if (countLocal.noMarcadas != 0) {
+                            if (element2['routine1'] == "" || element2['routine1'] != objects[0]['routine']['id']) {
+                                element2['servicios_no_marcados'] += 1;
+                                element2['routine1'] = objects[0]['routine']['id'];
+                            }
+                        }
+                        if (countLocal.marcadas != 0) {
+                            if (element2['routine2'] == "" || element2['routine2'] != objects[0]['routine']['id']) {
+                                element2['servicios_marcados'] += 1;
+                                element2['routine2'] = objects[0]['routine']['id'];
+                            }
+                        }
+                        if (countLocal.alertas != 0) {
+                            if (element2['routine3'] == "" || element2['routine3'] != objects[0]['routine']['id']) {
+                                element2['servicios_alerta'] += 1;
+                                element2['routine3'] = objects[0]['routine']['id'];
+                            }
+                        }
+                    }
+                });
+                /*for(let y = 0; y < key2.length; y++){
+                    let objects2 = objUser[key2[y]]
+                    // @ts-ignore
+                    objects2.map(element2 => {
+                        if(element['user']['id'] == element2['id']){
+                            if(element2['routine'] == "" || element2['routine'] != objects[0]['routine']['id']){
+                                element2['servicios_alerta'] += 1
+                                element2['routine'] = objects[0]['routine']['id']
+                            }
+                        }
+                    })
+
+                }*/
+            });
+            if (counts.noMarcadas == 0) {
+                countGeneral.sinNoCumplida += 1;
+            }
+            else {
+                countGeneral.totalNoMarcadas += 1;
+                if (responseConsole.length == 0) {
+                    countGeneral.noContestadas += 1;
+                }
+                else {
+                    countGeneral.contestadas += 1;
+                }
+            }
+            for (let y = 0; y < key2.length; y++) {
+                let objects2 = objUser[key2[y]];
+                // @ts-ignore
+                objects2.map(element2 => {
+                    // @ts-ignore
+                    const existUser = rawUser.some(user => user.id === element2['id']);
+                    if (!existUser) {
+                        rawUser.push(element2);
+                        if (element2['username'] == objects[0]['routine']['supervisorUser']) {
+                            onlyNames.push(element2["name"]);
+                        }
+                    }
+                });
+            }
+            let nameService = `${objects[0]['routine']['name'] ?? ''}`;
+            const deletedBy = `${objects[0]['routine']['deletedBy'] ?? ''}`;
+            if (deletedBy != '') {
+                nameService = `${nameService} (ELIMINADO)`;
+            }
+            const obj = {
+                "Cantidad_Servicios": key.length,
+                "Servicios_Atendidos_Completo": countGeneral.sinNoCumplida, //servicios sin ningun no cumplido
+                "Servicios_No_Marcados": countGeneral.totalNoMarcadas, //servicios con algun registro no cumplido
+                "Servicios_Atendidos": countGeneral.contestadas, //servicios con algun registro no cumplido contestado
+                "Servicios_No_Atendidos": countGeneral.noContestadas, //servicios con algun registro no cumplido no contestado
+                "Usuarios": rawUser.sort((a, b) => a.name - b.name),
+                "Servicio": `${nameService}`,
+                "Fecha": `${objects[0]['routine']['creationDate'] ?? ''}`,
+                "Marcadas": `${counts.marcadas}`,
+                "No_Marcadas": `${counts.noMarcadas}`,
+                "atendido": onlyNames
+            };
+            audits.push(obj);
+        }
+        else if (conditions.objetive == "CLIENTE") {
+            let objects = objAudit[key[i]];
+            //console.log(objects)
+            //console.log(objects.length)
+            const counts = {
+                marcadas: 0,
+                noMarcadas: 0
+            };
+            const responseConsole = [];
+            // @ts-ignore
+            objects.map(element => {
+                if (element['routineRegisterState']['name'] == 'Cumplido') {
+                    counts.marcadas += 1;
+                }
+                else if (element['routineRegisterState']['name'] == 'No cumplido') {
+                    counts.noMarcadas += 1;
+                    let observation = element["observation"] ?? "";
+                    if (observation != "") {
+                        if (element["consoleDate"] != undefined) {
+                            const creationDateTime = new Date(`${element["creationDate"]}T${element["creationTime"]}`);
+                            const consoleDateTime = new Date(`${element["consoleDate"]}T${element["consoleTime"]}`);
+                            const avg = consoleDateTime.getTime() - creationDateTime.getTime();
+                            responseConsole.push(avg);
+                        }
+                    }
+                }
+            });
+            const averageDate = averageTime(responseConsole);
+            let nameService = `${objects[0]['routine']['name'] ?? ''}`;
+            const deletedBy = `${objects[0]['routine']['deletedBy'] ?? ''}`;
+            if (deletedBy != '') {
+                nameService = `${nameService} (ELIMINADO)`;
+            }
+            const obj = {
+                "Cantidad_Servicios": key.length,
+                "Servicios_Atendidos_Completo": countGeneral.sinNoCumplida, //servicios sin ningun no cumplido
+                "Servicios_No_Marcados": countGeneral.totalNoMarcadas, //servicios con algun registro no cumplido
+                "Servicios_Atendidos": countGeneral.contestadas, //servicios con algun registro no cumplido contestado
+                "Servicios_No_Atendidos": countGeneral.noContestadas, //servicios con algun registro no cumplido no contestado
+                "Servicio": `${nameService}`,
+                "Fecha": `${objects[0]['routine']['creationDate'] ?? ''}`,
+                "Marcadas": `${counts.marcadas}`,
+                "No_Marcadas": `${counts.noMarcadas}`,
+                "Resp_Consola": `${responseConsole.length}`,
+                "Prom_Consola": `${averageDate}`
+            };
+            audits.push(obj);
+        }
+    }
+    return audits;
+};
+function esMenorOIgualA5Minutos(timestamp, registerTime) {
+    //const timestamp = 5 * 60 * 1000; // 5 minutos = 300000 ms
+    return registerTime <= timestamp;
+}
+function calcularMarcacionesPorFrecuencia(inicio, fin, hEntrada, hSalida, frecuenciaMinutos) {
+    const fechaActual = new Date(inicio + 'T00:00:00');
+    const fechaLimite = new Date(fin + 'T00:00:00');
+    const todasLasMarcaciones = [];
+    while (fechaActual <= fechaLimite) {
+        let marcacionesDia = [];
+        const fechaBaseStr = fechaActual.toISOString().split('T')[0];
+        //console.log(`Generando marcaciones para el día: ${fechaBaseStr}`);
+
+        // Definir punto de inicio (Entrada) y punto final (Salida)
+        let mEntrada = new Date(`${fechaBaseStr}T${hEntrada}`);
+        let mSalida = new Date(`${fechaBaseStr}T${hSalida}`);
+
+        // Ajuste de turno nocturno: Si la salida es menor a la entrada, es el día siguiente
+        if (hSalida <= hEntrada) {
+            mSalida.setDate(mSalida.getDate() + 1);
+        }
+
+        // Generar marcaciones según la frecuencia dentro de esa jornada
+        let marcaIterada = new Date(mEntrada);
+        
+        while (marcaIterada <= mSalida) {
+            marcacionesDia.push({
+                fechaHora: new Date(marcaIterada), // Clonamos la fecha
+                display: marcaIterada.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }),
+                count: 0 // Contador inicializado en 0
+            });
+
+            // Sumar la frecuencia en minutos
+            marcaIterada.setMinutes(marcaIterada.getMinutes() + frecuenciaMinutos);
+        }
+
+        // Avanzar al siguiente día calendario
+        fechaActual.setDate(fechaActual.getDate() + 1);
+        todasLasMarcaciones.push(marcacionesDia);
+    }
+
+    return {
+        detalle: todasLasMarcaciones,
+        totalEsperado: todasLasMarcaciones.flat().length
+    };
+}
+const generarRangosTiempo = (inicio, fin, intervaloMinutos) => {
+    let timestamps = [];
+    //inicio.setSeconds(0, 0)
+    let timeInicio = inicio.getTime();
+    fin.setSeconds(0, 0);
+    let timeFin = fin.getTime();
+    const tiempoAdd = intervaloMinutos * 60 * 1000;
+    let count = 0;
+    // Mientras la hora actual no supere la hora de fin
+    while (timeInicio <= timeFin) {
+        timestamps.push({
+            timestamp: timeInicio,
+            count: 0
+        });
+        if (count == 0) {
+            count++;
+            inicio.setSeconds(0, 0);
+            timeInicio = inicio.getTime();
+        }
+        // Incrementar el tiempo actual por el intervalo
+        timeInicio += tiempoAdd;
+    }
+    return timestamps;
+};
+export const auditResponse = (conditions) => {
+    const objUser = {};
+    const objRoutine = {};
+    let rawAudits = [];
+    if (conditions.objetive == "CONSOLA") {
+        rawAudits = [...conditions.registers, ...conditions.registersNot];
+    }
+    else if (conditions.objetive == "GUARDIA") {
+        rawAudits = [...conditions.registers, ...conditions.registersNot, ...conditions.registersLibre];
+    }
+    const audits = [];
+    if (conditions.objetive == "CONSOLA") {
+        rawAudits.forEach((rawAudit) => {
+            const user = rawAudit['consoleUserId']?.id ?? '';
+            if (user != '') {
+                if (objUser[user]) {
+                    objUser[user].push(rawAudit);
+                }
+                else {
+                    objUser[user] = [rawAudit];
+                }
+            }
+        });
+    }
+    else if (conditions.objetive == "GUARDIA") {
+        /*conditions.allUsersRoutines.forEach((routineUser) => {
+            console.log(routineUser)
+            const userId = routineUser?.user?.id ?? '';
+            if (userId != '') {
+                if (objUser[userId]) {
+                    objUser[userId].push(routineUser);
+                }
+                else {
+                    objUser[userId] = [routineUser];
+                }
+            }
+        });*/
+
+        rawAudits.forEach((rawAudit) => {
+            const routine = rawAudit['routine']?.id ?? '';
+            if (routine != '') {
+                if (objRoutine[routine]) {
+                    objRoutine[routine].push(rawAudit);
+                }
+                else {
+                    objRoutine[routine] = [rawAudit];
+                }
+            }
+        });
+    }
+    
+    
+        if (conditions.objetive == "CONSOLA") {
+            let key = Object.keys(objUser);
+            for (let i = 0; i < key.length; i++) {
+                let objects = objUser[key[i]];
+                    //console.log(objects)
+                //console.log(objects.length)
+                const variables = {
+                    //totalIntentosMarcacion: 0,
+                    totalMarcacionesHechas: 0,
+                    totalAlertasGeneradas: 0, // Las que crea el sistema de no cumplido
+                    //totalAlertasNoMarcadas: 0, // Las que crea el sistema, las no respondidas en mas de 5 min o no respondidas para nada
+                    totalAlertasRespondidas: 0,
+                    totalAlertasRespondidasATiempo: 0,
+                    tiempoLimite: 5 * 60 * 1000 // 5 minutos en milisegundos
+                };
+                const averageConsole = [];
+                // @ts-ignore
+                objects.map(element => {
+                    //variables.totalIntentosMarcacion += 1
+                    if (element['routineRegisterState']['name'] == 'Cumplido') {
+                        variables.totalMarcacionesHechas += 1;
+                    }
+                    else if (element['routineRegisterState']['name'] == 'No cumplido') {
+                        variables.totalAlertasGeneradas += 1;
+                        let observation = element["observation"] ?? "";
+                        if (observation != "") {
+                            if (element["consoleDate"] != undefined) {
+                                variables.totalAlertasRespondidas += 1;
+                                const creationDateTime = new Date(`${element["creationDate"]}T${element["creationTime"]}`);
+                                const consoleDateTime = new Date(`${element["consoleDate"]}T${element["consoleTime"]}`);
+                                const avg = consoleDateTime.getTime() - creationDateTime.getTime();
+                                averageConsole.push(avg);
+                                if (esMenorOIgualA5Minutos(variables.tiempoLimite, avg)) {
+                                    variables.totalAlertasRespondidasATiempo += 1;
+                                }
+                                else {
+                                    //variables.totalAlertasNoMarcadas += 1
+                                }
+                            }
+                        }
+                        else {
+                            //variables.totalAlertasNoMarcadas += 1
+                        }
+                    }
+                });
+                const cumplimiento = ((variables.totalAlertasRespondidasATiempo / variables.totalAlertasGeneradas) * 100).toFixed(2);
+                const averageDate = averageTime(averageConsole);
+                const obj = {
+                    "Usuario": `${objects[0]['consoleUserId']['firstName'] ?? ''} ${objects[0]['consoleUserId']['lastName'] ?? ''} ${objects[0]['consoleUserId']['secondLastName'] ?? ''}`,
+                    //"Total Intentos Marcacion": variables.totalIntentosMarcacion,
+                    "Total Marcaciones Hechas": variables.totalMarcacionesHechas,
+                    "Total Alertas Generadas": variables.totalAlertasGeneradas,
+                    //"Total Alertas No Marcadas": variables.totalAlertasNoMarcadas,
+                    "Total Alertas Respondidas": variables.totalAlertasRespondidas,
+                    "Total Alertas Respondidas A Tiempo": variables.totalAlertasRespondidasATiempo,
+                    "Cumplimiento": cumplimiento,
+                    "Promedio": averageDate,
+                };
+                audits.push(obj);
+            }
+        }
+        else if (conditions.objetive == "GUARDIA") {
+            //console.log(`${objects[0]['user']['firstName'] ?? ''} ${objects[0]['user']['lastName'] ?? ''} ${objects[0]['user']['secondLastName'] ?? ''}`)
+            const users = [];
+            let keyRoutine = Object.keys(objRoutine);
+            const routineScheduleG = [];
+            conditions.allUsersRoutines.forEach((routineUser) => {
+                const routines = [];
+                const routinesSchedule = [];
+                const variables = {
+                    totalRutinas: 0,
+                    totalUbicaciones: 0,
+                    totalRealizadas: 0,
+                    totalValidas: 0,
+                    totalEsperadas: 0
+                };
+                const index = keyRoutine.findIndex(filterElement => filterElement === routineUser['routine']['id']);
+                let objectRoutine = objRoutine[keyRoutine[index]];
+                if (objectRoutine != undefined) {
+                    // @ts-ignore
+                    objectRoutine.map(element2 => {
+                        if (routineUser['routine']['id'] == element2['routine']['id']) {
+                            // @ts-ignore
+                            const exisRoutine = routines.some(data => data.id === element2['routine']['id']);
+                            if (!exisRoutine) {
+                                routines.push(element2['routine']);
+                                variables.totalRutinas += 1;
+                            }
+
+                            const exisRoutineScheduleG = routineScheduleG.some(data => data.id === element2['routineSchedule']['id']);
+                            if (!exisRoutineScheduleG) {
+                                const esperadas = calcularMarcacionesPorFrecuencia(conditions.filterStartDate, conditions.filterEndDate, element2['routineSchedule']['scheduleTime'], element2['routineSchedule']['scheduleTimeEnd'], element2['routineSchedule']['frequency']);
+                                routineScheduleG.push({...element2["routineSchedule"], "rangos": esperadas.detalle});
+                                variables.totalEsperadas += esperadas.totalEsperado;
+                            }
+
+                            const exisRoutineSchedule = routinesSchedule.some(data => data.id === element2['routineSchedule']['id']);
+                            if (!exisRoutineSchedule) {
+                                variables.totalUbicaciones += 1;
+                                routinesSchedule.push(element2['routineSchedule']);
+                            }
+
+                            if (element2['routineState']['name'] == 'Cumplido' || element2['routineState']['name'] == 'Libre') {
+                                variables.totalRealizadas += 1;
+                                const creationDateTime = new Date(`${element2["creationDate"]}T${element2["creationTime"]}`);
+                                const indice = routineScheduleG.findIndex(data => data.id === element2['routineSchedule']['id']);
+                                for (let r = 0; r < routineScheduleG[indice].rangos.length; r++) {
+                                    let horaRango = routineScheduleG[indice].rangos[r];
+                                    for (let m = 0; m < horaRango.length; m++) {
+                                        if (horaRango[m + 1] != undefined) {
+                                            if((creationDateTime.getTime() >= horaRango[m].fechaHora.getTime()) && (creationDateTime.getTime() < horaRango[m + 1].fechaHora.getTime())) {
+                                                if (horaRango[m].count == 0) {
+                                                    // si tiene marcacion en ese rango de tiempo
+                                                    horaRango[m].count += 1;
+                                                    variables.totalValidas += 1;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                const existUser = audits.some(data => data.id === routineUser['user']['id']);
+                if (!existUser) {
+                    const ponderado = ((variables.totalValidas / variables.totalEsperadas) * 100).toFixed(2);
+                    audits.push({
+                        id: routineUser['user']['id'],
+                        name: `${routineUser['user']['firstName'] ?? ''} ${routineUser['user']['lastName'] ?? ''} ${routineUser['user']['secondLastName'] ?? ''}`,
+                        username: routineUser['user']['username'],
+                        totalRutinas: variables.totalRutinas,
+                        totalUbicaciones: variables.totalUbicaciones,
+                        totalRealizadas: variables.totalRealizadas,
+                        totalValidas: variables.totalValidas,
+                        totalEsperadas: variables.totalEsperadas,
+                        ponderado: ponderado
+                    });
+                }else{
+                    audits.map(data => {
+                        if(data.id == routineUser['user']['id']){
+                            data.totalRutinas += variables.totalRutinas;
+                            data.totalUbicaciones += variables.totalUbicaciones;
+                            data.totalRealizadas += variables.totalRealizadas;
+                            data.totalValidas += variables.totalValidas;
+                            data.totalEsperadas += variables.totalEsperadas;
+                            data.ponderado = ((data.totalValidas / data.totalEsperadas) * 100).toFixed(2);
+                        }
+                    });
+
+                }
+            });   
+    }
+    return audits;
+};
