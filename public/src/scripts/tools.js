@@ -1203,7 +1203,7 @@ function calcularMarcacionesPorFrecuencia(inicio, fin, hEntrada, hSalida, frecue
         // Generar marcaciones según la frecuencia dentro de esa jornada
         let marcaIterada = new Date(mEntrada);
         
-        while (marcaIterada <= mSalida) {
+        while (marcaIterada < mSalida) { //<=
             marcacionesDia.push({
                 fechaHora: new Date(marcaIterada), // Clonamos la fecha
                 display: marcaIterada.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }),
