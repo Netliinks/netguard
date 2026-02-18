@@ -55,11 +55,11 @@ export class Sidebar {
           <div class="sidebar_header"></div>
 
           <div class="sidebar_items" style="overflow-y:scroll; height: 100%;  <!-- max-height: 45rem;  --> ">
-            <div class="sidebar_item">
+            <!-- <div class="sidebar_item">
               <span class="sidebar_item_label" id="render-dashboard">
                 <i class="fa-regular fa-chart-simple"></i> <div class="label">Dashboard</div>
               </span>
-            </div>
+            </div> -->
 
             <div class="sidebar_item" id="render-customers">
               <span class="sidebar_item_label">
@@ -262,10 +262,10 @@ export class Sidebar {
   this.renders();
 }
 renders() {
-    document.getElementById('render-dashboard')?.addEventListener('click', () => {
+    /*document.getElementById('render-dashboard')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
       new Dashboard().render();
-    });
+    });*/
     document.getElementById('render-customers')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
       new Customers().render(Config.offset, Config.currentPage, "");

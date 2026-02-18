@@ -14,6 +14,7 @@ import { ChangePassword } from "./changePassword/changePassword.js";
 import { CloseDialog } from "../tools.js";
 import { FirebaseCtrl } from "../services/FirebaseCtrl.js";
 import { Events } from "../views/binnacle/Events/EventsView.js";
+import { Notes } from "../views/binnacle/notes/NotesView.js";
 let infoPage = {
     count: 0,
     counter: 10,
@@ -45,7 +46,8 @@ export class RenderApplicationUI {
         new Events().render(Config.offset, Config.currentPage, "", false, 0);
       }else{
         localStorage.removeItem('current_page');
-        new Dashboard().render();
+        //new Dashboard().render();
+        new Notes().render(Config.offset, Config.currentPage, "");
       }
       
       //new SelectCustomer().render();
