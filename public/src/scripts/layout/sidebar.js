@@ -2,6 +2,7 @@
 import { Config } from ".././Configs.js";
 import { currentDateTime } from ".././tools.js";
 import { Dashboard } from "../views/dashboard/dashboard.js";
+import { AlertsRegisters } from "./alert/alertpage.js";
 import { Notes } from "../views/binnacle/notes/NotesView.js";
 import { Guards } from "../views/users/guards/guards.js";
 import { Clients } from "../views/users/clients/clients.js";
@@ -60,6 +61,12 @@ export class Sidebar {
                 <i class="fa-regular fa-chart-simple"></i> <div class="label">Dashboard</div>
               </span>
             </div> -->
+
+            <div class="sidebar_item">
+              <span class="sidebar_item_label" id="render-alertspages">
+                <i class="fa-regular fa-brake-warning"></i> <div class="label">Alertas</div>
+              </span>
+            </div>
 
             <div class="sidebar_item" id="render-customers">
               <span class="sidebar_item_label">
@@ -266,72 +273,92 @@ renders() {
       clearTimeout(Config.timeOut);
       new Dashboard().render();
     });*/
+    document.getElementById('render-alertspages')?.addEventListener('click', () => {
+      clearTimeout(Config.timeOut);
+      Config.currentScreen = "AlertsRegisters";
+      new AlertsRegisters().render([], [], 0, 0, 0, 0);
+    });
     document.getElementById('render-customers')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Customers().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-guards')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Guards().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-clients')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Clients().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-employees')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Employees().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-contractors')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Contractors().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-blacklist')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Blacklist().render(Config.offset, Config.currentPage, "");
     });
     // render notes
     document.getElementById('render-notes')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Notes().render(Config.offset, Config.currentPage, "");
     });
     // render visits
     document.getElementById('render-visits')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Visits().render(Config.offset, Config.currentPage, "");
     });
     document.getElementById('render-binnacle')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Binnacle().render(Config.offset, Config.currentPage, "");
   });
     // render AssistControl
     document.getElementById('render-assistControl')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new AssistControl().render(Config.offset, Config.currentPage, "");
     });
     // render AssistGestion
     document.getElementById('render-assistGestion')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new AssistGestion().render("", currentDateTime().date);
   });
     // render AssistControl
     document.getElementById('render-events')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Events().render(Config.offset, Config.currentPage, "", false, 0);
     });
     // render AssistControl
     document.getElementById('render-vehiculars')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Vehiculars().render(Config.offset, Config.currentPage, "");
     });
     // render Deparments
     document.getElementById('render-deparments')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new Departments().render(Config.offset, Config.currentPage, "");
     });
     // render Superusers
     document.getElementById('render-superusers')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
         new SuperUsers().render(Config.offset, Config.currentPage, "");
     });
     
@@ -341,37 +368,44 @@ renders() {
     });*/
     document.getElementById('render-fixed')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Fixed().render(Config.offset, Config.currentPage, "");
     });
      // render Tasks Sporadic
     document.getElementById('render-sporadic')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Sporadic().render(Config.offset, Config.currentPage, "");
     });
 
     // render Procedures
     document.getElementById('render-procedures')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Procedures().render(Config.offset, Config.currentPage, "");
     });
 
     document.getElementById('render-routineConfiguration')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new Routines().render(Config.offset, Config.currentPage, "");
     });
 
     document.getElementById('render-routineDetails')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new RoutineRegisters().render(Config.offset, Config.currentPage, "", false, 0, "Todos");
     });
 
     document.getElementById('render-credentials')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
+      Config.currentScreen = null;
       new CredentialsView().render(currentDateTime().date, currentDateTime().date);
     });
 
     document.getElementById('render-audit')?.addEventListener('click', () => {
         clearTimeout(Config.timeOut);
+        Config.currentScreen = null;
         new Audits().render(currentDateTime().date, currentDateTime().date);
     });
   }

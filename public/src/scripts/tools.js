@@ -1319,10 +1319,10 @@ export const auditResponse = (conditions) => {
                 // @ts-ignore
                 objects.map(element => {
                     //variables.totalIntentosMarcacion += 1
-                    if (element['routineRegisterState']['name'] == 'Cumplido') {
+                    if (element['routineState']['name'] == 'Cumplido') {
                         variables.totalMarcacionesHechas += 1;
                     }
-                    else if (element['routineRegisterState']['name'] == 'No cumplido') {
+                    else if (element['routineState']['name'] == 'No cumplido') {
                         variables.totalAlertasGeneradas += 1;
                         let observation = element["observation"] ?? "";
                         if (observation != "") {

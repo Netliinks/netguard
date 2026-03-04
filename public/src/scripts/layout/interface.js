@@ -15,6 +15,7 @@ import { CloseDialog } from "../tools.js";
 import { FirebaseCtrl } from "../services/FirebaseCtrl.js";
 import { Events } from "../views/binnacle/Events/EventsView.js";
 import { Notes } from "../views/binnacle/notes/NotesView.js";
+import { AlertsRegisters } from "./alert/alertpage.js";
 let infoPage = {
     count: 0,
     counter: 10,
@@ -32,15 +33,17 @@ export class RenderApplicationUI {
         this.sidebarContainer = document.getElementById('app-sidebar');
         this.topbar = document.getElementById('app-topbar');
     }
-    render() {
+    async render() {
       this.loginContainer.style.display = 'none';
       this.APP.style.display = 'grid';
       this.sidebarContainer.style.display = 'inline-flex';
       this.topbar.style.display = 'flex';
       this.topbar.style.justifyContent = 'space-between';
-      this.renderTopbar();
+      await this.renderTopbar();
       new Sidebar().render();
-      const currentPage = localStorage.getItem('current_page');
+      Config.currentScreen = "AlertsRegisters";
+      new AlertsRegisters().render([], [], 0, 0, 0, 0);
+      /*const currentPage = localStorage.getItem('current_page');
       if(currentPage == 'Event'){
         localStorage.removeItem('current_page');
         new Events().render(Config.offset, Config.currentPage, "", false, 0);
@@ -48,7 +51,7 @@ export class RenderApplicationUI {
         localStorage.removeItem('current_page');
         //new Dashboard().render();
         new Notes().render(Config.offset, Config.currentPage, "");
-      }
+      }*/
       
       //new SelectCustomer().render();
   }
@@ -176,7 +179,7 @@ export class RenderApplicationUI {
                 infoPage.audioNoti.currentTime = 0;
                 clearTimeout(infoPage.timeColorNoti);
                 //this.renderTopbar();
-                const customerName = notificationData.notification.title.replace("ALERTA EN ","");
+                /*const customerName = notificationData.notification.title.replace("ALERTA EN ","");
                 const customerData = await searchCustomerbyName(customerName,customer.business.id);
                 if(customerData != undefined && customerId != customerData.id){
                     localStorage.removeItem('customer_id');
@@ -189,6 +192,11 @@ export class RenderApplicationUI {
                 }else{
                     defaultMenu();
                     new Events().render(Config.offset, Config.currentPage, "", true, 0);
+                }*/
+                defaultMenu();
+                if(Config.currentScreen != "AlertsRegisters"){
+                    Config.currentScreen = "AlertsRegisters";
+                    new AlertsRegisters().render([], [], 0, 0, 0, 0);
                 }
                 
             });
@@ -220,10 +228,12 @@ export class RenderApplicationUI {
                     }
                 });
             changePassword.addEventListener("click", () => {
+                Config.currentScreen = null;
                 new ChangePassword().render();
                 //new CloseDialog().x(settingOptions);
             });
             changeCustomer.addEventListener("click", () => {
+                Config.currentScreen = null;
                 new SelectCustomer().render(0, 1, '');
                 //new CloseDialog().x(settingOptions);
             });
