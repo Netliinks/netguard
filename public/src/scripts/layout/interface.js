@@ -258,6 +258,10 @@ export class RenderApplicationUI {
             infoPage.newRegister= false;
             infoPage.countNewRegister= 0;
             infoPage.audio.pause();
+            if(Config.currentScreen != "AlertsRegisters"){
+                Config.currentScreen = "AlertsRegisters";
+                new AlertsRegisters().render([], [], 0, 0, 0, 0);
+            }
             renderRoutines(customer.business.id);
         }
         
