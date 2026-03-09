@@ -259,6 +259,7 @@ export class SignIn {
         clearTimeout(Config.timeOut);
         clearTimeout(Config.timeRoutineTopBar);
         Config.currentUser = null;
+        Config.currentScreen = null;
         this.checkSignIn();
         window.location.reload();
     }

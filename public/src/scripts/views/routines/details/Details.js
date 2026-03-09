@@ -393,7 +393,9 @@ export class RoutineRegisters {
                 // RoutineRegister details
                 const _details = {
                     picture: document.getElementById('register-picture-placeholder'),
-                    content: document.getElementById('register-content'),
+                    content1: document.getElementById('register-content1'),
+                    obs: document.getElementById('register-obs'),
+                    content2: document.getElementById('register-content2'),
                     routine: document.getElementById('register-routine'),
                     schedule: document.getElementById('register-schedule'),
                     locationLat: document.getElementById('register-location-lat'),
@@ -405,10 +407,21 @@ export class RoutineRegisters {
                     targetDate: document.getElementById('target-date'),
                     targeTime: document.getElementById('target-time'),
                     targetDate2: document.getElementById('target-date2'),
-                    targeTime2: document.getElementById('target-time2')
+                    targeTime2: document.getElementById('target-time2'),
+                    consoleDate: document.getElementById('console-date'),
+                    consoleTime: document.getElementById('console-time'),
+                    consoleAuthor: document.getElementById('console-author'),
+                    registerButton: document.getElementById('register-entity')
                 };
                 //const image = await getFile(note.attachment);
-                _details.content.innerText = register?.observation ?? '';
+                if(register?.routineState?.name == 'No cumplido'){
+                    _details.obs.style.display = 'flex'
+                    _details.content2.value = register?.observation ?? '';
+                    _details.registerButton.style.display = 'block'
+                }else if(register?.routineState?.name == 'Cumplido' || register?.routineState?.name == 'Libre' || register?.routineState?.name == 'Extra'){
+                    _details.content1.style.display = 'flex'
+                    _details.content1.innerText = register?.observation ?? '';
+                }
                 _details.routine.value = register?.routine?.name ?? '';
                 _details.schedule.value = register?.routineSchedule?.name ?? '';
                 _details.locationLat.value = `Lat: ${register?.latitude ?? ''}`;
@@ -427,6 +440,32 @@ export class RoutineRegisters {
                     <img id="register-picture" width="100%" class="note_picture margin_b_8" src="${image}">
                 `;
                 this.zoom(register);
+                }
+
+                _details.registerButton.addEventListener('click', () => {
+                    let raw = JSON.stringify({
+                        "observation": `${_details.content2?.value}`,
+                        "consoleDate": `${currentDateTime().date}`,
+                        "consoleTime": `${currentDateTime().timeHHMMSS}`,
+                        "consoleUser": `${Config.currentUser.username}`,
+                        "consoleUserId": {
+                            "id": `${Config.currentUser.id}`
+                        }
+                    })
+    
+                    update(raw)
+                })
+                const update = (raw) => {
+                    updateEntity('RoutineRegister', noteId, raw)
+                        .then((res) => {
+                            setTimeout(async () => {
+                                let tableBody = document.getElementById('datatable-container');
+                                let container = document.getElementById('entity-editor-container');
+                                //let data = await getUsers();
+                                new CloseDialog().x(container);
+                                new RoutineRegisters().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.check, infoPage.countNewRegister, infoPage.statusSearch);
+                            }, 100)
+                        })
                 }
             };
         };
