@@ -289,726 +289,683 @@ export class Audits {
                     const _dialog = document.getElementById('dialog-content');
                     new CloseDialog().x(_dialog);
                 };
-                if (_inputElements.objetiveTheme.value == 'RUTINA2') {
-                    _inputElements.objetiveType.value = 'GUARDIA';
-                    const conditions = {
-                        objetive: _inputElements.objetiveType.value,
-                        filterStartDate: _inputElements.filterStartDate.value,
-                        filterEndDate: _inputElements.filterEndDate.value,
-                        operator: '',
-                        property: '',
-                        value: _inputElements.entityElement.dataset.optionid ?? '',
-                        name: _inputElements.entityElement.value ?? '',
-                        countCumplido: 0,
-                        countNoCumplido: 0,
-                        registers: [],
-                        registersNot: [],
-                        registersLibre: [],
-                        respConsole: 0,
-                        average: '',
-                        service: '',
-                        countCumplido2: 0,
-                        countNoCumplido2: 0,
-                        property2: '',
-                        value2: '',
-                        registers2: [],
-                        registersNot2: [],
-                        respConsole2: 0,
-                        average2: '',
-                        allRoutines: [],
-                        allUsersRoutines: []
-                    };
-                    let status = [];
-                    if (_inputElements.objetiveType.value == 'GUARDIA') {
-                        //conditions.property = 'user.id'
-                        conditions.property = 'routine.name';
-                        conditions.operator = '<>';
-                        status = ["Cumplido", "No cumplido", "Libre"];
-                    }
-                    else if (_inputElements.objetiveType.value == 'CONSOLA') {
-                        //conditions.property = 'consoleUserId.id'
-                        conditions.property = 'routine.name';
-                        conditions.operator = '<>';
-                        status = ["No cumplido"];
-                    }
-                    else {
-                        conditions.property = 'customer.id';
-                        conditions.operator = '=';
-                        status = ["Cumplido", "No cumplido"];
-                    }
-                    const rawToModify = (offset, property, operator, value, status) => {
-                        const rawToCount = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": `customer.id`,
-                                        "operator": "=",
-                                        "value": `${customerId}`
-                                    },
-                                    {
-                                        "property": `${property}`,
-                                        "operator": `${operator}`,
-                                        "value": `${value}`
-                                    },
-                                    {
-                                        "property": "routineState.name",
-                                        "operator": `=`,
-                                        "value": `${status}`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `>=`,
-                                        "value": `${conditions.filterStartDate}`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `<=`,
-                                        "value": `${conditions.filterEndDate}`
-                                    }
-                                ],
-                            },
-                            sort: "-createdDate",
-                            limit: Config.limitExport,
-                            offset: offset,
-                            fetchPlan: 'full',
-                        });
-                        return rawToCount;
-                    };
-                    for (let i = 0; i < status.length; i++) {
-                        const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, status[i]);
-                        if (status[i] == "Cumplido") {
-                            conditions.countCumplido = await getFilterEntityCount("RoutineRegister", rawToCount);
-                        }
-                        else if (status[i] == "No cumplido") {
-                            conditions.countNoCumplido = await getFilterEntityCount("RoutineRegister", rawToCount);
-                        }
-                        else if (status[i] == "Libre") {
-                            conditions.countLibre = await getFilterEntityCount("RoutineRegister", rawToCount);
-                        }
-                    }
-                    if (conditions.countCumplido === undefined || conditions.countNoCumplido === undefined || conditions.countLibre === undefined) {
-                        infoPage.onPressed = false;
-                        const _dialog = document.getElementById('dialog-content');
-                        new CloseDialog().x(_dialog);
-                        alert("Ocurrió un error al exportar");
-                    }
-                    else if (conditions.countCumplido === 0 && conditions.countNoCumplido === 0 && conditions.countLibre === 0) {
-                        infoPage.onPressed = false;
-                        const _dialog = document.getElementById('dialog-content');
-                        new CloseDialog().x(_dialog);
-                        alert("No hay ningún registro");
-                    }
-                    else {
-                        const totalRegisters = conditions.countCumplido + conditions.countNoCumplido + conditions.countLibre;
-                        subtitleModal.value = `0 / ${totalRegisters}`;
-                        const pages = Math.ceil(totalRegisters / Config.limitExport);
-                        for (let i = 0; i < status.length; i++) {
-                            let array = [];
-                            let offset = 0;
-                            if (status[i] == "Cumplido") {
-                                for (let x = 0; x < pages; x++) {
-                                    if (infoPage.onPressed) {
-                                        const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
-                                        array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
-                                        for (let y = 0; y < array[x].length; y++) {
-                                            conditions.registers.push(array[x][y]);
-                                            const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
-                                            if (!exisRoutine) {
-                                                conditions.allRoutines.push(array[x][y]['routine']);
-                                            }
-                                        }
-                                        subtitleModal.value = `${conditions.registers.length} / ${totalRegisters}`;
-                                        offset = Config.limitExport + (offset);
-                                    }
-                                }
-                            }
-                            else if (status[i] == "No cumplido") {
-                                for (let x = 0; x < pages; x++) {
-                                    if (infoPage.onPressed) {
-                                        const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
-                                        array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
-                                        for (let y = 0; y < array[x].length; y++) {
-                                            conditions.registersNot.push(array[x][y]);
-                                            const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
-                                            if (!exisRoutine) {
-                                                conditions.allRoutines.push(array[x][y]['routine']);
-                                            }
-                                        }
-                                        subtitleModal.value = `${conditions.registers.length + conditions.registersNot.length} / ${totalRegisters}`;
-                                        offset = Config.limitExport + (offset);
-                                    }
-                                }
-                            }else if (status[i] == "Libre") {
-                                for (let x = 0; x < pages; x++) {
-                                    if (infoPage.onPressed) {
-                                        const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
-                                        array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
-                                        for (let y = 0; y < array[x].length; y++) {
-                                            conditions.registersLibre.push(array[x][y]);
-                                            const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
-                                            if (!exisRoutine) {
-                                                conditions.allRoutines.push(array[x][y]['routine']);
-                                            }
-                                        }
-                                        subtitleModal.value = `${conditions.registers.length + conditions.registersNot.length + conditions.registersLibre.length} / ${totalRegisters}`;
-                                        offset = Config.limitExport + (offset);
-                                    }
-                                }
-                            }
-                        }
-                        
-                        //NO CUMPLIDAS PERO RESPONDIDAS
-                        const responseConsole = [];
-                        for (let i = 0; i < conditions.registersNot.length; i++) {
-                            let observation = conditions.registersNot[i]["observation"] ?? "";
-                            if (observation != "") {
-                                if (conditions.registersNot[i]["consoleDate"] != undefined) {
-                                    const creationDateTime = new Date(`${conditions.registersNot[i]["creationDate"]}T${conditions.registersNot[i]["creationTime"]}`);
-                                    const consoleDateTime = new Date(`${conditions.registersNot[i]["consoleDate"]}T${conditions.registersNot[i]["consoleTime"]}`);
-                                    const avg = consoleDateTime.getTime() - creationDateTime.getTime();
-                                    //console.log(consoleDateTime+" - "+creationDateTime)
-                                    //console.log(msToHHMMSS(avg))
-                                    responseConsole.push(avg);
-                                }
-                            }
-                        }
+                let error = 0;
+                const conditions = {
+                    filterStartDate: _inputElements.filterStartDate.value,
+                    filterEndDate: _inputElements.filterEndDate.value,
+                    property: '',
+                    operator: '',
+                    value: '',
+                    property2: '',
+                    operator2: '',
+                    value2: '',
+                }
+                if(_inputElements.checkAllCustomer.checked){
+                    conditions.property= 'business.id';
+                    conditions.operator= '=';
+                    conditions.value= Config.currentUser.business.id;
+                    conditions.property2= 'customer.state.name';
+                    conditions.operator2= '=';
+                    conditions.value2= 'Enabled';
+
+                }
+                else if(_inputElements.customerElement.dataset.optionid != undefined){
+                    conditions.property= 'customer.id';
+                    conditions.operator= '=';
+                    conditions.value= _inputElements.customerElement.dataset.optionid;
+                    conditions.property2= 'customer.state.name';
+                    conditions.operator2= '<>';
+                    conditions.value2= '';
+                }else{
+                    error += 1;
+                }
+                if(error == 0){
+                    if (_inputElements.objetiveTheme.value == 'RUTINA2') {
+                        _inputElements.objetiveType.value = 'GUARDIA';
+                        const conditions = {
+                            objetive: _inputElements.objetiveType.value,
+                            filterStartDate: _inputElements.filterStartDate.value,
+                            filterEndDate: _inputElements.filterEndDate.value,
+                            operator: '',
+                            property: '',
+                            value: _inputElements.entityElement.dataset.optionid ?? '',
+                            name: _inputElements.entityElement.value ?? '',
+                            countCumplido: 0,
+                            countNoCumplido: 0,
+                            registers: [],
+                            registersNot: [],
+                            registersLibre: [],
+                            respConsole: 0,
+                            average: '',
+                            service: '',
+                            countCumplido2: 0,
+                            countNoCumplido2: 0,
+                            property2: '',
+                            value2: '',
+                            registers2: [],
+                            registersNot2: [],
+                            respConsole2: 0,
+                            average2: '',
+                            allRoutines: [],
+                            allUsersRoutines: []
+                        };
+                        let status = [];
                         if (_inputElements.objetiveType.value == 'GUARDIA') {
-                            const averageDate = averageTime(responseConsole);
-                            conditions.respConsole = responseConsole.length;
-                            conditions.average = averageDate;
-                            //OBTENIENDO USUARIOS DE RUTINAS
-                            subtitleModal.value = "Obteniendo guardias";
-                            for (let i = 0; i < conditions.allRoutines.length; i++) {
-                                const routine = conditions.allRoutines[i];
-                                let offset = 0;
-                                let array = [];
-                                const rawModify = (routineId, offset) => {
-                                    return JSON.stringify({
-                                        "filter": {
-                                            "conditions": [
-                                                {
-                                                    "property": `customer.id`,
-                                                    "operator": "=",
-                                                    "value": `${customerId}`
-                                                },
-                                                {
-                                                    "property": `routine.id`,
-                                                    "operator": `=`,
-                                                    "value": `${routineId}`
-                                                }
-                                            ],
-                                        },
-                                        sort: "-createdDate",
-                                        limit: Config.limitExport,
-                                        offset: offset,
-                                        fetchPlan: 'full'
-                                    });
-                                }
-                                let countUsers = await getFilterEntityCount("RoutineUser", rawModify(routine.id, offset));
-                                subtitleModal.value = `0 / ${countUsers}`;
-                                const pages = Math.ceil(countUsers / Config.limitExport);
-                                for (let x = 0; x < pages; x++) {
-                                    if (infoPage.onPressed) {
-                                        const rawToGuard = rawModify(routine.id, offset);
-                                        array[x] = await getFilterEntityData("RoutineUser", rawToGuard);
-                                        for (let y = 0; y < array[x].length; y++) {
-                                            const existUserRoutine = conditions.allUsersRoutines.some(item => 
-                                                item['user']['id'] === array[x][y]['user']['id'] && item['routine']['id'] === array[x][y]['routine']['id']);;
-                                            if (!existUserRoutine) {
-                                                conditions.allUsersRoutines.push(array[x][y]);
-                                            }
-                                        }
-                                        subtitleModal.value = `${conditions.allUsersRoutines.length} / ${countUsers}`;
-                                        offset = Config.limitExport + (offset);
-                                    }
-                                }
-                            }
-                            subtitleModal.value = `Cálculo completado, generando archivo...`;
-                            /*messageModal.innerHTML = `
-                                <p>Marcados: ${conditions.countCumplido}</p>
-                                <p>No marcados: ${conditions.registersNot.length}</p>
-                                <div style="padding-left: 20px;">
-                                    <ul>
-                                        <li>Respondidas por consola: ${responseConsole.length}</li>
-                                        <li>Tiempo promedio: ${averageDate}</li>
-                                    </ul>
-                                </div>
-                            `
-                            _dwnButton.style.display = 'flex'*/
+                            //conditions.property = 'user.id'
+                            conditions.property = 'routine.name';
+                            conditions.operator = '<>';
+                            status = ["Cumplido", "No cumplido", "Libre"];
                         }
                         else if (_inputElements.objetiveType.value == 'CONSOLA') {
-                            const averageDate = averageTime(responseConsole);
-                            conditions.respConsole = responseConsole.length;
-                            conditions.average = averageDate;
-                            subtitleModal.value = `Cálculo completado, generando PDF...`;
-                            /*messageModal.innerHTML = `
-                                <div style="padding-left: 20px;">
-                                    <ul>
-                                        <li>Respondidas por consola: ${responseConsole.length}</li>
-                                        <li>Tiempo promedio: ${averageDate}</li>
-                                    </ul>
-                                </div>
-                            `
-                            _dwnButton.style.display = 'flex'*/
+                            //conditions.property = 'consoleUserId.id'
+                            conditions.property = 'routine.name';
+                            conditions.operator = '<>';
+                            status = ["No cumplido"];
                         }
                         else {
-                            //if(_inputElements.entityService.value == ''){
-                            subtitleModal.value = `Cálculo completado, generando PDF...`;
-                            /*messageModal.innerHTML = `
-                                <p>Marcados: ${conditions.countCumplido}</p>
-                                <p>No marcados: ${conditions.countNoCumplido}</p>
-                            `
-                            _dwnButton.style.display = 'flex'*/
-                            //}else{
-                            /*conditions.property2 = 'routine.id'
-                            conditions.value2 = _inputElements.entityService.dataset.optionid
-                            for(let i = 0; i < status.length; i++){
-                                const rawToCount = rawToModify(0, conditions.property2, conditions.value2, status[i])
-                                if(status[i] == "Cumplido"){
-                                    conditions.countCumplido2 = await getFilterEntityCount("RoutineRegister", rawToCount)
-                                }else{
-                                    conditions.countNoCumplido2 = await getFilterEntityCount("RoutineRegister", rawToCount)
-                                }
+                            conditions.property = 'customer.id';
+                            conditions.operator = '=';
+                            status = ["Cumplido", "No cumplido"];
+                        }
+                        const rawToModify = (offset, property, operator, value, status) => {
+                            const rawToCount = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": `customer.id`,
+                                            "operator": "=",
+                                            "value": `${customerId}`
+                                        },
+                                        {
+                                            "property": `${property}`,
+                                            "operator": `${operator}`,
+                                            "value": `${value}`
+                                        },
+                                        {
+                                            "property": "routineState.name",
+                                            "operator": `=`,
+                                            "value": `${status}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `>=`,
+                                            "value": `${conditions.filterStartDate}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `<=`,
+                                            "value": `${conditions.filterEndDate}`
+                                        }
+                                    ],
+                                },
+                                sort: "-createdDate",
+                                limit: Config.limitExport,
+                                offset: offset,
+                                fetchPlan: 'full',
+                            });
+                            return rawToCount;
+                        };
+                        for (let i = 0; i < status.length; i++) {
+                            const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, status[i]);
+                            if (status[i] == "Cumplido") {
+                                conditions.countCumplido = await getFilterEntityCount("RoutineRegister", rawToCount);
                             }
-                            const totalRegisters2 = conditions.countCumplido2 + conditions.countNoCumplido2
-                            subtitleModal.value = `0 / ${totalRegisters2}`;
-                            const pages2 = Math.ceil(totalRegisters2 / Config.limitExport);
-                            for(let i = 0; i < status.length; i++){
+                            else if (status[i] == "No cumplido") {
+                                conditions.countNoCumplido = await getFilterEntityCount("RoutineRegister", rawToCount);
+                            }
+                            else if (status[i] == "Libre") {
+                                conditions.countLibre = await getFilterEntityCount("RoutineRegister", rawToCount);
+                            }
+                        }
+                        if (conditions.countCumplido === undefined || conditions.countNoCumplido === undefined || conditions.countLibre === undefined) {
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                            alert("Ocurrió un error al exportar");
+                        }
+                        else if (conditions.countCumplido === 0 && conditions.countNoCumplido === 0 && conditions.countLibre === 0) {
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                            alert("No hay ningún registro");
+                        }
+                        else {
+                            const totalRegisters = conditions.countCumplido + conditions.countNoCumplido + conditions.countLibre;
+                            subtitleModal.value = `0 / ${totalRegisters}`;
+                            const pages = Math.ceil(totalRegisters / Config.limitExport);
+                            for (let i = 0; i < status.length; i++) {
                                 let array = [];
                                 let offset = 0;
-                                if(status[i] == "Cumplido"){
-                                    for(let x = 0; x < pages2; x++){
-                                        if(infoPage.onPressed){
-                                            const rawToCount = rawToModify(offset, conditions.property2, conditions.value2, status[i])
-                                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount) //await getEvents();
-                                            for(let y=0; y<array[x].length; y++){
-                                                conditions.registers2.push(array[x][y]);
+                                if (status[i] == "Cumplido") {
+                                    for (let x = 0; x < pages; x++) {
+                                        if (infoPage.onPressed) {
+                                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
+                                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
+                                            for (let y = 0; y < array[x].length; y++) {
+                                                conditions.registers.push(array[x][y]);
+                                                const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
+                                                if (!exisRoutine) {
+                                                    conditions.allRoutines.push(array[x][y]['routine']);
+                                                }
                                             }
-                                            subtitleModal.value = `${conditions.registers2.length} / ${totalRegisters2}`;
+                                            subtitleModal.value = `${conditions.registers.length} / ${totalRegisters}`;
                                             offset = Config.limitExport + (offset);
                                         }
                                     }
-                                }else{
-                                    for(let x = 0; x < pages2; x++){
-                                        if(infoPage.onPressed){
-                                            const rawToCount = rawToModify(offset, conditions.property2, conditions.value2, status[i])
-                                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount) //await getEvents();
-                                            for(let y=0; y<array[x].length; y++){
-                                                conditions.registersNot2.push(array[x][y]);
+                                }
+                                else if (status[i] == "No cumplido") {
+                                    for (let x = 0; x < pages; x++) {
+                                        if (infoPage.onPressed) {
+                                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
+                                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
+                                            for (let y = 0; y < array[x].length; y++) {
+                                                conditions.registersNot.push(array[x][y]);
+                                                const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
+                                                if (!exisRoutine) {
+                                                    conditions.allRoutines.push(array[x][y]['routine']);
+                                                }
                                             }
-                                            subtitleModal.value = `${conditions.registers2.length + conditions.registersNot2.length} / ${totalRegisters2}`;
+                                            subtitleModal.value = `${conditions.registers.length + conditions.registersNot.length} / ${totalRegisters}`;
+                                            offset = Config.limitExport + (offset);
+                                        }
+                                    }
+                                }else if (status[i] == "Libre") {
+                                    for (let x = 0; x < pages; x++) {
+                                        if (infoPage.onPressed) {
+                                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, status[i]);
+                                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
+                                            for (let y = 0; y < array[x].length; y++) {
+                                                conditions.registersLibre.push(array[x][y]);
+                                                const exisRoutine = conditions.allRoutines.some(data => data.id === array[x][y]['routine']['id']);
+                                                if (!exisRoutine) {
+                                                    conditions.allRoutines.push(array[x][y]['routine']);
+                                                }
+                                            }
+                                            subtitleModal.value = `${conditions.registers.length + conditions.registersNot.length + conditions.registersLibre.length} / ${totalRegisters}`;
                                             offset = Config.limitExport + (offset);
                                         }
                                     }
                                 }
                             }
-
-                            const responseConsole2: number[] = []
-                            for(let i=0; i<conditions.registersNot2.length; i++){
-                                if(conditions.registersNot2[i]["observation"] != undefined){
-                                    if(conditions.registersNot2[i]["consoleDate"] != undefined){
-                                        const creationDateTime = new Date(`${conditions.registersNot2[i]["creationDate"]}T${conditions.registersNot2[i]["creationTime"]}`)
-                                        const consoleDateTime = new Date(`${conditions.registersNot2[i]["consoleDate"]}T${conditions.registersNot2[i]["consoleTime"]}`)
-                                        const avg = consoleDateTime.getTime() - creationDateTime.getTime()
+                            
+                            //NO CUMPLIDAS PERO RESPONDIDAS
+                            const responseConsole = [];
+                            for (let i = 0; i < conditions.registersNot.length; i++) {
+                                let observation = conditions.registersNot[i]["observation"] ?? "";
+                                if (observation != "") {
+                                    if (conditions.registersNot[i]["consoleDate"] != undefined) {
+                                        const creationDateTime = new Date(`${conditions.registersNot[i]["creationDate"]}T${conditions.registersNot[i]["creationTime"]}`);
+                                        const consoleDateTime = new Date(`${conditions.registersNot[i]["consoleDate"]}T${conditions.registersNot[i]["consoleTime"]}`);
+                                        const avg = consoleDateTime.getTime() - creationDateTime.getTime();
                                         //console.log(consoleDateTime+" - "+creationDateTime)
                                         //console.log(msToHHMMSS(avg))
-                                        responseConsole2.push(avg)
+                                        responseConsole.push(avg);
                                     }
                                 }
                             }
+                            if (_inputElements.objetiveType.value == 'GUARDIA') {
+                                const averageDate = averageTime(responseConsole);
+                                conditions.respConsole = responseConsole.length;
+                                conditions.average = averageDate;
+                                //OBTENIENDO USUARIOS DE RUTINAS
+                                subtitleModal.value = "Obteniendo guardias";
+                                for (let i = 0; i < conditions.allRoutines.length; i++) {
+                                    const routine = conditions.allRoutines[i];
+                                    let offset = 0;
+                                    let array = [];
+                                    const rawModify = (routineId, offset) => {
+                                        return JSON.stringify({
+                                            "filter": {
+                                                "conditions": [
+                                                    {
+                                                        "property": `customer.id`,
+                                                        "operator": "=",
+                                                        "value": `${customerId}`
+                                                    },
+                                                    {
+                                                        "property": `routine.id`,
+                                                        "operator": `=`,
+                                                        "value": `${routineId}`
+                                                    }
+                                                ],
+                                            },
+                                            sort: "-createdDate",
+                                            limit: Config.limitExport,
+                                            offset: offset,
+                                            fetchPlan: 'full'
+                                        });
+                                    }
+                                    let countUsers = await getFilterEntityCount("RoutineUser", rawModify(routine.id, offset));
+                                    subtitleModal.value = `0 / ${countUsers}`;
+                                    const pages = Math.ceil(countUsers / Config.limitExport);
+                                    for (let x = 0; x < pages; x++) {
+                                        if (infoPage.onPressed) {
+                                            const rawToGuard = rawModify(routine.id, offset);
+                                            array[x] = await getFilterEntityData("RoutineUser", rawToGuard);
+                                            for (let y = 0; y < array[x].length; y++) {
+                                                const existUserRoutine = conditions.allUsersRoutines.some(item => 
+                                                    item['user']['id'] === array[x][y]['user']['id'] && item['routine']['id'] === array[x][y]['routine']['id']);;
+                                                if (!existUserRoutine) {
+                                                    conditions.allUsersRoutines.push(array[x][y]);
+                                                }
+                                            }
+                                            subtitleModal.value = `${conditions.allUsersRoutines.length} / ${countUsers}`;
+                                            offset = Config.limitExport + (offset);
+                                        }
+                                    }
+                                }
+                                subtitleModal.value = `Cálculo completado, generando archivo...`;
+                                /*messageModal.innerHTML = `
+                                    <p>Marcados: ${conditions.countCumplido}</p>
+                                    <p>No marcados: ${conditions.registersNot.length}</p>
+                                    <div style="padding-left: 20px;">
+                                        <ul>
+                                            <li>Respondidas por consola: ${responseConsole.length}</li>
+                                            <li>Tiempo promedio: ${averageDate}</li>
+                                        </ul>
+                                    </div>
+                                `
+                                _dwnButton.style.display = 'flex'*/
+                            }
+                            else if (_inputElements.objetiveType.value == 'CONSOLA') {
+                                const averageDate = averageTime(responseConsole);
+                                conditions.respConsole = responseConsole.length;
+                                conditions.average = averageDate;
+                                subtitleModal.value = `Cálculo completado, generando PDF...`;
+                                /*messageModal.innerHTML = `
+                                    <div style="padding-left: 20px;">
+                                        <ul>
+                                            <li>Respondidas por consola: ${responseConsole.length}</li>
+                                            <li>Tiempo promedio: ${averageDate}</li>
+                                        </ul>
+                                    </div>
+                                `
+                                _dwnButton.style.display = 'flex'*/
+                            }
+                            else {
+                                //if(_inputElements.entityService.value == ''){
+                                subtitleModal.value = `Cálculo completado, generando PDF...`;
+                                /*messageModal.innerHTML = `
+                                    <p>Marcados: ${conditions.countCumplido}</p>
+                                    <p>No marcados: ${conditions.countNoCumplido}</p>
+                                `
+                                _dwnButton.style.display = 'flex'*/
+                                //}else{
+                                /*conditions.property2 = 'routine.id'
+                                conditions.value2 = _inputElements.entityService.dataset.optionid
+                                for(let i = 0; i < status.length; i++){
+                                    const rawToCount = rawToModify(0, conditions.property2, conditions.value2, status[i])
+                                    if(status[i] == "Cumplido"){
+                                        conditions.countCumplido2 = await getFilterEntityCount("RoutineRegister", rawToCount)
+                                    }else{
+                                        conditions.countNoCumplido2 = await getFilterEntityCount("RoutineRegister", rawToCount)
+                                    }
+                                }
+                                const totalRegisters2 = conditions.countCumplido2 + conditions.countNoCumplido2
+                                subtitleModal.value = `0 / ${totalRegisters2}`;
+                                const pages2 = Math.ceil(totalRegisters2 / Config.limitExport);
+                                for(let i = 0; i < status.length; i++){
+                                    let array = [];
+                                    let offset = 0;
+                                    if(status[i] == "Cumplido"){
+                                        for(let x = 0; x < pages2; x++){
+                                            if(infoPage.onPressed){
+                                                const rawToCount = rawToModify(offset, conditions.property2, conditions.value2, status[i])
+                                                array[x] = await getFilterEntityData("RoutineRegister", rawToCount) //await getEvents();
+                                                for(let y=0; y<array[x].length; y++){
+                                                    conditions.registers2.push(array[x][y]);
+                                                }
+                                                subtitleModal.value = `${conditions.registers2.length} / ${totalRegisters2}`;
+                                                offset = Config.limitExport + (offset);
+                                            }
+                                        }
+                                    }else{
+                                        for(let x = 0; x < pages2; x++){
+                                            if(infoPage.onPressed){
+                                                const rawToCount = rawToModify(offset, conditions.property2, conditions.value2, status[i])
+                                                array[x] = await getFilterEntityData("RoutineRegister", rawToCount) //await getEvents();
+                                                for(let y=0; y<array[x].length; y++){
+                                                    conditions.registersNot2.push(array[x][y]);
+                                                }
+                                                subtitleModal.value = `${conditions.registers2.length + conditions.registersNot2.length} / ${totalRegisters2}`;
+                                                offset = Config.limitExport + (offset);
+                                            }
+                                        }
+                                    }
+                                }
 
-                            const averageDate2 = averageTime(responseConsole2)
-                            conditions.service = _inputElements.entityService.value
-                            conditions.respConsole2 = responseConsole2.length
-                            conditions.average2 = averageDate2
-                            subtitleModal.value = `Cálculo completado`
-                            messageModal.innerHTML = `
-                                <p>Marcados: ${conditions.countCumplido}</p>
-                                <p>No marcados: ${conditions.countNoCumplido}</p>
-                                <br>
-                                <h4>Servicio seleccionado:</h4>
-                                <p>${_inputElements.entityService.value}</p>
-                                <br>
-                                <p>Marcados: ${conditions.countCumplido2}</p>
-                                <p>No marcados: ${conditions.registersNot2.length}</p>
-                                <div style="padding-left: 20px;">
-                                    <ul>
-                                        <li>Respondidas por consola: ${responseConsole2.length}</li>
-                                        <li>Tiempo promedio: ${averageDate2}</li>
-                                    </ul>
-                                </div>
-                            `
-                            _dwnButton.style.display = 'flex'*/
-                            //}   
+                                const responseConsole2: number[] = []
+                                for(let i=0; i<conditions.registersNot2.length; i++){
+                                    if(conditions.registersNot2[i]["observation"] != undefined){
+                                        if(conditions.registersNot2[i]["consoleDate"] != undefined){
+                                            const creationDateTime = new Date(`${conditions.registersNot2[i]["creationDate"]}T${conditions.registersNot2[i]["creationTime"]}`)
+                                            const consoleDateTime = new Date(`${conditions.registersNot2[i]["consoleDate"]}T${conditions.registersNot2[i]["consoleTime"]}`)
+                                            const avg = consoleDateTime.getTime() - creationDateTime.getTime()
+                                            //console.log(consoleDateTime+" - "+creationDateTime)
+                                            //console.log(msToHHMMSS(avg))
+                                            responseConsole2.push(avg)
+                                        }
+                                    }
+                                }
+
+                                const averageDate2 = averageTime(responseConsole2)
+                                conditions.service = _inputElements.entityService.value
+                                conditions.respConsole2 = responseConsole2.length
+                                conditions.average2 = averageDate2
+                                subtitleModal.value = `Cálculo completado`
+                                messageModal.innerHTML = `
+                                    <p>Marcados: ${conditions.countCumplido}</p>
+                                    <p>No marcados: ${conditions.countNoCumplido}</p>
+                                    <br>
+                                    <h4>Servicio seleccionado:</h4>
+                                    <p>${_inputElements.entityService.value}</p>
+                                    <br>
+                                    <p>Marcados: ${conditions.countCumplido2}</p>
+                                    <p>No marcados: ${conditions.registersNot2.length}</p>
+                                    <div style="padding-left: 20px;">
+                                        <ul>
+                                            <li>Respondidas por consola: ${responseConsole2.length}</li>
+                                            <li>Tiempo promedio: ${averageDate2}</li>
+                                        </ul>
+                                    </div>
+                                `
+                                _dwnButton.style.display = 'flex'*/
+                                //}   
+                            }
+                            //if (_inputElements.entityUser.checked && (_inputElements.objetiveType.value == 'GUARDIA' || _inputElements.objetiveType.value == 'CONSOLA')) {
+                            //    await exportAuditV2Xls(conditions);
+                            //}
+                            //else {
+                                //await exportAuditPdf(conditions);
+                            //}
+                            await exportAuditV2Xls(conditions);
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                            /*_dwnButton.onclick = async () => {
+                                await exportAuditPdf(conditions)
+                            };*/
+                            
                         }
-                        //if (_inputElements.entityUser.checked && (_inputElements.objetiveType.value == 'GUARDIA' || _inputElements.objetiveType.value == 'CONSOLA')) {
-                        //    await exportAuditV2Xls(conditions);
-                        //}
-                        //else {
-                            //await exportAuditPdf(conditions);
-                        //}
-                        await exportAuditV2Xls(conditions);
+                    }else if (_inputElements.objetiveTheme.value == 'RUTINA') {
+                        const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
+                            const rawToCount = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": `${property}`,
+                                            "operator": `${operator}`,
+                                            "value": `${value}`
+                                        },
+                                        {
+                                            "property": `${property2}`,
+                                            "operator": `${operator2}`,
+                                            "value": `${value2}`
+                                        },
+                                        {
+                                            "property": `routineState.name`,
+                                            "operator": `<>`,
+                                            "value": `No cumplido`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `>=`,
+                                            "value": `${_inputElements.filterStartDate.value}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `<=`,
+                                            "value": `${_inputElements.filterEndDate.value}`
+                                        }
+                                    ],
+                                },
+                                sort: "+customer.name",
+                                limit: Config.limitExport,
+                                offset: offset,
+                                fetchPlan: 'full',
+                            });
+                            return rawToCount;
+                        };
+                        const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                        let totalRoutine = await getFilterEntityCount("RoutineRegister", rawToCount);
+                        if(totalRoutine != 0){
+                            subtitleModal.value = `0 / ${totalRoutine}`;
+                            const pages = Math.ceil(totalRoutine / Config.limitExport);
+                            const routines = [];
+                            let array = [];
+                            let offset = 0;
+                            for (let x = 0; x < pages; x++) {
+                                if (infoPage.onPressed) {
+                                    const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                                    array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
+                                    for (let y = 0; y < array[x].length; y++) {
+                                        routines.push(array[x][y]);
+                                    }
+                                    subtitleModal.value = `${routines.length} / ${totalRoutine}`;
+                                    offset = Config.limitExport + (offset);
+                                }
+                            }
+                            subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
+                            //await exportVisitPdf(visits);
+                            await generarReportRoutineXls(conditions, routines);
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }else{
+                            alert("No hay registros.");
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }
+                    }else if(_inputElements.objetiveTheme.value == 'INGRESO EMERGENTE'){
+                        const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
+                            const rawToCount = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": `${property}`,
+                                            "operator": `${operator}`,
+                                            "value": `${value}`
+                                        },
+                                        {
+                                            "property": `${property2}`,
+                                            "operator": `${operator2}`,
+                                            "value": `${value2}`
+                                        },
+                                        {
+                                            "property": `type`,
+                                            "operator": `=`,
+                                            "value": `Guardia`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `>=`,
+                                            "value": `${_inputElements.filterStartDate.value}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `<=`,
+                                            "value": `${_inputElements.filterEndDate.value}`
+                                        }
+                                    ],
+                                },
+                                sort: "+customer.name",
+                                limit: Config.limitExport,
+                                offset: offset,
+                                fetchPlan: 'full',
+                            });
+                            return rawToCount;
+                        };
+                        const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                        let totalVisits = await getFilterEntityCount("Visit", rawToCount);
+                        if(totalVisits != 0){
+                            subtitleModal.value = `0 / ${totalVisits}`;
+                            const pages = Math.ceil(totalVisits / Config.limitExport);
+                            const visits = [];
+                            let array = [];
+                            let offset = 0;
+                            for (let x = 0; x < pages; x++) {
+                                if (infoPage.onPressed) {
+                                    const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                                    array[x] = await getFilterEntityData("Visit", rawToCount); //await getEvents();
+                                    for (let y = 0; y < array[x].length; y++) {
+                                        visits.push(array[x][y]);
+                                    }
+                                    subtitleModal.value = `${visits.length} / ${totalVisits}`;
+                                    offset = Config.limitExport + (offset);
+                                }
+                            }
+                            subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
+                            //await exportVisitPdf(visits);
+                            await generarReportVisitXls(conditions, visits);
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }else{
+                            alert("No hay registros.");
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }
+                    }else if(_inputElements.objetiveTheme.value == 'INGRESO VEHICULAR'){
+                        const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
+                            const rawToCount = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": `${property}`,
+                                            "operator": `${operator}`,
+                                            "value": `${value}`
+                                        },
+                                        {
+                                            "property": `${property2}`,
+                                            "operator": `${operator2}`,
+                                            "value": `${value2}`
+                                        },
+                                        {
+                                            "property": "ingressDate",
+                                            "operator": `>=`,
+                                            "value": `${_inputElements.filterStartDate.value}`
+                                        },
+                                        {
+                                            "property": "ingressDate",
+                                            "operator": `<=`,
+                                            "value": `${_inputElements.filterEndDate.value}`
+                                        }
+                                    ],
+                                },
+                                sort: "+customer.name",
+                                limit: Config.limitExport,
+                                offset: offset,
+                                fetchPlan: 'full',
+                            });
+                            return rawToCount;
+                        };
+                        const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                        let totalVehiculars = await getFilterEntityCount("Vehicular", rawToCount);
+                        if(totalVehiculars != 0){
+                            subtitleModal.value = `0 / ${totalVehiculars}`;
+                            const pages = Math.ceil(totalVehiculars / Config.limitExport);
+                            const vehiculars = [];
+                            let array = [];
+                            let offset = 0;
+                            for (let x = 0; x < pages; x++) {
+                                if (infoPage.onPressed) {
+                                    const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                                    array[x] = await getFilterEntityData("Vehicular", rawToCount); //await getEvents();
+                                    for (let y = 0; y < array[x].length; y++) {
+                                        vehiculars.push(array[x][y]);
+                                    }
+                                    subtitleModal.value = `${vehiculars.length} / ${totalVehiculars}`;
+                                    offset = Config.limitExport + (offset);
+                                }
+                            }
+                            subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
+                            //await exportVisitPdf(visits);
+                            await generarReportVehicularXls(conditions, vehiculars);
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }else{
+                            alert("No hay registros.");
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }
+                    }else if(_inputElements.objetiveTheme.value == 'CONSIGNAS (REPORTES)'){
+                        const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
+                            const rawToCount = JSON.stringify({
+                                "filter": {
+                                    "conditions": [
+                                        {
+                                            "property": `${property}`,
+                                            "operator": `${operator}`,
+                                            "value": `${value}`
+                                        },
+                                        {
+                                            "property": `${property2}`,
+                                            "operator": `${operator2}`,
+                                            "value": `${value2}`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `>=`,
+                                            "value": `${_inputElements.filterStartDate.value}T00:00:00`
+                                        },
+                                        {
+                                            "property": "creationDate",
+                                            "operator": `<=`,
+                                            "value": `${_inputElements.filterEndDate.value}T23:59:59`
+                                        }
+                                    ],
+                                },
+                                sort: "+customer.name",
+                                limit: Config.limitExport,
+                                offset: offset,
+                                fetchPlan: 'full',
+                            });
+                            return rawToCount;
+                        };
+                        const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                        let totalNotes = await getFilterEntityCount("Note", rawToCount);
+                        if(totalNotes != 0){
+                            subtitleModal.value = `0 / ${totalNotes}`;
+                            const pages = Math.ceil(totalNotes / Config.limitExport);
+                            const notes = [];
+                            let array = [];
+                            let offset = 0;
+                            for (let x = 0; x < pages; x++) {
+                                if (infoPage.onPressed) {
+                                    const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
+                                    array[x] = await getFilterEntityData("Note", rawToCount); //await getEvents();
+                                    for (let y = 0; y < array[x].length; y++) {
+                                        notes.push(array[x][y]);
+                                    }
+                                    subtitleModal.value = `${notes.length} / ${totalNotes}`;
+                                    offset = Config.limitExport + (offset);
+                                }
+                            }
+                            subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
+                            //await exportVisitPdf(visits);
+                            await generarReporteXls(conditions, notes);
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }else{
+                            alert("No hay registros.");
+                            infoPage.onPressed = false;
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        }
+                    }
+                    else {
+                        alert('Seleccione un elemento');
                         infoPage.onPressed = false;
                         const _dialog = document.getElementById('dialog-content');
                         new CloseDialog().x(_dialog);
-                        /*_dwnButton.onclick = async () => {
-                            await exportAuditPdf(conditions)
-                        };*/
-                        
                     }
-                }else if (_inputElements.objetiveTheme.value == 'RUTINA') {
-                    const conditions = {
-                        filterStartDate: _inputElements.filterStartDate.value,
-                        filterEndDate: _inputElements.filterEndDate.value,
-                        property: '',
-                        operator: '',
-                        value: '',
-                        property2: '',
-                        operator2: '',
-                        value2: '',
-                    }
-                    if(_inputElements.checkAllCustomer.checked){
-                        conditions.property= 'business.id';
-                        conditions.operator= '=';
-                        conditions.value= Config.currentUser.business.id;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '=';
-                        conditions.value2= 'Enabled';
-
-                    }
-                    else if(_inputElements.customerElement.dataset.optionid != undefined){
-                        conditions.property= 'customer.id';
-                        conditions.operator= '=';
-                        conditions.value= _inputElements.customerElement.dataset.optionid;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '<>';
-                        conditions.value2= '';
-                    }
-                    const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
-                        const rawToCount = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": `${property}`,
-                                        "operator": `${operator}`,
-                                        "value": `${value}`
-                                    },
-                                    {
-                                        "property": `${property2}`,
-                                        "operator": `${operator2}`,
-                                        "value": `${value2}`
-                                    },
-                                    {
-                                        "property": `routineState.name`,
-                                        "operator": `<>`,
-                                        "value": `No cumplido`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `>=`,
-                                        "value": `${_inputElements.filterStartDate.value}`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `<=`,
-                                        "value": `${_inputElements.filterEndDate.value}`
-                                    }
-                                ],
-                            },
-                            sort: "+customer.name",
-                            limit: Config.limitExport,
-                            offset: offset,
-                            fetchPlan: 'full',
-                        });
-                        return rawToCount;
-                    };
-                    const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                    let totalRoutine = await getFilterEntityCount("RoutineRegister", rawToCount);
-                    subtitleModal.value = `0 / ${totalRoutine}`;
-                    const pages = Math.ceil(totalRoutine / Config.limitExport);
-                    const routines = [];
-                    let array = [];
-                    let offset = 0;
-                    for (let x = 0; x < pages; x++) {
-                        if (infoPage.onPressed) {
-                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                            array[x] = await getFilterEntityData("RoutineRegister", rawToCount); //await getEvents();
-                            for (let y = 0; y < array[x].length; y++) {
-                                routines.push(array[x][y]);
-                            }
-                            subtitleModal.value = `${routines.length} / ${totalRoutine}`;
-                            offset = Config.limitExport + (offset);
-                        }
-                    }
-                    subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
-                    //await exportVisitPdf(visits);
-                    await generarReportRoutineXls(conditions, routines);
-                    infoPage.onPressed = false;
-                    const _dialog = document.getElementById('dialog-content');
-                    new CloseDialog().x(_dialog);
-                }else if(_inputElements.objetiveTheme.value == 'INGRESO EMERGENTE'){
-                    const conditions = {
-                        filterStartDate: _inputElements.filterStartDate.value,
-                        filterEndDate: _inputElements.filterEndDate.value,
-                        property: '',
-                        operator: '',
-                        value: '',
-                        property2: '',
-                        operator2: '',
-                        value2: '',
-                    }
-                    if(_inputElements.checkAllCustomer.checked){
-                        conditions.property= 'business.id';
-                        conditions.operator= '=';
-                        conditions.value= Config.currentUser.business.id;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '=';
-                        conditions.value2= 'Enabled';
-
-                    }
-                    else if(_inputElements.customerElement.dataset.optionid != undefined){
-                        conditions.property= 'customer.id';
-                        conditions.operator= '=';
-                        conditions.value= _inputElements.customerElement.dataset.optionid;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '<>';
-                        conditions.value2= '';
-                    }
-                    const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
-                        const rawToCount = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": `${property}`,
-                                        "operator": `${operator}`,
-                                        "value": `${value}`
-                                    },
-                                    {
-                                        "property": `${property2}`,
-                                        "operator": `${operator2}`,
-                                        "value": `${value2}`
-                                    },
-                                    {
-                                        "property": `type`,
-                                        "operator": `=`,
-                                        "value": `Guardia`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `>=`,
-                                        "value": `${_inputElements.filterStartDate.value}`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `<=`,
-                                        "value": `${_inputElements.filterEndDate.value}`
-                                    }
-                                ],
-                            },
-                            sort: "+customer.name",
-                            limit: Config.limitExport,
-                            offset: offset,
-                            fetchPlan: 'full',
-                        });
-                        return rawToCount;
-                    };
-                    const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                    let totalVisits = await getFilterEntityCount("Visit", rawToCount);
-                    subtitleModal.value = `0 / ${totalVisits}`;
-                    const pages = Math.ceil(totalVisits / Config.limitExport);
-                    const visits = [];
-                    let array = [];
-                    let offset = 0;
-                    for (let x = 0; x < pages; x++) {
-                        if (infoPage.onPressed) {
-                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                            array[x] = await getFilterEntityData("Visit", rawToCount); //await getEvents();
-                            for (let y = 0; y < array[x].length; y++) {
-                                visits.push(array[x][y]);
-                            }
-                            subtitleModal.value = `${visits.length} / ${totalVisits}`;
-                            offset = Config.limitExport + (offset);
-                        }
-                    }
-                    subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
-                    //await exportVisitPdf(visits);
-                    await generarReportVisitXls(conditions, visits);
-                    infoPage.onPressed = false;
-                    const _dialog = document.getElementById('dialog-content');
-                    new CloseDialog().x(_dialog);
-                }else if(_inputElements.objetiveTheme.value == 'INGRESO VEHICULAR'){
-                    const conditions = {
-                        filterStartDate: _inputElements.filterStartDate.value,
-                        filterEndDate: _inputElements.filterEndDate.value,
-                        property: '',
-                        operator: '',
-                        value: '',
-                        property2: '',
-                        operator2: '',
-                        value2: '',
-                    }
-                    if(_inputElements.checkAllCustomer.checked){
-                        conditions.property= 'business.id';
-                        conditions.operator= '=';
-                        conditions.value= Config.currentUser.business.id;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '=';
-                        conditions.value2= 'Enabled';
-
-                    }
-                    else if(_inputElements.customerElement.dataset.optionid != undefined){
-                        conditions.property= 'customer.id';
-                        conditions.operator= '=';
-                        conditions.value= _inputElements.customerElement.dataset.optionid;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '<>';
-                        conditions.value2= '';
-                    }
-                    const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
-                        const rawToCount = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": `${property}`,
-                                        "operator": `${operator}`,
-                                        "value": `${value}`
-                                    },
-                                    {
-                                        "property": `${property2}`,
-                                        "operator": `${operator2}`,
-                                        "value": `${value2}`
-                                    },
-                                    {
-                                        "property": "ingressDate",
-                                        "operator": `>=`,
-                                        "value": `${_inputElements.filterStartDate.value}`
-                                    },
-                                    {
-                                        "property": "ingressDate",
-                                        "operator": `<=`,
-                                        "value": `${_inputElements.filterEndDate.value}`
-                                    }
-                                ],
-                            },
-                            sort: "+customer.name",
-                            limit: Config.limitExport,
-                            offset: offset,
-                            fetchPlan: 'full',
-                        });
-                        return rawToCount;
-                    };
-                    const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                    let totalVehiculars = await getFilterEntityCount("Vehicular", rawToCount);
-                    subtitleModal.value = `0 / ${totalVehiculars}`;
-                    const pages = Math.ceil(totalVehiculars / Config.limitExport);
-                    const vehiculars = [];
-                    let array = [];
-                    let offset = 0;
-                    for (let x = 0; x < pages; x++) {
-                        if (infoPage.onPressed) {
-                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                            array[x] = await getFilterEntityData("Vehicular", rawToCount); //await getEvents();
-                            for (let y = 0; y < array[x].length; y++) {
-                                vehiculars.push(array[x][y]);
-                            }
-                            subtitleModal.value = `${vehiculars.length} / ${totalVehiculars}`;
-                            offset = Config.limitExport + (offset);
-                        }
-                    }
-                    subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
-                    //await exportVisitPdf(visits);
-                    await generarReportVehicularXls(conditions, vehiculars);
-                    infoPage.onPressed = false;
-                    const _dialog = document.getElementById('dialog-content');
-                    new CloseDialog().x(_dialog);
-                }else if(_inputElements.objetiveTheme.value == 'CONSIGNAS (REPORTES)'){
-                    const conditions = {
-                        filterStartDate: _inputElements.filterStartDate.value,
-                        filterEndDate: _inputElements.filterEndDate.value,
-                        property: '',
-                        operator: '',
-                        value: '',
-                        property2: '',
-                        operator2: '',
-                        value2: '',
-                    }
-                    if(_inputElements.checkAllCustomer.checked){
-                        conditions.property= 'business.id';
-                        conditions.operator= '=';
-                        conditions.value= Config.currentUser.business.id;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '=';
-                        conditions.value2= 'Enabled';
-
-                    }
-                    else if(_inputElements.customerElement.dataset.optionid != undefined){
-                        conditions.property= 'customer.id';
-                        conditions.operator= '=';
-                        conditions.value= _inputElements.customerElement.dataset.optionid;
-                        conditions.property2= 'customer.state.name';
-                        conditions.operator2= '<>';
-                        conditions.value2= '';
-                    }
-                    const rawToModify = (offset, property, operator, value, property2, operator2, value2) => {
-                        const rawToCount = JSON.stringify({
-                            "filter": {
-                                "conditions": [
-                                    {
-                                        "property": `${property}`,
-                                        "operator": `${operator}`,
-                                        "value": `${value}`
-                                    },
-                                    {
-                                        "property": `${property2}`,
-                                        "operator": `${operator2}`,
-                                        "value": `${value2}`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `>=`,
-                                        "value": `${_inputElements.filterStartDate.value}T00:00:00`
-                                    },
-                                    {
-                                        "property": "creationDate",
-                                        "operator": `<=`,
-                                        "value": `${_inputElements.filterEndDate.value}T23:59:59`
-                                    }
-                                ],
-                            },
-                            sort: "+customer.name",
-                            limit: Config.limitExport,
-                            offset: offset,
-                            fetchPlan: 'full',
-                        });
-                        return rawToCount;
-                    };
-                    const rawToCount = rawToModify(0, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                    let totalNotes = await getFilterEntityCount("Note", rawToCount);
-                    subtitleModal.value = `0 / ${totalNotes}`;
-                    const pages = Math.ceil(totalNotes / Config.limitExport);
-                    const notes = [];
-                    let array = [];
-                    let offset = 0;
-                    for (let x = 0; x < pages; x++) {
-                        if (infoPage.onPressed) {
-                            const rawToCount = rawToModify(offset, conditions.property, conditions.operator, conditions.value, conditions.property2, conditions.operator2, conditions.value2);
-                            array[x] = await getFilterEntityData("Note", rawToCount); //await getEvents();
-                            for (let y = 0; y < array[x].length; y++) {
-                                notes.push(array[x][y]);
-                            }
-                            subtitleModal.value = `${notes.length} / ${totalNotes}`;
-                            offset = Config.limitExport + (offset);
-                        }
-                    }
-                    subtitleModal.value = `Descarga de datos completada, calculando y generando archivo...`;
-                    //await exportVisitPdf(visits);
-                    await generarReporteXls(conditions, notes);
-                    infoPage.onPressed = false;
-                    const _dialog = document.getElementById('dialog-content');
-                    new CloseDialog().x(_dialog);
-                }
-                else {
-                    alert('Seleccione un elemento');
+                }else{
+                    alert("Marque todos los clientes activos o seleccione uno.")
                     infoPage.onPressed = false;
                     const _dialog = document.getElementById('dialog-content');
                     new CloseDialog().x(_dialog);
