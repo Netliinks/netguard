@@ -750,10 +750,10 @@ export const searchCustomerbyName = async (name, business) => {
     }
 }
 
-export const inputSelectTypeAudit = async (selectId, currentType, statsCustomer, statsUser, element /*, service: InterfaceElement*/) => {
+export const inputSelectTypeAudit = async (selectId, _inputElements) => {
     //const data = ['GUARDIA', 'CONSOLA', 'CLIENTE']
     const data = ['GUARDIA'];
-    const type = await currentType;
+    //const type = await currentType;
     const select = document.querySelector(`#${selectId}`);
     const inputParent = select.parentNode;
     const optionsContent = inputParent.querySelector('#input-options');
@@ -780,19 +780,65 @@ export const inputSelectTypeAudit = async (selectId, currentType, statsCustomer,
             select.removeAttribute('value');
             select.setAttribute('value', option.getAttribute('value'));
             inputParent.classList.remove('select_active');
-            element.removeAttribute('value');
-            element.removeAttribute('data-optionid');
+            //_inputElements.entityElement.removeAttribute('value');
+            //_inputElements.entityElement.removeAttribute('data-optionid');
             //service.removeAttribute('value');
             //service.removeAttribute('data-optionid');
             if (option.getAttribute('value') === "CLIENTE") {
                 //console.log("es cliente")
-                statsCustomer.style.display = "flex";
-                statsUser.style.display = "none";
+                //_inputElements.divStatsCustomer.style.display = "flex";
+                //_inputElements.divStatsUser.style.display = "none";
             }
             else {
                 //console.log("no es cliente")
-                statsCustomer.style.display = "none";
-                statsUser.style.display = "none";//"flex";
+                //_inputElements.divStatsCustomer.style.display = "none";
+                //_inputElements.divStatsUser.style.display = "none";//"flex";
+            }
+        });
+    });
+};
+export const inputSelectThemeAudit = async (selectId, _inputElements) => {
+    const data = ['INGRESO EMERGENTE', 'INGRESO VEHICULAR', 'RUTINA', 'CONSIGNAS (REPORTES)'];
+    //const type = await currentType;
+    const select = document.querySelector(`#${selectId}`);
+    const inputParent = select.parentNode;
+    const optionsContent = inputParent.querySelector('#input-options');
+    const optionsContainer = document.createElement('div');
+    optionsContainer.classList.add('input_options_container');
+    optionsContent.appendChild(optionsContainer);
+    for (let i = 0; i < data.length; i++) {
+        const inputOption = document.createElement('div');
+        select.setAttribute('value', data[0]);
+        inputOption.classList.add('input_option');
+        inputOption.setAttribute('value', data[i]);
+        let nameData = data[i];
+        inputOption.innerHTML = nameData;
+        optionsContainer.appendChild(inputOption);
+    }
+    const options = optionsContainer.querySelectorAll('.input_option');
+    select.value = data[0];
+    select.addEventListener('click', () => {
+        inputParent.classList.toggle('select_active');
+    });
+    options.forEach((option) => {
+        option.addEventListener('click', () => {
+            select.value = option.innerText;
+            select.removeAttribute('value');
+            select.setAttribute('value', option.getAttribute('value'));
+            inputParent.classList.remove('select_active');
+            //_inputElements.entityElement.removeAttribute('value');
+            //_inputElements.entityElement.removeAttribute('data-optionid');
+            //service.removeAttribute('value');
+            //service.removeAttribute('data-optionid');
+            if (option.getAttribute('value') === "CLIENTE") {
+                //console.log("es cliente")
+                //_inputElements.divStatsCustomer.style.display = "flex";
+                //_inputElements.divStatsUser.style.display = "none";
+            }
+            else {
+                //console.log("no es cliente")
+                //_inputElements.divStatsCustomer.style.display = "none";
+                //_inputElements.divStatsUser.style.display = "none";//"flex";
             }
         });
     });
@@ -1456,3 +1502,167 @@ export const auditResponse = (conditions) => {
     }
     return audits;
 };
+
+export const routineToStimate = (conditions, rawRoutines) => {
+    const objRoutine = {};
+    rawRoutines.forEach((rawRoutine) => {
+        let customer = rawRoutine['customer']['id'] ?? '';
+        if (objRoutine[customer]) {
+            objRoutine[customer].push(rawRoutine);
+        }
+        else {
+            objRoutine[customer] = [rawRoutine];
+        }
+    });
+    let key = Object.keys(objRoutine);
+    const users = [];
+    for (let i = 0; i < key.length; i++) {
+        let objects = objRoutine[key[i]];
+        objects.map(element => {
+            const index = users.findIndex(u => u.id === element.user.id);
+            if (index !== -1) {
+                // Si existe: Actualizar (reemplazar el objeto en el índice encontrado)
+                users[index].routines += 1; // Incrementar el contador de visitas
+            } else {
+                // Si no existe: Insertar
+                users.push({
+                    id: element.user.id,
+                    name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
+                    username: element.user?.username ?? '',
+                    customer: `${element.customer?.name ?? ''}`,
+                    routines: 1,
+                    requerido: element?.customer?.reqNroRoutine ?? 'N/A',
+                    cumplimiento: 0
+                });
+            }
+        });
+    }
+    for(let i = 0; i < users.length; i++){
+        const cumplimiento = users[i].requerido != 'N/A' ? ((users[i].routines / users[i].requerido) * 100).toFixed(2) : 'N/A';
+        users[i].cumplimiento = cumplimiento;
+    }
+    return users;
+}
+
+export const visitToStimate = (conditions, rawVisits) => {
+    const objVisit = {};
+    rawVisits.forEach((rawVisit) => {
+        let customer = rawVisit['customer']['id'] ?? '';
+        if (objVisit[customer]) {
+            objVisit[customer].push(rawVisit);
+        }
+        else {
+            objVisit[customer] = [rawVisit];
+        }
+    });
+    let key = Object.keys(objVisit);
+    const users = [];
+    for (let i = 0; i < key.length; i++) {
+        let objects = objVisit[key[i]];
+        objects.map(element => {
+            const index = users.findIndex(u => u.id === element.user.id);
+            if (index !== -1) {
+                // Si existe: Actualizar (reemplazar el objeto en el índice encontrado)
+                users[index].visits += 1; // Incrementar el contador de visitas
+            } else {
+                // Si no existe: Insertar
+                users.push({
+                    id: element.user.id,
+                    name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
+                    username: element.user?.username ?? '',
+                    customer: `${element.customer?.name ?? ''}`,
+                    visits: 1,
+                    requerido: element?.customer?.reqNroVisitEmer ?? 'N/A',
+                    cumplimiento: 0
+                });
+            }
+        });
+    }
+    for(let i = 0; i < users.length; i++){
+        const cumplimiento = users[i].requerido != 'N/A' ? ((users[i].visits / users[i].requerido) * 100).toFixed(2) : 'N/A';
+        users[i].cumplimiento = cumplimiento;
+    }
+    return users;
+}
+
+export const vehicleToStimate = (conditions, rawVehicles) => {
+    const objVehicle = {};
+    rawVehicles.forEach((rawVehicle) => {
+        let customer = rawVehicle['customer']['id'] ?? '';
+        if (objVehicle[customer]) {
+            objVehicle[customer].push(rawVehicle);
+        }
+        else {
+            objVehicle[customer] = [rawVehicle];
+        }
+    });
+    let key = Object.keys(objVehicle);
+    const users = [];
+    for (let i = 0; i < key.length; i++) {
+        let objects = objVehicle[key[i]];
+        objects.map(element => {
+            const index = users.findIndex(u => u.id === element.ingressIssued.id);
+            if (index !== -1) {
+                // Si existe: Actualizar (reemplazar el objeto en el índice encontrado)
+                users[index].vehicles += 1; // Incrementar el contador de visitas
+            } else {
+                // Si no existe: Insertar
+                users.push({
+                    id: element.ingressIssued.id,
+                    name: `${element.ingressIssued?.firstName ?? ''} ${element.ingressIssued?.lastName ?? ''} ${element.ingressIssued?.secondLastName ?? ''}`,
+                    username: element.ingressIssued?.username ?? '',
+                    customer: `${element.customer?.name ?? ''}`,
+                    vehicles: 1,
+                    requerido: element?.customer?.reqNroVehicle ?? 'N/A',
+                    cumplimiento: 0
+                });
+            }
+        });
+    }
+    for(let i = 0; i < users.length; i++){
+        const cumplimiento = users[i].requerido != 'N/A' ? ((users[i].vehicles / users[i].requerido) * 100).toFixed(2) : 'N/A';
+        users[i].cumplimiento = cumplimiento;
+    }
+    return users;
+}
+
+export const reportToStimate = (conditions, rawReports) => {
+    const objReport = {};
+    rawReports.forEach((rawReport) => {
+        let customer = rawReport['customer']['id'] ?? '';
+        if (objReport[customer]) {
+            objReport[customer].push(rawReport);
+        }
+        else {
+            objReport[customer] = [rawReport];
+        }
+    });
+    let key = Object.keys(objReport);
+    const users = [];
+    for (let i = 0; i < key.length; i++) {
+        let objects = objReport[key[i]];
+        objects.map(element => {
+            let objeto = users.find(item => item.id === element.user.id);
+            if (objeto) {
+                // Si existe: Actualizar (reemplazar el objeto en el índice encontrado)
+                objeto.reports += 1; // Incrementar el contador de visitas
+            } else {
+                // Si no existe: Insertar
+                users.push({
+                    id: element.user.id,
+                    name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
+                    username: element.user?.username ?? '',
+                    customer: `${element.customer?.name ?? ''}`,
+                    reports: 1,
+                    requerido: element?.customer?.reqNroReport ?? 'N/A',
+                    cumplimiento: 0
+                });
+            }
+        });
+    }
+    for(let i = 0; i < users.length; i++){
+        const cumplimiento = users[i].requerido != 'N/A' ? ((users[i].reports / users[i].requerido) * 100).toFixed(2) : 'N/A';
+        users[i].cumplimiento = cumplimiento;
+    }
+    return users;
+}

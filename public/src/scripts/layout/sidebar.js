@@ -244,20 +244,20 @@ export class Sidebar {
                   </span>
                 </div>
 
-                <div class="sidebar_subitem" id="render-audit">
-                  <span class="sidebar_subitem_label">
-                    <i class="fa-regular fa-abacus"></i> <div class="label">Reportes estadísticos</div>
-                  </span>
-                </div>
-
               </div>
             </div>
 
             <div class="sidebar_item" id="render-credentials">
-              <span class="sidebar_subitem_label">
+              <span class="sidebar_item_label">
                 <i class="fa-regular fa-table"></i> <div class="label">Licencias</div>
               </span>
             </div>
+
+            <div class="sidebar_item" id="render-audit">
+              <span class="sidebar_item_label">
+                <i class="fa-regular fa-abacus"></i> <div class="label">Reportes estadísticos</div>
+              </span>
+            </div
 
           </div>
         </div>
