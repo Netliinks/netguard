@@ -1525,13 +1525,21 @@ export const routineToStimate = (conditions, rawRoutines) => {
                 users[index].routines += 1; // Incrementar el contador de visitas
             } else {
                 // Si no existe: Insertar
+                // 1. Diferencia en milisegundos
+                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+
+                // 2. Convertir a días (redondear para evitar errores de zona horaria)
+                const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
+
+                // 3. Contar ambos extremos (sumar 1)
+                const totalDias = dias + 1;
                 users.push({
                     id: element.user.id,
                     name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     routines: 1,
-                    requerido: element?.customer?.reqNroRoutine ?? 'N/A',
+                    requerido: element?.customer?.reqNroRoutine == undefined ? 'N/A' : (element?.customer?.reqNroRoutine * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1566,13 +1574,21 @@ export const visitToStimate = (conditions, rawVisits) => {
                 users[index].visits += 1; // Incrementar el contador de visitas
             } else {
                 // Si no existe: Insertar
+                // 1. Diferencia en milisegundos
+                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+
+                // 2. Convertir a días (redondear para evitar errores de zona horaria)
+                const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
+
+                // 3. Contar ambos extremos (sumar 1)
+                const totalDias = dias + 1;
                 users.push({
                     id: element.user.id,
                     name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     visits: 1,
-                    requerido: element?.customer?.reqNroVisitEmer ?? 'N/A',
+                    requerido: element?.customer?.reqNroVisitEmer == undefined ? 'N/A' : (element?.customer?.reqNroVisitEmer * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1607,13 +1623,21 @@ export const vehicleToStimate = (conditions, rawVehicles) => {
                 users[index].vehicles += 1; // Incrementar el contador de visitas
             } else {
                 // Si no existe: Insertar
+                // 1. Diferencia en milisegundos
+                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+
+                // 2. Convertir a días (redondear para evitar errores de zona horaria)
+                const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
+
+                // 3. Contar ambos extremos (sumar 1)
+                const totalDias = dias + 1;
                 users.push({
                     id: element.ingressIssued.id,
                     name: `${element.ingressIssued?.firstName ?? ''} ${element.ingressIssued?.lastName ?? ''} ${element.ingressIssued?.secondLastName ?? ''}`,
                     username: element.ingressIssued?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     vehicles: 1,
-                    requerido: element?.customer?.reqNroVehicle ?? 'N/A',
+                    requerido: element?.customer?.reqNroVehicle == undefined ? 'N/A' : (element?.customer?.reqNroVehicle * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1648,13 +1672,21 @@ export const reportToStimate = (conditions, rawReports) => {
                 objeto.reports += 1; // Incrementar el contador de visitas
             } else {
                 // Si no existe: Insertar
+                // 1. Diferencia en milisegundos
+                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+
+                // 2. Convertir a días (redondear para evitar errores de zona horaria)
+                const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
+
+                // 3. Contar ambos extremos (sumar 1)
+                const totalDias = dias + 1;
                 users.push({
                     id: element.user.id,
                     name: `${element.user?.firstName ?? ''} ${element.user?.lastName ?? ''} ${element.user?.secondLastName ?? ''}`,
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     reports: 1,
-                    requerido: element?.customer?.reqNroReport ?? 'N/A',
+                    requerido: element?.customer?.reqNroReport == undefined ? 'N/A' : (element?.customer?.reqNroReport * totalDias),
                     cumplimiento: 0
                 });
             }
