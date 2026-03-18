@@ -6,7 +6,7 @@
 export const tableLayout = `
   <div class="datatable" id="datatable">
     <div class="datatable_header">
-      <div class="datatable_title" id="datatable-title"><h1>Reportes estadísticos de rutinas</h1></div>
+      <div class="datatable_title" id="datatable-title"><h1>Reportes estadísticos</h1></div>
     </div>
 
     <div style="justify-content: center; align-items: center; display:flex; height:500px;">
@@ -16,21 +16,28 @@ export const tableLayout = `
             <br>
             <br>
             <div class="material_input_select">
-                <label for="entity-type" style="font-size:14px;">Organizar por:</label>
-                <input type="text" id="entity-type" class="input_select" readonly placeholder="cargando..." autocomplete="none" style="font-size:14px;">
+                <label for="entity-theme" style="font-size:14px;">Seleccione una opción:</label>
+                <input type="text" id="entity-theme" class="input_select" readonly placeholder="cargando..." autocomplete="none" style="font-size:14px;">
                 <div id="input-options" class="input_options"></div>
             </div>
 
-            <div id="stats-user" style="display:none;">
+            <!-- <div class="material_input_select" id="div-entity-type" style="display:none;">
+                <label for="entity-type" style="font-size:14px;">Organizar por:</label>
+                <input type="text" id="entity-type" class="input_select" readonly placeholder="cargando..." autocomplete="none" style="font-size:14px;">
+                <div id="input-options" class="input_options"></div>
+            </div> -->
+
+            <div class="material_input" id="div-customer">
+                <input type="text" id="entity-customer" autocomplete="none" style="font-size:14px;" disabled>
+                <label for="entity-customer" style="font-size:14px;"><i class="fa-solid fa-window" readonly></i> Seleccionar cliente <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-element"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
+            </div>
+
+            <div id="stats-allcustomer">
                 <div class="input_checkbox">
-                  <label><input type="checkbox" class="checkbox" id="entity-user-stats"> Más detalles por usuario</label>
+                  <label><input type="checkbox" class="checkbox" id="entity-allcustomer"> Todas las empresas activas</label>
                 </div>
             </div>
 
-            <div class="material_input" id="stats-customer" style="display:none;">
-                <input type="text" id="entity-element" autocomplete="none" style="font-size:14px;" disabled>
-                <label for="entity-element" style="font-size:14px;"><i class="fa-solid fa-window" readonly></i> Seleccionar <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-element"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
-            </div>
             <br>
 
             <div class="form_group">

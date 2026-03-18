@@ -1,3 +1,5 @@
+import { visitToStimate } from "../tools.js";
+
 export const exportVisitPdf = (ar, start, end) => {
     // @ts-ignore
     window.jsPDF = window.jspdf.jsPDF;
@@ -259,3 +261,73 @@ const newDataBlock = (array, index) => {
 const splitText = (doc, field, lMargin, rMargin, pdfInMM) => {
     return doc.splitTextToSize(field, (pdfInMM - lMargin - rMargin));
 }
+
+export const generarReportVisitXls = async (conditions, visits) => {
+    // @ts-ignore
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Personal");
+    const usuarios = await visitToStimate(conditions, visits);
+    // Encabezado principal
+    const titulo = sheet.addRow(["REPORTE DE INGRESO DE PERSONAS (VISITAS EMERGENTES)"]);
+    titulo.font = { bold: true, size: 14 };
+    titulo.alignment = { horizontal: "center" };
+    sheet.mergeCells("A1:E1");
+    sheet.addRow([]);
+    const fechas = sheet.addRow([`FECHA INICIAL: ${conditions.filterStartDate} - FECHA CORTE: ${conditions.filterEndDate}`]);
+    fechas.font = { italic: true };
+    sheet.mergeCells("A3:E3");
+    sheet.addRow([]);
+    const header = sheet.addRow([
+        "Cliente",
+        "Usuario",
+        "Requeridos",
+        "Realizados",
+        "Cumplimiento",
+    ]);
+    header.font = { bold: true };
+    header.alignment = { horizontal: "center" };
+    // @ts-ignore
+    header.eachCell(cell => {
+        cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9D9D9" } };
+    });
+    // Recorrer usuarios
+    // @ts-ignore
+    usuarios.forEach(u => {
+        //const row = sheet.addRow([u["Usuario"], u["Total Alertas Generadas"], u["Total Alertas No Marcadas"], u["Total Alertas Respondidas"], u["Total Alertas Respondidas A Tiempo"], u["Cumplimiento"], u["Promedio"]]);
+        const row = sheet.addRow([u["customer"], u["username"], u["requerido"], u["visits"], u["cumplimiento"] == 'N/A' ? u["cumplimiento"] : `${u["cumplimiento"]}%`]);
+        let cellIndex = 0;
+        // @ts-ignore
+        row.eachCell(cell => {
+            cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
+            if(cellIndex < 2){
+                cell.alignment = { horizontal: "left" };
+            }else{
+                cell.alignment = { horizontal: "center" };
+            }
+            
+            cellIndex += 1;
+        });
+    });
+    sheet.addRow([]);
+    // Ajustar ancho de columnas
+    sheet.columns = [
+        { width: 30 },
+        { width: 40 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 },
+    ];
+    // Guardar archivo
+    //await workbook.xlsx.writeFile("ReporteCumplimiento.xlsx");
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8' });
+    var blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = "Cumplimiento_Visita.xlsx";
+    link.click();
+    URL.revokeObjectURL(blobUrl);
+    // @ts-ignore
+    //window.location=link;
+};

@@ -137,7 +137,7 @@ export class AlertsRegisters {
             viewTitle.innerText = pageName;
             tableBody.innerHTML = '.Cargando... Esto puede tomar unos momentos';
             let notesArray = await GetAlerts();
-            console.log(notesArray)
+            //console.log(notesArray)
             //if(infoPage.currentPage == 1){
                 const change = async () => {
                     clearTimeout(Config.timeOut);
