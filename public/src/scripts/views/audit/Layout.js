@@ -7,6 +7,9 @@ export const tableLayout = `
   <div class="datatable" id="datatable">
     <div class="datatable_header">
       <div class="datatable_title" id="datatable-title"><h1>Reportes estadísticos</h1></div>
+      <div class="datatable_tools" id="datatable-tools">
+        <button class="datatable_button import_user" id="import-entities">Importar</button>
+      </div>
     </div>
 
     <div style="justify-content: center; align-items: center; display:flex; height:500px;">

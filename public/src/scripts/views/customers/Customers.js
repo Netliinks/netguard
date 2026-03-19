@@ -273,6 +273,36 @@ export class Customers {
                 <label><input type="checkbox" class="checkbox" id="entity-qr-static"> Permitir QR estático para visita</label>
             </div>
 
+            <br>
+            <br>
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-visitemer"
+               autocomplete="none" min="0">
+              <label for="entity-required-visitemer">Requerido visita emergente</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-vehicular"
+               autocomplete="none" min="0">
+              <label for="entity-required-vehicular">Requerido ingreso vehicular</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-report"
+               autocomplete="none" min="0">
+              <label for="entity-required-report">Requerido reportes</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-routine"
+               autocomplete="none" min="0">
+              <label for="entity-required-routine">Requerido rutinas</label>
+            </div>
+
           </div>
           <!-- END EDITOR BODY -->
 
@@ -296,6 +326,10 @@ export class Customers {
                     vehicular: document.getElementById('entity-vehicular'),
                     routine: document.getElementById('entity-routine'),
                     qrstatic: document.getElementById('entity-qr-static'),
+                    reqNroVisitEmer: document.getElementById('entity-required-visitemer'),
+                    reqNroVehicle: document.getElementById('entity-required-vehicular'),
+                    reqNroReport: document.getElementById('entity-required-report'),
+                    reqNroRoutine: document.getElementById('entity-required-routine'),
                 };
                 const raw = JSON.stringify({
                     "name": `${inputsCollection.name.value}`,
@@ -310,6 +344,10 @@ export class Customers {
                     "permitVehicular": `${inputsCollection.vehicular.checked ? true : false}`,
                     "permitRoutine": `${inputsCollection.routine.checked ? true : false}`,
                     'permitVisitStatic': `${inputsCollection.qrstatic.checked ? true : false}`,
+                    'reqNroVisitEmer': `${inputsCollection.reqNroVisitEmer.value ?? 0}`,
+                    'reqNroVehicle': `${inputsCollection.reqNroVehicle.value ?? 0}`,
+                    'reqNroReport': `${inputsCollection.reqNroReport.value ?? 0}`,
+                    'reqNroRoutine': `${inputsCollection.reqNroRoutine.value ?? 0}`,
                 });
                 const exist = await searchUniversalSingle2('name', 'contains', inputsCollection.name.value, 'business.id', '=', businessData.business.id, 'Customer');
                 //const exist = await searchCustomerbyName(inputsCollection.name.value, businessId)
@@ -390,6 +428,36 @@ export class Customers {
                 <label><input type="checkbox" class="checkbox" id="entity-qr-static"> Permitir QR estático para visita</label>
             </div>
 
+            <br>
+            <br>
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-visitemer"
+               autocomplete="none" min="0" class="input_filled" value="${data?.reqNroVisitEmer ?? 0}">
+              <label for="entity-required-visitemer">Requerido visita emergente</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-vehicular"
+               autocomplete="none" min="0" class="input_filled" value="${data?.reqNroVehicle ?? 0}">
+              <label for="entity-required-vehicular">Requerido ingreso vehicular</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-report"
+               autocomplete="none" min="0" class="input_filled" value="${data?.reqNroReport ?? 0}">
+              <label for="entity-required-report">Requerido reportes</label>
+            </div>
+
+            <div class="material_input">
+              <input type="number"
+                id="entity-required-routine"
+               autocomplete="none" min="0" class="input_filled" value="${data?.reqNroRoutine ?? 0}">
+              <label for="entity-required-routine">Requerido rutinas</label>
+            </div>
+
           </div>
           <!-- END EDITOR BODY -->
 
@@ -436,6 +504,10 @@ export class Customers {
               // @ts-ignore
               routine: document.getElementById('entity-routine'),
               qrstatic: document.getElementById('entity-qr-static'),
+              reqNroVisitEmer: document.getElementById('entity-required-visitemer'),
+              reqNroVehicle: document.getElementById('entity-required-vehicular'),
+              reqNroReport: document.getElementById('entity-required-report'),
+              reqNroRoutine: document.getElementById('entity-required-routine'),
           };
             updateButton.addEventListener('click', () => {
               let raw = JSON.stringify({
@@ -448,6 +520,10 @@ export class Customers {
                   "permitVehicular": `${$value.vehicular.checked ? true : false}`,
                   "permitRoutine": `${$value.routine.checked ? true : false}`,
                   'permitVisitStatic': `${$value.qrstatic.checked ? true : false}`,
+                  'reqNroVisitEmer': `${$value.reqNroVisitEmer.value ?? 0}`,
+                  'reqNroVehicle': `${$value.reqNroVehicle.value ?? 0}`,
+                  'reqNroReport': `${$value.reqNroReport.value ?? 0}`,
+                  'reqNroRoutine': `${$value.reqNroRoutine.value ?? 0}`,
               });
               update(raw);
             });

@@ -1539,7 +1539,7 @@ export const routineToStimate = (conditions, rawRoutines) => {
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     routines: 1,
-                    requerido: element?.customer?.reqNroRoutine == undefined ? 'N/A' : (element?.customer?.reqNroRoutine * totalDias),
+                    requerido: element?.customer?.reqNroRoutine == undefined ? 'N/A' : element?.customer?.reqNroRoutine == 0 ? 'N/A' : (element?.customer?.reqNroRoutine * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1588,7 +1588,7 @@ export const visitToStimate = (conditions, rawVisits) => {
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     visits: 1,
-                    requerido: element?.customer?.reqNroVisitEmer == undefined ? 'N/A' : (element?.customer?.reqNroVisitEmer * totalDias),
+                    requerido: element?.customer?.reqNroVisitEmer == undefined ? 'N/A' : element?.customer?.reqNroVisitEmer == 0 ? 'N/A' : (element?.customer?.reqNroVisitEmer * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1637,7 +1637,7 @@ export const vehicleToStimate = (conditions, rawVehicles) => {
                     username: element.ingressIssued?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     vehicles: 1,
-                    requerido: element?.customer?.reqNroVehicle == undefined ? 'N/A' : (element?.customer?.reqNroVehicle * totalDias),
+                    requerido: element?.customer?.reqNroVehicle == undefined ? 'N/A' : element?.customer?.reqNroVehicle == 0 ? 'N/A' : (element?.customer?.reqNroVehicle * totalDias),
                     cumplimiento: 0
                 });
             }
@@ -1686,7 +1686,7 @@ export const reportToStimate = (conditions, rawReports) => {
                     username: element.user?.username ?? '',
                     customer: `${element.customer?.name ?? ''}`,
                     reports: 1,
-                    requerido: element?.customer?.reqNroReport == undefined ? 'N/A' : (element?.customer?.reqNroReport * totalDias),
+                    requerido: element?.customer?.reqNroReport == undefined ? 'N/A' : element?.customer?.reqNroReport == 0 ? 'N/A' : (element?.customer?.reqNroReport * totalDias),
                     cumplimiento: 0
                 });
             }

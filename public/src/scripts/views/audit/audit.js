@@ -227,6 +227,7 @@ export class Audits {
             calculateButton: document.getElementById('calculate-entity')
         };
         this.load(_inputElements);
+        this.import();
         this.selectElement();
         //this.selectService()
         this.generateReport(_inputElements);
@@ -237,6 +238,319 @@ export class Audits {
         //_inputElements.checkDate.checked = true
         inputSelectThemeAudit('entity-theme', 'INGRESO EMERGENTE', _inputElements);
         //inputSelectTypeAudit('entity-type', 'GUARDIA', _inputElements);
+    }
+    import() {
+        const importClients = document.getElementById('import-entities');
+        importClients.addEventListener('click', async () => {
+            this.entityDialogContainer.innerHTML = '';
+            this.entityDialogContainer.style.display = 'flex';
+            this.entityDialogContainer.innerHTML = `
+            <div class="entity_editor" id="entity-editor">
+                <div class="entity_editor_header">
+                <div class="user_info">
+                    <div class="avatar"><i class="fa-regular fa-up-from-line"></i></div>
+                    <h1 class="entity_editor_title">Importar <br><small>Números requeridos</small></h1>
+                </div>
+
+                <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+                </div>
+
+                <!-- EDITOR BODY -->
+                <div class="entity_editor_body padding_t_8_important">
+                <div class="sidebar_section">
+                    <div class="file_template">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <div class="description">
+                            <p class="filename">Plantilla de Requerimientos</p>
+                            <a id="file-export" rel="noopener" target="_self" class="filelink">Descargar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar_section" style="display: none">
+                    <label class="drop_zone" id="drop-zone" draggable="true">
+                        Seleccione o arrastre <br>su archivo aquí
+                    </label>
+                </div>
+
+                <div class="sidebar_section">
+                    <input type="file" id="file-handler">
+                </div>
+                </div>
+                <!-- END EDITOR BODY -->
+
+                <div class="entity_editor_footer">
+                <button class="btn btn_primary btn_widder" id="button-import">Importar</button>
+                </div>
+            </div>
+            `;
+            const _fileExport = document.getElementById('file-export');
+            const _fileHandler = document.getElementById('file-handler');
+            let onPressed = false;
+            _fileExport.addEventListener('click', async () => {
+                if(!onPressed){
+                    onPressed = true;
+                    this.dialogContainer.style.display = 'block';
+                    this.dialogContainer.innerHTML = `
+                    <div class="dialog_content" id="dialog-content">
+                        <div class="dialog">
+                            <div class="dialog_container padding_8">
+                                <div class="dialog_header">
+                                    <h2>Exportando...</h2>
+                                </div>
+
+                                <div class="dialog_message padding_8">
+                                    <div class="material_input">
+                                        <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                        <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                    </div>
+
+                                    <div class="input_detail">
+                                        <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                        <p id="message-export" class="input_filled" readonly></p>
+                                    </div>
+                                </div>
+
+                                <div class="dialog_footer">
+                                    <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    inputObserver();
+                    const message1 = document.getElementById("export-total");
+                    const message2 = document.getElementById("message-export");
+                    const _closeButton = document.getElementById('cancel');
+                    _closeButton.onclick = () => {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                    };
+                    let rawToExport=(offset)=>{
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": `business.id`,
+                                        "operator": "=",
+                                        "value": `${Config.currentUser.business.id}`
+                                    },
+                                    {
+                                        "property": "business.state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                    {
+                                        "property": "state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                ],
+                            },
+                            sort: `+name`,
+                            limit: Config.limitExport,
+                            offset: offset,
+                        });
+                        return rawExport;
+                    }
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("Customer", rawExport);
+                    if(totalRegisters === undefined){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("Ocurrió un error al exportar");
+                    }else if(totalRegisters===0){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("No hay ningún registro");  
+                    }else {
+                        message1.value = `0 / ${totalRegisters}`;
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let customers = [];
+                        let offset = 0;
+                        for(let i = 0; i < pages; i++){
+                            if(onPressed){
+                                rawExport = rawToExport(offset);
+                                array[i] = await getFilterEntityData("Customer", rawExport); //await getEvents();
+                                for(let y=0; y<array[i].length; y++){
+                                    customers.push({
+                                        "ID":array[i][y]["id"] ?? '',
+                                        "Nombre":array[i][y]["name"] ?? '',
+                                        "Visitas Emergentes":array[i][y]["reqNroVisitEmer"] ?? 0,
+                                        "Ingreso Vehicular":array[i][y]["reqNroVehicle"] ?? 0,
+                                        "Reportes":array[i][y]["reqNroReport"] ?? 0,
+                                        "Rutinas":array[i][y]["reqNroRoutine"] ?? 0
+                                    });
+                                }
+                                message1.value = `${customers.length} / ${totalRegisters}`;
+                                offset = Config.limitExport + (offset);
+                            }
+                        }
+                    
+                        const generateFile = (ar, title, extension) => {
+                            //comprobamos compatibilidad
+                            if (window.Blob && (window.URL || window.webkitURL)) {
+                                var contenido = "", d = new Date(), blob, reader, save, clicEvent;
+                                //creamos contenido del archivo
+                                for (var i = 0; i < ar.length; i++) {
+                                    //construimos cabecera del csv
+                                    if (i == 0)
+                                        contenido += Object.keys(ar[i]).join(";") + "\n";
+                                    //resto del contenido
+                                    contenido += Object.keys(ar[i]).map(function (key) {
+                                        return ar[i][key];
+                                    }).join(";") + "\n";
+                                }
+                                //creamos el blob
+                                blob = new Blob(["\ufeff", contenido], { type: `text/${extension}` });
+                                //creamos el reader
+                                // @ts-ignore
+                                var reader = new FileReader();
+                                reader.onload = function (event) {
+                                    //escuchamos su evento load y creamos un enlace en dom
+                                    save = document.createElement('a');
+                                    // @ts-ignore
+                                    save.href = event.target.result;
+                                    save.target = '_blank';
+                                    //aquí le damos nombre al archivo
+                                    save.download = "Doc_" + title + "_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.${extension}`;
+                                    try {
+                                        //creamos un evento click
+                                        clicEvent = new MouseEvent('click', {
+                                            'view': window,
+                                            'bubbles': true,
+                                            'cancelable': true
+                                        });
+                                    }
+                                    catch (e) {
+                                        //si llega aquí es que probablemente implemente la forma antigua de crear un enlace
+                                        clicEvent = document.createEvent("MouseEvent");
+                                        // @ts-ignore
+                                        clicEvent.click();
+                                    }
+                                    //disparamos el evento
+                                    save.dispatchEvent(clicEvent);
+                                    //liberamos el objeto window.URL
+                                    (window.URL || window.webkitURL).revokeObjectURL(save.href);
+                                };
+                                //leemos como url
+                                reader.readAsDataURL(blob);
+                            }
+                            else {
+                                //el navegador no admite esta opción
+                                alert("Su navegador no permite esta acción");
+                            }
+                        };
+                        generateFile(customers,"Requerimientos","csv");
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        onPressed = false;
+                    }
+                }
+            });
+            _fileHandler.addEventListener('change', () => {
+                readFile(_fileHandler.files[0]);
+            });
+            async function readFile(file) {
+                //const customer = await getEntitiesData('Customer');
+                //const citadel = await getEntitiesData('Citadel');
+                //const deparment = await getEntitiesData('Department');
+                //const contractor = await getEntitiesData('Contractor');
+                const fileReader = new FileReader();
+                fileReader.readAsText(file);
+                fileReader.addEventListener('load', (e) => {
+                    let result = e.srcElement.result;
+                    let resultSplit = result.split('\r');
+                    let rawFile;
+                    let elem = [];
+                    for (let i = 1; i < resultSplit.length-1; i++) {
+                        let userData = resultSplit[i].split(';');
+                        rawFile = {
+                            "id": `${userData[0]?.replace(/\n/g, '')}`,
+                            "nombre": `${userData[1]?.replace(/\n/g, '')}`,
+                            "reqNroVisitEmer": `${userData[2]?.replace(/\n/g, '')}`,
+                            "reqNroVehicle": `${userData[3]?.replace(/\n/g, '')}`,
+                            "reqNroReport": `${userData[4]?.replace(/\n/g, '')}`,
+                            "reqNroRoutine": `${userData[5]?.replace(/\n/g, '')}`,
+                        };
+                        elem.push(rawFile);
+                    }
+                    const importToBackend = document.getElementById('button-import');
+                    importToBackend.addEventListener('click', () => {
+                        let cont = 0
+                        const dialogContainer = document.getElementById('app-dialogs');
+                        dialogContainer.style.display = 'block';
+                        dialogContainer.innerHTML = `
+                        <div class="dialog_content" id="dialog-content">
+                            <div class="dialog">
+                                <div class="dialog_container padding_8">
+                                    <div class="dialog_header">
+                                        <h2>Importando...</h2>
+                                    </div>
+
+                                    <div class="dialog_message padding_8">
+                                        <div class="material_input">
+                                            <input type="text" id="import-total" class="input_filled" value="..." readonly>
+                                            <label for="import-total"><i class="fa-solid fa-cloud-arrow-up"></i>Cargando datos</label>
+                                        </div>
+
+                                        <div class="input_detail">
+                                            <label for="message-import"><i class="fa-solid fa-file-import"></i></label>
+                                            <p id="message-import" class="input_filled" readonly></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="dialog_footer">
+                                        <button class="btn btn_primary" id="btn-cancelImport">Cancelar</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        const message1 = document.getElementById("import-total");
+                        const message2 = document.getElementById("message-import");
+                        const btnCancelModal = document.getElementById("btn-cancelImport");
+                        btnCancelModal.onclick = () => {
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        };
+                        elem.forEach(async (el) => {
+                            message1.value = `${cont += 1} / ${elem.length}`
+                            message2.innerText = `${el["nombre"]}`
+                            const entityId = el["id"];
+                            const raw = JSON.stringify({
+                                "reqNroVisitEmer": `${el["reqNroVisitEmer"]}`,
+                                "reqNroVehicle": `${el["reqNroVehicle"]}`,
+                                "reqNroReport": `${el["reqNroReport"]}`,
+                                "reqNroRoutine": `${el["reqNroRoutine"]}`,
+                            });
+                            console.log(entityId)
+                            console.log(raw)
+                            /*await updateEntity('Customer', entityId, raw)
+                                .then((res) => {
+                                setTimeout(async () => {
+                                }, 2000);
+                            });*/
+                            etTimeout(async () => {
+                                new CloseDialog().x(dialogContainer);
+                                }, 5000);
+                        });
+                        
+                    });
+                });
+            }
+            const closeButton = document.getElementById('close');
+            const editor = document.getElementById('entity-editor-container');
+            closeButton.addEventListener('click', () => {
+                //console.log('close');
+                new CloseDialog().x(editor);
+            }, false);
+        });
     }
     generateReport(_inputElements) {
         _inputElements.calculateButton.addEventListener('click', async () => {
