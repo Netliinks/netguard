@@ -668,12 +668,7 @@ export const searchUniversalValue = async (param, operator, value, table) => {
               "property": `${param}`,
               "operator": `${operator}`,
               "value": `${value}`
-            },
-            {
-                "property": `customer.id`,
-                "operator": `=`,
-                "value": ``
-              },
+            }
           ]
         },
         sort: "createdDate",

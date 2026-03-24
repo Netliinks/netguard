@@ -6,7 +6,7 @@
 import { Config } from "./Configs.js";
 import { getUserInfo, _userAgent, getEntityData, getEntitiesData, updateEntity, getFilterEntityData } from "./endpoints.js";
 import { RenderApplicationUI } from "./layout/interface.js";
-import { registryPlataform, searchUniversalValueComplex} from "./tools.js";
+import { registryPlataform, searchUniversalValue} from "./tools.js";
 const loginContainer = document.getElementById('login-container');
 const app = document.getElementById('app');
 const connectionHeader = {
@@ -28,7 +28,7 @@ export class SignIn {
         const checkUser = async () => {
             //let currentUser = await getUserInfo();
             console.log(userId)
-            let currentUsers = await searchUniversalValueComplex(userId === 'consulta' ? 'username' : 'id','=',`${userId}`,'User');
+            let currentUsers = await searchUniversalValue(userId === 'consulta' ? 'username' : 'id','=',`${userId}`,'User');
             console.log(currentUsers)
             let currentUser = currentUsers[0];
             const customerId = localStorage.getItem('customer_id')
