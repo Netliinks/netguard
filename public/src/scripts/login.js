@@ -27,9 +27,7 @@ export class SignIn {
         const userId = localStorage.getItem('userId');
         const checkUser = async () => {
             //let currentUser = await getUserInfo();
-            console.log(userId)
             let currentUsers = await searchUniversalValue(userId === 'consulta' ? 'username' : 'id','=',`${userId}`,'User');
-            console.log(currentUsers)
             let currentUser = currentUsers[0];
             const customerId = localStorage.getItem('customer_id')
             if (currentUsers.error === 'invalid_token') {
