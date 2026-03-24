@@ -686,6 +686,28 @@ export const searchUniversalValue = async (param, operator, value, table) => {
     }
 }
 
+export const searchUniversalValueComplex = async (param, operator, value, table) => {
+    const raw = JSON.stringify({
+        "filter": {
+          "conditions": [
+            {
+              "property": `${param}`,
+              "operator": `${operator}`,
+              "value": `${value}`
+            }
+          ]
+        },
+        sort: "createdDate",
+        fetchPlan: 'full',
+    });
+    const data = await getFilterEntityData(`${table}`, raw);
+    if(data == undefined || data.length == 0){
+        alert(`${param} ${value} no obtenido(a)`);
+    }else{
+        return data;
+    }
+}
+
 export const searchUniversalSingle2 = async (param, operator, value, param2, operator2, value2, table) => {
     const raw = JSON.stringify({
         "filter": {

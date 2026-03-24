@@ -6,7 +6,7 @@
 import { Config } from "./Configs.js";
 import { getUserInfo, _userAgent, getEntityData, getEntitiesData, updateEntity, getFilterEntityData } from "./endpoints.js";
 import { RenderApplicationUI } from "./layout/interface.js";
-import { registryPlataform } from "./tools.js";
+import { registryPlataform, searchUniversalValueComplex} from "./tools.js";
 const loginContainer = document.getElementById('login-container');
 const app = document.getElementById('app');
 const connectionHeader = {
@@ -24,10 +24,15 @@ const reqOP = {
 export class SignIn {
     async checkSignIn() {
         const accessToken = localStorage.getItem('access_token');
+        const userId = localStorage.getItem('userId');
         const checkUser = async () => {
-            let currentUser = await getUserInfo();
+            //let currentUser = await getUserInfo();
+            console.log(userId)
+            let currentUsers = await searchUniversalValueComplex(userId === 'consulta' ? 'username' : 'id','=',`${userId}`,'User');
+            console.log(currentUsers)
+            let currentUser = currentUsers[0];
             const customerId = localStorage.getItem('customer_id')
-            if (currentUser.error === 'invalid_token') {
+            if (currentUsers.error === 'invalid_token') {
                 this.signOut();
             }
             if(currentUser.username === "consulta"){
@@ -78,6 +83,8 @@ export class SignIn {
                             scope: res.scope,
                             tokenType: res.token_type
                         };
+                        localStorage.removeItem('userId');
+                        localStorage.setItem('userId', user[0].id);
                         await registryPlataform(user[0].id);
                         localStorage.removeItem('email');
                         localStorage.removeItem('password');
@@ -91,7 +98,7 @@ export class SignIn {
                 });
             }else{
                 if(customerId == null){
-                    let user = await getEntityData('User', currentUser.attributes.id);
+                    let user = await getEntityData('User', currentUser.id);
                     if(user.customer?.id != null || user.customer?.id != undefined){
                         localStorage.setItem('customer_id', user.customer?.id);
                         window.location.reload();
@@ -100,16 +107,16 @@ export class SignIn {
                         alert('Usuario no tiene asignado empresa.');
                     }    
                 }
-                if (currentUser.attributes.isSuper !== true) {
+                if (currentUser.isSuper !== true) {
                     this.signOut();
                     alert('Usuario no es superusuario.');
                 }
-                if (currentUser.attributes.userType !== 'GUARD') {
+                if (currentUser.userType !== 'GUARD') {
                     this.signOut();
                     alert('Usuario no es tipo guardia.');
                 }
-                if (currentUser.attributes.verifiedSuper === true) {
-                    let user = await getEntityData('User', currentUser.attributes.id);
+                if (currentUser.verifiedSuper === true) {
+                    let user = await getEntityData('User', currentUser.id);
                     //let business = await getEntityData('Business', user?.business?.id);
                     let rawCustomer = JSON.stringify({
                         "filter": {
@@ -139,7 +146,7 @@ export class SignIn {
                         this.signOut();
                     }
                 }else{
-                    this.showVerified(currentUser.attributes.id, currentUser.attributes?.hashSuper);
+                    this.showVerified(currentUser.id, currentUser?.hashSuper);
                 }
             }
             
@@ -222,6 +229,7 @@ export class SignIn {
             }
         });
         async function connect(user, password) {
+            localStorage.setItem('userId', "consulta");
             const reqOptions = {
                 method: reqOP.method,
                 body: `grant_type=password&username=consulta&password=consulta`,
