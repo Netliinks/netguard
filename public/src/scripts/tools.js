@@ -1543,7 +1543,9 @@ export const routineToStimate = (conditions, rawRoutines) => {
             } else {
                 // Si no existe: Insertar
                 // 1. Diferencia en milisegundos
-                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+                const fecha1 = new Date(conditions.filterStartDate);
+                const fecha2 = new Date(conditions.filterEndDate);
+                const diferenciaMs = Math.abs(fecha2.getTime() - fecha1.getTime());
 
                 // 2. Convertir a días (redondear para evitar errores de zona horaria)
                 const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
@@ -1592,7 +1594,9 @@ export const visitToStimate = (conditions, rawVisits) => {
             } else {
                 // Si no existe: Insertar
                 // 1. Diferencia en milisegundos
-                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+                const fecha1 = new Date(conditions.filterStartDate);
+                const fecha2 = new Date(conditions.filterEndDate);
+                const diferenciaMs = Math.abs(fecha2.getTime() - fecha1.getTime());
 
                 // 2. Convertir a días (redondear para evitar errores de zona horaria)
                 const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
@@ -1641,7 +1645,9 @@ export const vehicleToStimate = (conditions, rawVehicles) => {
             } else {
                 // Si no existe: Insertar
                 // 1. Diferencia en milisegundos
-                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+                const fecha1 = new Date(conditions.filterStartDate);
+                const fecha2 = new Date(conditions.filterEndDate);
+                const diferenciaMs = Math.abs(fecha2.getTime() - fecha1.getTime());
 
                 // 2. Convertir a días (redondear para evitar errores de zona horaria)
                 const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
@@ -1690,7 +1696,9 @@ export const reportToStimate = (conditions, rawReports) => {
             } else {
                 // Si no existe: Insertar
                 // 1. Diferencia en milisegundos
-                const diferenciaMs = Math.abs(conditions.filterEndDate - conditions.filterStartDate);
+                const fecha1 = new Date(conditions.filterStartDate);
+                const fecha2 = new Date(conditions.filterEndDate);
+                const diferenciaMs = Math.abs(fecha2.getTime() - fecha1.getTime());
 
                 // 2. Convertir a días (redondear para evitar errores de zona horaria)
                 const dias = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24));
