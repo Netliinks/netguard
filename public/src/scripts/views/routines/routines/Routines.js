@@ -187,6 +187,7 @@ export class Routines {
             }
         }
         this.register();
+        this.ex();
         this.export();
         this.remove();
         this.location();
@@ -763,6 +764,101 @@ export class Routines {
           };
         });
       });
+  }
+  ex(){
+    const exportRegisters = document.getElementById('ex-entity');
+    exportRegisters.addEventListener('click', async () => {
+        const raw = JSON.stringify({
+            "filter": {
+                "conditions": [
+                    {
+                    "property": "business.id",
+                    "operator": "=",
+                    "value": `${Config.currentUser.business.id}`
+                    },
+                    {
+                    "property": "customer.state.name",
+                    "operator": "=",
+                    "value": `Enabled`
+                    }
+                ]
+            },
+            sort: "+customer.name,+routine.name",
+            fetchPlan: 'full',
+        });
+        const data = await getFilterEntityData("RoutineSchedule", raw);
+        const dataToExport = []
+        for(let i=0;i<data.length;i++){
+            dataToExport.push({
+                "Empresa":data[i].customer.name,
+                "Rutina":data[i].routine.name,
+                "Activo":data[i].routine.isActive ? "Si" : "No",
+                "GPS":data[i].routine.checkLocation ? "Si" : "No",
+                "Ubicacion":data[i].name,
+                "Coordenadas":data[i].cords,
+                "Horario":`${data[i].scheduleTime} - ${data[i].scheduleTimeEnd ?? ''}`,
+                "Frecuencia":data[i].frequency ?? 0,
+                "Distancia":data[i].distance ?? 0
+            })
+        }
+        const generateFile = (ar, title, extension) => {
+            //comprobamos compatibilidad
+            if (window.Blob && (window.URL || window.webkitURL)) {
+                var contenido = "", d = new Date(), blob, reader, save, clicEvent;
+                //creamos contenido del archivo
+                for (var i = 0; i < ar.length; i++) {
+                    //construimos cabecera del csv
+                    if (i == 0)
+                        contenido += Object.keys(ar[i]).join(";") + "\n";
+                    //resto del contenido
+                    contenido += Object.keys(ar[i]).map(function (key) {
+                        return ar[i][key];
+                    }).join(";") + "\n";
+                }
+                //creamos el blob
+                blob = new Blob(["\ufeff", contenido], { type: `text/${extension}` });
+                //creamos el reader
+                // @ts-ignore
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    //escuchamos su evento load y creamos un enlace en dom
+                    save = document.createElement('a');
+                    // @ts-ignore
+                    save.href = event.target.result;
+                    save.target = '_blank';
+                    //aquí le damos nombre al archivo
+                    save.download = "log_" + title + "_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.${extension}`;
+                    try {
+                        //creamos un evento click
+                        clicEvent = new MouseEvent('click', {
+                            'view': window,
+                            'bubbles': true,
+                            'cancelable': true
+                        });
+                    }
+                    catch (e) {
+                        //si llega aquí es que probablemente implemente la forma antigua de crear un enlace
+                        clicEvent = document.createEvent("MouseEvent");
+                        // @ts-ignore
+                        clicEvent.click();
+                    }
+                    //disparamos el evento
+                    save.dispatchEvent(clicEvent);
+                    //liberamos el objeto window.URL
+                    (window.URL || window.webkitURL).revokeObjectURL(save.href);
+                };
+                //leemos como url
+                reader.readAsDataURL(blob);
+            }
+            else {
+                //el navegador no admite esta opción
+                alert("Su navegador no permite esta acción");
+            }
+        };
+        generateFile(dataToExport,"Rutinas","xls")
+                
+
+    });
   }
   
     location() {
