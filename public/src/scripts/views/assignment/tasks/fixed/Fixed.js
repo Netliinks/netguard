@@ -438,6 +438,9 @@ export class Fixed {
                     "customer": {
                         "id": `${customerId}`
                     },
+                    "business": {
+                        "id": `${Config.currentUser.business.id}`
+                    },
                     //"execTime": `${inputsCollection.executionTime.value}`,
                     "startTime": `${hourFormat}`,
                     "startDate": `${dateFormat}`,

@@ -331,6 +331,9 @@ export class Procedures {
           "user": {
             "id": `${_userInfo['attributes']['id']}`
           },
+          "business": {
+            "id": `${Config.currentUser.business.id}`
+          },
           "customer": {
             "id": `${customerId}`
           }
