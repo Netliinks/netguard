@@ -637,50 +637,54 @@ export class Employees {
                 //const contractor = await getEntitiesData('Contractor');
                 const fileReader = new FileReader();
                 fileReader.readAsText(file);
-                fileReader.addEventListener('load', (e) => {
+                fileReader.addEventListener('load', async (e) => {
                     let result = e.srcElement.result;
                     let resultSplit = result.split('\r');
                     let rawFile;
                     let elem = [];
                     for (let i = 1; i < resultSplit.length; i++) {
                         let userData = resultSplit[i].split(';');
-                        rawFile = JSON.stringify({
-                            "lastName": `${userData[1]?.replace(/\n/g, '')}`,
-                            "secondLastName": `${userData[2]?.replace(/\n/g, '')}`,
-                            "isSuper": false,
-                            "temp": `${userData[5]?.replace(/\n/g, '')}`,
-                            "isWebUser": false,
-                            "isActive": true,
-                            "newUser": true,
-                            "firstName": `${userData[0]?.replace(/\n/g, '')}`,
-                            "ingressHour": `${userData[6]?.replace(/\n/g, '')}`,
-                            "turnChange": `${userData[7]?.replace(/\n/g, '')}`,
-                            "state": {
-                                "id": "60885987-1b61-4247-94c7-dff348347f93"
-                            },
-                            "contractor": {
-                                "id": `${currentUserInfo.contractor.id}`
-                            //    "id": `${contractor[0].id}`
-                            },
-                            "customer": {
-                                "id": `${customerId}`
-                            },
-                            "citadel": {
-                                "id": `${currentUserInfo.citadel.id}`
-                            },
-                            "department": {
-                                "id": `${naDepartment[0]?.id ?? ''}`
-                            },
-                            "business": {
-                                "id": `${currentUserInfo.business.id}`
-                            },
-                            "phone": `${userData[3]?.replace(/\n/g, '')}`,
-                            "dni": `${userData[4]?.replace(/\n/g, '')}`,
-                            "userType": "EMPLOYEE",
-                            "username": `${userData[0]?.toLowerCase().replace(/\n/g, '')}.${userData[1]?.toLowerCase().replace(/\n/g, '')}${userData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
-                            "createVisit": false
-                        });
-                        elem.push(rawFile);
+                        const username = `${userData[0]?.toLowerCase().replace(/\n/g, '')}.${userData[1]?.toLowerCase().replace(/\n/g, '')}${userData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`;
+                        const existUsername = await getVerifyUsername(`${username}`);
+                        if (existUsername == "none") {
+                            rawFile = JSON.stringify({
+                                "lastName": `${userData[1]?.replace(/\n/g, '')}`,
+                                "secondLastName": `${userData[2]?.replace(/\n/g, '')}`,
+                                "isSuper": false,
+                                "temp": `${userData[5]?.replace(/\n/g, '')}`,
+                                "isWebUser": false,
+                                "isActive": true,
+                                "newUser": true,
+                                "firstName": `${userData[0]?.replace(/\n/g, '')}`,
+                                "ingressHour": `${userData[6]?.replace(/\n/g, '')}`,
+                                "turnChange": `${userData[7]?.replace(/\n/g, '')}`,
+                                "state": {
+                                    "id": "60885987-1b61-4247-94c7-dff348347f93"
+                                },
+                                "contractor": {
+                                    "id": `${currentUserInfo.contractor.id}`
+                                //    "id": `${contractor[0].id}`
+                                },
+                                "customer": {
+                                    "id": `${customerId}`
+                                },
+                                "citadel": {
+                                    "id": `${currentUserInfo.citadel.id}`
+                                },
+                                "department": {
+                                    "id": `${naDepartment[0]?.id ?? ''}`
+                                },
+                                "business": {
+                                    "id": `${currentUserInfo.business.id}`
+                                },
+                                "phone": `${userData[3]?.replace(/\n/g, '')}`,
+                                "dni": `${userData[4]?.replace(/\n/g, '')}`,
+                                "userType": "EMPLOYEE",
+                                "username": `${username}`,
+                                "createVisit": false
+                            });
+                            elem.push(rawFile);
+                        }
                     }
                     const importToBackend = document.getElementById('button-import');
                     importToBackend.addEventListener('click', () => {

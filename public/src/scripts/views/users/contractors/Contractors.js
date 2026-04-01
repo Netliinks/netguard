@@ -606,49 +606,53 @@ export class Contractors {
                 //const contractor = await getEntitiesData('Contractor');
                 const fileReader = new FileReader();
                 fileReader.readAsText(file);
-                fileReader.addEventListener('load', (e) => {
+                fileReader.addEventListener('load', async (e) => {
                     let result = e.srcElement.result;
                     let resultSplit = result.split('\r');
                     let rawFile;
                     let stageUsers = [];
                     for (let i = 1; i < resultSplit.length; i++) {
                         let contractorData = resultSplit[i].split(';');
-                        rawFile = JSON.stringify({
-                            "lastName": `${contractorData[1]?.replace(/\n/g, '')}`,
-                            "secondLastName": `${contractorData[2]?.replace(/\n/g, '')}`,
-                            "isSuper": false,
-                            "temp": `${contractorData[5]?.replace(/\n/g, '')}`,
-                            "isWebUser": false,
-                            "isActive": true,
-                            "newUser": true,
-                            "firstName": `${contractorData[0]?.replace(/\n/g, '')}`,
-                            "ingressHour": `${contractorData[6]?.replace(/\n/g, '')}`,
-                            "turnChange": `${contractorData[7]?.replace(/\n/g, '')}`,
-                            "state": {
-                                "id": "60885987-1b61-4247-94c7-dff348347f93"
-                            },
-                            "contractor": {
-                                "id": `${currentUserInfo.contractor.id}`
-                            },
-                            "customer": {
-                                "id": `${customerId}`
-                            },
-                            "citadel": {
-                                "id": `${currentUserInfo.citadel.id}`
-                            },
-                            "department": {
-                                "id": `${naDepartment[0]?.id ?? ''}`
-                            },
-                            "business": {
-                                "id": `${currentUserInfo.business.id}`
-                            },
-                            "phone": `${contractorData[3]?.replace(/\n/g, '')}`,
-                            "dni": `${contractorData[4]?.replace(/\n/g, '')}`,
-                            "userType": "CONTRACTOR",
-                            "username": `${contractorData[0]?.toLowerCase().replace(/\n/g, '')}.${contractorData[1]?.toLowerCase().replace(/\n/g, '')}${contractorData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
-                            "createVisit": false,
-                        });
-                        stageUsers.push(rawFile);
+                        const username = `${contractorData[0]?.toLowerCase().replace(/\n/g, '')}.${contractorData[1]?.toLowerCase().replace(/\n/g, '')}${contractorData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`;
+                        const existUsername = await getVerifyUsername(`${username}`);
+                        if (existUsername == "none") {
+                            rawFile = JSON.stringify({
+                                "lastName": `${contractorData[1]?.replace(/\n/g, '')}`,
+                                "secondLastName": `${contractorData[2]?.replace(/\n/g, '')}`,
+                                "isSuper": false,
+                                "temp": `${contractorData[5]?.replace(/\n/g, '')}`,
+                                "isWebUser": false,
+                                "isActive": true,
+                                "newUser": true,
+                                "firstName": `${contractorData[0]?.replace(/\n/g, '')}`,
+                                "ingressHour": `${contractorData[6]?.replace(/\n/g, '')}`,
+                                "turnChange": `${contractorData[7]?.replace(/\n/g, '')}`,
+                                "state": {
+                                    "id": "60885987-1b61-4247-94c7-dff348347f93"
+                                },
+                                "contractor": {
+                                    "id": `${currentUserInfo.contractor.id}`
+                                },
+                                "customer": {
+                                    "id": `${customerId}`
+                                },
+                                "citadel": {
+                                    "id": `${currentUserInfo.citadel.id}`
+                                },
+                                "department": {
+                                    "id": `${naDepartment[0]?.id ?? ''}`
+                                },
+                                "business": {
+                                    "id": `${currentUserInfo.business.id}`
+                                },
+                                "phone": `${contractorData[3]?.replace(/\n/g, '')}`,
+                                "dni": `${contractorData[4]?.replace(/\n/g, '')}`,
+                                "userType": "CONTRACTOR",
+                                "username": `${username}`,
+                                "createVisit": false,
+                            });
+                            stageUsers.push(rawFile);
+                        }
                     }
                     const _import = document.getElementById('button-import');
                     _import.addEventListener('click', () => {
