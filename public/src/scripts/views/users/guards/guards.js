@@ -18,7 +18,8 @@ let infoPage = {
     count: 0,
     offset: Config.offset,
     currentPage: currentPage,
-    search: ""
+    search: "",
+    showGuards: "ALL"
 };
 let dataPage;
 const currentUserData = async() => {
@@ -32,8 +33,8 @@ const currentCustomerData = async() => {
     return customer;
 }
 const getUsers = async () => {
-    const currentUser = await currentUserData(); //usuario logueado
-    currentCustomer = await currentCustomerData();
+    //const currentUser = await currentUserData(); //usuario logueado
+    //currentCustomer = await currentCustomerData();
     /*const users = await getEntitiesData('User');
     const FSuper = users.filter((data) => data.isSuper === false);
     const FCustomer = FSuper.filter((data) => `${data.customer?.id}` === `${customerId}`);
@@ -90,10 +91,15 @@ const getUsers = async () => {
                     "property": "business.id",
                     "operator": "=",
                     "value": `${Config.currentUser.business.id}`
+                },
+                {
+                    "property": `${infoPage.showGuards === "ALL" ? "business.id" : infoPage.showGuards === "THIS" ? "customer.id" : "business.id"}`,
+                    "operator": "=",
+                    "value": `${infoPage.showGuards === "ALL" ? Config.currentUser.business.id : infoPage.showGuards === "THIS" ? customerId : Config.currentUser.business.id}`
                 }
             ],
         },
-        sort: "-createdDate",
+        sort: infoPage.showGuards === "N/A" ? "-customer.name,-createdDate" : "+customer.name,-createdDate",
         limit: Config.tableRows,
         offset: infoPage.offset,
         fetchPlan: 'full',
@@ -110,7 +116,9 @@ export class Guards {
         this.searchEntity = async (tableBody /*, data: any*/) => {
             const search = document.getElementById('search');
             const btnSearch = document.getElementById('btnSearch');
+            const customerUser = document.getElementById('search-type-user');
             search.value = infoPage.search;
+            customerUser.value = infoPage.showGuards;
             await search.addEventListener('keyup', async () => {
                 /*const arrayData = await data.filter((user) => `${user.id}
                 ${user.firstName}
@@ -126,7 +134,7 @@ export class Guards {
                 this.pagination(result, tableRows, currentPage);*/
             });
             btnSearch.addEventListener('click', async () => {
-                new Guards().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim());
+                new Guards().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim(), customerUser.value);
             });
         };
         /*this.generateUserName = async () => {
@@ -159,10 +167,11 @@ export class Guards {
             });
         };*/
     }
-    async render(offset, actualPage, search) {
+    async render(offset, actualPage, search, showGuards) {
         infoPage.offset = offset;
         infoPage.currentPage = actualPage;
         infoPage.search = search;
+        infoPage.showGuards = showGuards;
         this.datatableContainer.innerHTML = '';
         this.datatableContainer.innerHTML = tableLayout;
         const tableBody = document.getElementById('datatable-body');
@@ -196,29 +205,32 @@ export class Guards {
         else {
             for (let i = 0; i < paginatedItems.length; i++) {
                 let client = paginatedItems[i];
-                let row = document.createElement('tr');
-                //<button class="button" id="convert-entity" data-entityId="${client.id}"><i class="fa-solid fa-shield"></i></button>
-                row.innerHTML += `
-          <td>${client.firstName} ${client.lastName}</dt>
-          <td>${client.username}</dt>
-          <td class="key"><button class="button" data-userid="${client.id}" id="change-user-password"><i class="fa-regular fa-key"></i></button></td>
-          <td class="tag"><span>${client.state.name}</span></td>
-          <!-- <td>${client.citadel.description}</dt> -->
-          <td class="entity_options">
-            <button class="button" id="edit-entity" data-entityId="${client.id}">
-              <i class="fa-solid fa-pen"></i>
-            </button>
+                if((infoPage.showGuards === "N/A" && client?.customer?.id == undefined) || infoPage.showGuards === "THIS" || infoPage.showGuards === "ALL"){
+                    let row = document.createElement('tr');
+                    //<button class="button" id="convert-entity" data-entityId="${client.id}"><i class="fa-solid fa-shield"></i></button>
+                    row.innerHTML += `
+                        <td>${client?.customer?.name ?? ''}</dt>
+                        <td>${client.firstName} ${client.lastName}</dt>
+                        <td>${client.username}</dt>
+                        <td class="key"><button class="button" data-userid="${client.id}" id="change-user-password"><i class="fa-regular fa-key"></i></button></td>
+                        <td class="tag"><span>${client.state.name}</span></td>
+                        <!-- <td>${client?.citadel?.description}</dt> -->
+                        <td class="entity_options">
+                            <button class="button" id="edit-entity" data-entityId="${client.id}">
+                            <i class="fa-solid fa-pen"></i>
+                            </button>
 
-            <button class="button" id="mobile-entity" data-entityId="${client.id}" data-entityName="${client.username}"><i class="fa-solid fa-mobile"></i></button>
+                            <button class="button" id="mobile-entity" data-entityId="${client.id}" data-entityName="${client.username}"><i class="fa-solid fa-mobile"></i></button>
 
-            <button class="button" id="remove-entity" data-entityId="${client.id}">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+                            <button class="button" id="remove-entity" data-entityId="${client.id}">
+                            <i class="fa-solid fa-trash"></i>
+                            </button>
 
-          </dt>
-        `;
-                table.appendChild(row);
-                drawTagsIntoTables();
+                        </dt>
+                    `;
+                    table.appendChild(row);
+                    drawTagsIntoTables();
+                }
             }
         }
         this.register();
@@ -296,6 +308,11 @@ export class Guards {
                     </div>
                     </div>
 
+                    <div class="material_input">
+                        <input type="text" id="entity-customer" autocomplete="none" class="input_filled" value="Actual" data-optionid="${customerId}" disabled>
+                        <label for="entity-customer">Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
+                    </div>
+
                     <!--
                     <div class="material_input">
                     <input type="text" id="entity-username" class="input_filled" placeholder="john.doe@ejemplo.com" readonly>
@@ -346,6 +363,7 @@ export class Guards {
                 </div>
             `;
             inputObserver();
+            this.selectCustomer();
             //inputSelect('Citadel', 'entity-citadel');
             //inputSelect('Customer', 'entity-customer');
             inputSelect('State', 'entity-state');
@@ -364,6 +382,7 @@ export class Guards {
                     //customer: document.getElementById('entity-customer'),
                     //username: document.getElementById('entity-username'),
                     //citadel: document.getElementById('entity-citadel'),
+                    customer: document.getElementById('entity-customer'),
                     temporalPass: document.getElementById('tempPass'),
                     dni: document.getElementById('entity-dni'),
                     email: document.getElementById('entity-email'),
@@ -384,16 +403,16 @@ export class Guards {
                         "id": `${inputsCollection.state.dataset.optionid}`
                     },
                     "contractor": {
-                        "id": `${currentUserInfo.contractor.id}`,
+                        "id": `${Config.currentUser.contractor.id}`,
                     },
                     "customer": {
-                        "id": `${customerId}`
+                        "id": `${inputsCollection.customer.dataset.optionid}`
                     },
                     "citadel": {
-                        "id": `${currentUserInfo.citadel.id}`
+                        "id": `${Config.currentUser.citadel.id}`
                     },
                     "business":{
-                        "id": `${currentUserInfo.business.id}`
+                        "id": `${Config.currentUser.business.id}`
                     },
                     "department":{
                       "id": `${naDepartment[0]?.id ?? ''}`
@@ -435,7 +454,7 @@ export class Guards {
                     const tableBody = document.getElementById('datatable-body');
                     const container = document.getElementById('entity-editor-container');
                     new CloseDialog().x(container);
-                    new Guards().render(Config.offset, Config.currentPage, infoPage.search);
+                    new Guards().render(Config.offset, Config.currentPage, infoPage.search, infoPage.showGuards);
                 }, 1000);
             });
         };
@@ -501,48 +520,53 @@ export class Guards {
                 //const contractor = await getEntitiesData('Contractor');
                 const fileReader = new FileReader();
                 fileReader.readAsText(file);
-                fileReader.addEventListener('load', (e) => {
+                fileReader.addEventListener('load', async (e) => {
                     let result = e.srcElement.result;
                     let resultSplit = result.split('\r');
                     let rawFile;
                     let elem = [];
                     for (let i = 1; i < resultSplit.length-1; i++) {
                         let userData = resultSplit[i].split(';');
-                        rawFile = JSON.stringify({
-                            "lastName": `${userData[1]?.replace(/\n/g, '')}`,
-                            "secondLastName": `${userData[2]?.replace(/\n/g, '')}`,
-                            "isSuper": false,
-                            "temp": `${userData[5]?.replace(/\n/g, '')}`,
-                            "isWebUser": false,
-                            "isActive": true,
-                            "newUser": true,
-                            "firstName": `${userData[0]?.replace(/\n/g, '')}`,
-                            "state": {
-                                "id": "60885987-1b61-4247-94c7-dff348347f93"
-                            },
-                            "contractor": {
-                                "id": `${currentUserInfo.contractor.id}`
-                            //    "id": `${contractor[0].id}`
-                            },
-                            "customer": {
-                                "id": `${customerId}`
-                            },
-                            "citadel": {
-                                "id": `${currentUserInfo.citadel.id}`
-                            },
-                            "department": {
-                                "id": `${naDepartment[0]?.id ?? ''}`
-                            },
-                            "business": {
-                                "id": `${currentUserInfo.business.id}`
-                            },
-                            "phone": `${userData[3]?.replace(/\n/g, '')}`,
-                            "dni": `${userData[4]?.replace(/\n/g, '')}`,
-                            "userType": "GUARD",
-                            "username": `${userData[0]?.toLowerCase().replace(/\n/g, '')}.${userData[1]?.toLowerCase().replace(/\n/g, '')}${userData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
-                            "createVisit": false
-                        });
-                        elem.push(rawFile);
+                        const dni = `${userData[4]?.replace(/\n/g, '')}`;
+                        const existUsername = await getVerifyUsername(`${dni}`);
+                        if (existUsername == "none") {
+                            rawFile = JSON.stringify({
+                                "lastName": `${userData[1]?.replace(/\n/g, '')}`,
+                                "secondLastName": `${userData[2]?.replace(/\n/g, '')}`,
+                                "isSuper": false,
+                                "temp": `${userData[5]?.replace(/\n/g, '')}`,
+                                "isWebUser": false,
+                                "isActive": true,
+                                "newUser": true,
+                                "firstName": `${userData[0]?.replace(/\n/g, '')}`,
+                                "state": {
+                                    "id": "60885987-1b61-4247-94c7-dff348347f93"
+                                },
+                                "contractor": {
+                                    "id": `${Config.currentUser.contractor.id}`
+                                //    "id": `${contractor[0].id}`
+                                },
+                                "customer": {
+                                    "id": `${customerId}`
+                                },
+                                "citadel": {
+                                    "id": `${Config.currentUser.citadel.id}`
+                                },
+                                "department": {
+                                    "id": `${naDepartment[0]?.id ?? ''}`
+                                },
+                                "business": {
+                                    "id": `${Config.currentUser.business.id}`
+                                },
+                                "phone": `${userData[3]?.replace(/\n/g, '')}`,
+                                "dni": `${dni}`,
+                                "userType": "GUARD",
+                                "username": `${dni}`,
+                                //"username": `${userData[0]?.toLowerCase().replace(/\n/g, '')}.${userData[1]?.toLowerCase().replace(/\n/g, '')}${userData[2]?.toLowerCase().replace(/\n/g, '')[0]}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`,
+                                "createVisit": false
+                            });
+                            elem.push(rawFile);
+                        }
                     }
                     const importToBackend = document.getElementById('button-import');
                     importToBackend.addEventListener('click', () => {
@@ -554,7 +578,7 @@ export class Guards {
                                     const tableBody = document.getElementById('datatable-body');
                                     const container = document.getElementById('entity-editor-container');
                                     new CloseDialog().x(container);
-                                    new Guards().render(Config.offset, Config.currentPage, '');
+                                    new Guards().render(Config.offset, Config.currentPage, '', 'ALL');
                                 }, 1000);
                             });
                         });
@@ -632,8 +656,8 @@ export class Guards {
                     </div>
 
                     <div class="material_input">
-                    <input type="text" id="entity-customer" class="input_filled" value="${data.customer.name}" readonly>
-                    <label for="entity-customer">Empresa</label>
+                        <input type="text" id="entity-customer" autocomplete="none" class="input_filled" value="${data?.customer?.name ?? ''}" data-optionid="${data?.customer?.id ?? ''}" disabled>
+                        <label for="entity-customer">Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
                     </div>
 
                     <!--
@@ -685,15 +709,16 @@ export class Guards {
                 </div>
             `;
             inputObserver();
+            this.selectCustomer();
             //inputSelect('Citadel', 'entity-citadel');
             //inputSelect('Customer', 'entity-customer');
             inputSelect('State', 'entity-state', data.state.name);
             //inputSelect('Department', 'entity-department');
             //inputSelect('Business', 'entity-business');
             this.close();
-            UUpdate(entityID);
+            UUpdate(entityID,data);
         };
-        const UUpdate = async (entityId) => {
+        const UUpdate = async (entityId,data) => {
             const updateButton = document.getElementById('update-changes');
             updateButton.addEventListener('click', async() => {
                 const $value = {
@@ -709,16 +734,13 @@ export class Guards {
                     //email: document.getElementById('entity-email'),
                     // @ts-ignore
                     status: document.getElementById('entity-state'),
+                    customer: document.getElementById('entity-customer'),
                     // @ts-ignore
                     //dni: document.getElementById('entity-dni'),
                     // @ts-ignore
                     //business: document.getElementById('entity-business'),
                     // @ts-ignore
-                    //client: document.getElementById('entity-customer'),
-                    // @ts-ignore
                     //department: document.getElementById('entity-department'),
-                    // @ts-ignore
-                    //customer: document.getElementById('entity-customer')
                 };
                 let raw = JSON.stringify({
                     // @ts-ignore
@@ -731,9 +753,9 @@ export class Guards {
                     "state": {
                         "id": `${$value.status?.dataset.optionid}`
                     },
-                    //"customer": {
-                    //    "id": `${$value.customer?.dataset.optionid}`
-                   // },
+                    "customer": {
+                        "id": `${$value.customer.dataset.optionid}`
+                    },
                     // @ts-ignore
                     "phone": `${$value.phone?.value}`,
                     //"dni": `${$value.dni.value}`,
@@ -747,9 +769,28 @@ export class Guards {
                 //} 
                 //if ($value.dni.value === '' || $value.dni.value === undefined) {
                 //    alert("DNI vacío!");
-                //}else{
+                if($value.customer.dataset.optionid != data?.customer?.id){
+                    const rawToRoutine = JSON.stringify({
+                        "filter": {
+                            "conditions": [
+                                {
+                                    "property": "customer.id",
+                                    "operator": "=",
+                                    "value": `${data?.customer?.id}`
+                                }
+                            ],
+                        },
+                        limit: 1
+                    });
+                    const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
+                    if(existUserRoutine > 0){
+                        alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                    }else{
+                        update(raw);
+                    }
+                }else{
                     update(raw);
-                //}
+                }
             });
             const update = (raw) => {
                 updateEntity('User', entityId, raw)
@@ -760,7 +801,7 @@ export class Guards {
                         //let data = await getUsers();
                         new CloseDialog()
                             .x(container);
-                        new Guards().render(infoPage.offset, infoPage.currentPage, infoPage.search);
+                        new Guards().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.showGuards);
                     }, 100);
                 });
             };
@@ -873,7 +914,7 @@ export class Guards {
                             //let data = await getUsers();
                             const tableBody = document.getElementById('datatable-body');
                             new CloseDialog().x(dialogContent);
-                            new Guards().render(infoPage.offset, infoPage.currentPage, infoPage.search);
+                            new Guards().render(infoPage.offset, infoPage.currentPage, infoPage.search, infoPage.showGuards);
                         }, 1000);
                     });
                 };
@@ -1231,7 +1272,7 @@ export class Guards {
             button.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (page - 1);
                 currentPage = page;
-                new Guards().render(infoPage.offset, currentPage, infoPage.search);
+                new Guards().render(infoPage.offset, currentPage, infoPage.search, infoPage.showGuards);
             });
             return button;
         }
@@ -1257,11 +1298,11 @@ export class Guards {
         }
         function setupButtonsEvents(prevButton, nextButton) {
             prevButton.addEventListener('click', () => {
-                new Guards().render(Config.offset, Config.currentPage, infoPage.search);
+                new Guards().render(Config.offset, Config.currentPage, infoPage.search, infoPage.showGuards);
             });
             nextButton.addEventListener('click', () => {
                 infoPage.offset = Config.tableRows * (pageCount - 1);
-                new Guards().render(infoPage.offset, pageCount, infoPage.search);
+                new Guards().render(infoPage.offset, pageCount, infoPage.search, infoPage.showGuards);
             });
         }
     }
@@ -1272,6 +1313,178 @@ export class Guards {
             //console.log('close');
             new CloseDialog().x(editor);
         }, false);
+    }
+    selectCustomer() {
+        const btnElement = document.getElementById('btn-select-customer');
+
+        btnElement.addEventListener('click', async () => {
+            const element = document.getElementById('entity-customer');
+            modalTable(0, "", element);
+        })
+
+        async function modalTable(offset, search, element){
+            const dialogContainer = document.getElementById('app-dialogs');
+            let raw = JSON.stringify({
+                "filter": {
+                    "conditions": [
+                        {
+                        "property": "business.id",
+                        "operator": "=",
+                        "value": `${Config.currentUser.business.id}`
+                        }
+                    ],
+                }, 
+                sort: "+name",
+                limit: Config.modalRows,
+                offset: offset
+            });
+            if(search != ""){
+                raw = JSON.stringify({
+                    "filter": {
+                        "conditions": [
+                            {
+                            "group": "OR",
+                            "conditions": [
+                                {
+                                "property": "name",
+                                "operator": "contains",
+                                "value": `${search.toLowerCase()}`
+                                },
+                                {
+                                "property": "ruc",
+                                "operator": "contains",
+                                "value": `${search.toLowerCase()}`
+                                }
+                            ]
+                            },
+                            {
+                            "property": "business.id",
+                            "operator": "=",
+                            "value": `${Config.currentUser.business.id}`
+                            }
+                        ],
+                    }, 
+                    sort: "+name",
+                    limit: Config.modalRows,
+                    offset: offset
+                });
+            }
+            let dataModal = await getFilterEntityData("Customer", raw);
+            dialogContainer.style.display = 'block';
+            dialogContainer.innerHTML = `
+                <div class="dialog_content" id="dialog-content">
+                    <div class="dialog">
+                        <div class="dialog_container padding_8">
+                            <div class="dialog_header">
+                                <h2>Seleccione una empresa</h2>
+                            </div>
+
+                            <div class="dialog_message padding_8">
+                                <div class="datatable_tools">
+                                    <input type="search"
+                                    class="search_input"
+                                    placeholder="Buscar"
+                                    id="search-modal">
+                                    <button
+                                        class="datatable_button add_user"
+                                        id="btnSearchModal">
+                                        <i class="fa-solid fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dashboard_datatable">
+                                    <table class="datatable_content margin_t_16">
+                                    <thead>
+                                        <tr>
+                                        <th>Nombre</th>
+                                        <th>RUC</th>
+                                        <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="datatable-modal-body">
+                                    </tbody>
+                                    </table>
+                                </div>
+                                <br>
+                            </div>
+
+                            <div class="dialog_footer">
+                                <button class="btn btn_primary" id="prevModal"><i class="fa-solid fa-arrow-left"></i></button>
+                                <button class="btn btn_primary" id="nextModal"><i class="fa-solid fa-arrow-right"></i></button>
+                                <button class="btn btn_danger" id="cancel">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            inputObserver();
+            const datetableBody = document.getElementById('datatable-modal-body');
+            if (dataModal.length === 0) {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>No hay datos</td>
+                    <td></td>
+                    <td></td>
+                `;
+                datetableBody.appendChild(row);
+            }
+            else {
+                for (let i = 0; i < dataModal.length; i++) {
+                    let data = dataModal[i];
+                    let row = document.createElement('tr');
+                    row.innerHTML += `
+                        <td>${data?.name ?? ''}</dt>
+                        <td>${data?.ruc ?? ''}</dt>
+                        <td class="entity_options">
+                            <button class="button" id="edit-entity" data-entityId="${data.id}" data-entityName="${data?.name ?? ''}">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </button>
+                        </td>
+                    `;
+                    datetableBody.appendChild(row);
+                }
+            }
+            const txtSearch = document.getElementById('search-modal');
+            const btnSearchModal = document.getElementById('btnSearchModal');
+            const _selectCustomer = document.querySelectorAll('#edit-entity');
+            const _closeButton = document.getElementById('cancel');
+            const _dialog = document.getElementById('dialog-content');
+            const prevModalButton = document.getElementById('prevModal');
+            const nextModalButton = document.getElementById('nextModal');
+
+            txtSearch.value = search ?? '';
+
+            _selectCustomer.forEach((edit) => {
+                const entityId = edit.dataset.entityid;
+                const entityName = edit.dataset.entityname;
+                edit.addEventListener('click', () => {
+                    element.setAttribute('data-optionid', entityId);
+                    element.setAttribute('value', `${entityName}`);
+                    element.classList.add('input_filled');
+                    new CloseDialog().x(_dialog);
+                })
+            
+            })
+
+            btnSearchModal.onclick = () => {
+                modalTable(0, txtSearch.value, element);
+            }
+
+            _closeButton.onclick = () => {
+                new CloseDialog().x(_dialog);
+            }
+
+            nextModalButton.onclick = () => {
+                offset = Config.modalRows + (offset);
+                modalTable(offset, search, element);
+            }
+
+            prevModalButton.onclick = () => {
+                if(offset > 0){
+                offset = (offset) - Config.modalRows;
+                modalTable(offset, search, element);
+                }
+            }
+        }
     }
 }
 export const setUserPassword = async () => {
