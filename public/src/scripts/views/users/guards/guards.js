@@ -441,6 +441,8 @@ export class Guards {
                     alert("DNI vacío!")
                 }else if(inputsCollection.temporalPass.value === '' || inputsCollection.temporalPass.value === undefined){
                     alert("Clave vacío!")
+                }else if(inputsCollection.customer.dataset.optionid === '' || inputsCollection.customer.dataset.optionid === undefined){
+                    alert("Empresa vacía!")
                 }else{
                     reg(raw);
                 }           
@@ -769,27 +771,31 @@ export class Guards {
                 //} 
                 //if ($value.dni.value === '' || $value.dni.value === undefined) {
                 //    alert("DNI vacío!");
-                if($value.customer.dataset.optionid != data?.customer?.id){
-                    const rawToRoutine = JSON.stringify({
-                        "filter": {
-                            "conditions": [
-                                {
-                                    "property": "customer.id",
-                                    "operator": "=",
-                                    "value": `${data?.customer?.id}`
-                                }
-                            ],
-                        },
-                        limit: 1
-                    });
-                    const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
-                    if(existUserRoutine > 0){
-                        alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                if ($value.customer.dataset.optionid === '' || $value.customer.dataset.optionid === undefined) {
+                    alert("Empresa vacía!");
+                }else {
+                    if($value.customer.dataset.optionid != data?.customer?.id){
+                        const rawToRoutine = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": "customer.id",
+                                        "operator": "=",
+                                        "value": `${data?.customer?.id}`
+                                    }
+                                ],
+                            },
+                            limit: 1
+                        });
+                        const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
+                        if(existUserRoutine > 0){
+                            alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                        }else{
+                            update(raw);
+                        }
                     }else{
                         update(raw);
                     }
-                }else{
-                    update(raw);
                 }
             });
             const update = (raw) => {
