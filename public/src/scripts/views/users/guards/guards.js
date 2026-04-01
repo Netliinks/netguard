@@ -19,7 +19,7 @@ let infoPage = {
     offset: Config.offset,
     currentPage: currentPage,
     search: "",
-    showGuards: "ALL"
+    showGuards: "THIS"
 };
 let dataPage;
 const currentUserData = async() => {
@@ -578,7 +578,7 @@ export class Guards {
                                     const tableBody = document.getElementById('datatable-body');
                                     const container = document.getElementById('entity-editor-container');
                                     new CloseDialog().x(container);
-                                    new Guards().render(Config.offset, Config.currentPage, '', 'ALL');
+                                    new Guards().render(Config.offset, Config.currentPage, '', infoPage.showGuards);
                                 }, 1000);
                             });
                         });

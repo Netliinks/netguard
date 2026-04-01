@@ -286,7 +286,7 @@ renders() {
     document.getElementById('render-guards')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);
       Config.currentScreen = null;
-        new Guards().render(Config.offset, Config.currentPage, "", 'ALL');
+        new Guards().render(Config.offset, Config.currentPage, "", 'THIS');
     });
     document.getElementById('render-clients')?.addEventListener('click', () => {
       clearTimeout(Config.timeOut);

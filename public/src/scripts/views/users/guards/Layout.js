@@ -11,8 +11,8 @@ export const tableLayout = `
       <div class="form_input">
       <label class="form_label" for="search-type-user">Mostrar guardia</label>
       <select class="input_time input_time-start" id="search-type-user">
-          <option value="ALL" selected>Todas las empresas</option>
-          <option value="THIS">Solo empresa actual</option>
+          <option value="THIS" selected>Solo empresa actual</option>
+          <option value="ALL">Todas las empresas</option>
       </select>
       </div>
       <input type="search"
