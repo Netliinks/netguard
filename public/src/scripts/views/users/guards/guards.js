@@ -42,9 +42,39 @@ const getUsers = async () => {
         "filter": {
             "conditions": [
                 {
-                    "property": "customer.id",
-                    "operator": "=",
-                    "value": `${customerId}`
+                    "group": "OR",
+                    "conditions": [
+                        {
+                            "property": "dni",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "firstName",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "lastName",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "secondLastName",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "username",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "email",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
+                        }
+                    ]
                 },
                 {
                     "property": "isSuper",
@@ -55,6 +85,11 @@ const getUsers = async () => {
                     "property": "userType",
                     "operator": "=",
                     "value": `GUARD`
+                },
+                {
+                    "property": "business.id",
+                    "operator": "=",
+                    "value": `${Config.currentUser.business.id}`
                 }
             ],
         },
@@ -63,68 +98,6 @@ const getUsers = async () => {
         offset: infoPage.offset,
         fetchPlan: 'full',
     });
-    if (infoPage.search != "") {
-        raw = JSON.stringify({
-            "filter": {
-                "conditions": [
-                    {
-                        "group": "OR",
-                        "conditions": [
-                            {
-                                "property": "dni",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "firstName",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "lastName",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "secondLastName",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "username",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            },
-                            {
-                                "property": "email",
-                                "operator": "contains",
-                                "value": `${infoPage.search.toLowerCase()}`
-                            }
-                        ]
-                    },
-                    {
-                        "property": "customer.id",
-                        "operator": "=",
-                        "value": `${customerId}`
-                    },
-                    {
-                        "property": "isSuper",
-                        "operator": "=",
-                        "value": `${false}`
-                    },
-                    {
-                        "property": "userType",
-                        "operator": "=",
-                        "value": `GUARD`
-                    }
-                ]
-            },
-            sort: "-createdDate",
-            limit: Config.tableRows,
-            offset: infoPage.offset,
-            fetchPlan: 'full',
-        });
-    }
     infoPage.count = await getFilterEntityCount("User", raw);
     dataPage = await getFilterEntityData("User", raw);
     return dataPage;
@@ -156,7 +129,7 @@ export class Guards {
                 new Guards().render(Config.offset, Config.currentPage, search.value.toLowerCase().trim());
             });
         };
-        this.generateUserName = async () => {
+        /*this.generateUserName = async () => {
             const firstName = document.getElementById('entity-firstname');
             const secondName = document.getElementById('');
             const lastName = document.getElementById('entity-lastname');
@@ -184,7 +157,7 @@ export class Guards {
                     userName.setAttribute('value', `${UserNameFFragment}.${UserNameLNFragment}`);
                 }
             });
-        };
+        };*/
     }
     async render(offset, actualPage, search) {
         infoPage.offset = offset;
@@ -316,11 +289,6 @@ export class Guards {
                     <label for="entity-phone"><i class="fa-solid fa-phone"></i> Teléfono</label>
                     </div>
 
-                    <div class="material_input">
-                    <input type="text" id="entity-username" class="input_filled" placeholder="john.doe@ejemplo.com" readonly>
-                    <label for="entity-username"><i class="input_locked fa-solid fa-lock"></i> Nombre de usuario</label>
-                    </div>
-
                     <div class="material_input_select">
                     <label for="entity-state">Estado</label>
                     <input type="text" id="entity-state" class="input_select" readonly placeholder="cargando..." autocomplete="none">
@@ -329,6 +297,11 @@ export class Guards {
                     </div>
 
                     <!--
+                    <div class="material_input">
+                    <input type="text" id="entity-username" class="input_filled" placeholder="john.doe@ejemplo.com" readonly>
+                    <label for="entity-username"><i class="input_locked fa-solid fa-lock"></i> Nombre de usuario</label>
+                    </div>
+
                     <div class="material_input_select" style="display: none">
                         <label for="entity-business"><i class="fa-solid fa-building"></i> Empresa</label>
                         <input type="text" id="entity-business" class="input_select" readonly placeholder="cargando..." autocomplete="none">
@@ -379,7 +352,7 @@ export class Guards {
             //inputSelect('Department', 'entity-department');
             //inputSelect('Business', 'entity-business');
             this.close();
-            this.generateUserName();
+            //this.generateUserName();
             const registerButton = document.getElementById('register-entity');
             registerButton.addEventListener('click', async() => {
                 const inputsCollection = {
@@ -389,18 +362,19 @@ export class Guards {
                     phoneNumer: document.getElementById('entity-phone'),
                     state: document.getElementById('entity-state'),
                     //customer: document.getElementById('entity-customer'),
-                    username: document.getElementById('entity-username'),
+                    //username: document.getElementById('entity-username'),
                     //citadel: document.getElementById('entity-citadel'),
                     temporalPass: document.getElementById('tempPass'),
                     dni: document.getElementById('entity-dni'),
                     email: document.getElementById('entity-email'),
                 };
+                const dni = inputsCollection.dni.value.trim();
                 const raw = JSON.stringify({
                     "lastName": `${inputsCollection.lastName.value}`,
                     "secondLastName": `${inputsCollection.secondLastName.value}`,
                     "isSuper": false,
                     "newUser": true,
-                    "dni": `${inputsCollection.dni.value}`,
+                    "dni": `${dni}`,
                     "email": `${inputsCollection.email.value}`,
                     "temp": `${inputsCollection.temporalPass.value}`,
                     "isWebUser": false,
@@ -426,12 +400,14 @@ export class Guards {
                     },
                     "phone": `${inputsCollection.phoneNumer.value}`,
                     "userType": "GUARD",
-                    "username": `${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`
+                    'username':`${dni}`,
+                    //"username": `${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`
                 });    
                 const existEmail = await getVerifyEmail(inputsCollection.email.value);
-                const existUsername = await getVerifyUsername(`${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
+                //const existUsername = await getVerifyUsername(`${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
+                const existUsername = await getVerifyUsername(`${dni}`);
                 if (existUsername != "none") {
-                    alert("¡Usuario ya existe, es tipo " + existUsername + "!");
+                    alert("¡Usuario ya existe, es tipo " + existUsername);
                 }else if(existEmail == true){
                     alert("¡Correo electrónico ya existe!");
                 }else if(inputsCollection.firstName.value === '' || inputsCollection.firstName.value === undefined){
@@ -644,11 +620,6 @@ export class Guards {
                     </div>
 
                     <div class="material_input">
-                    <input type="text" maxlength="10" id="entity-dni" class="input_filled" value="${data?.dni ?? ''}">
-                    <label for="entity-dni">Cédula</label>
-                    </div>
-
-                    <div class="material_input">
                     <input type="email" id="entity-email" class="input_filled" value="${data?.email ?? ''}" disabled>
                     <label for="entity-email">Email</label>
                     </div>
@@ -666,6 +637,11 @@ export class Guards {
                     </div>
 
                     <!--
+                    <div class="material_input">
+                    <input type="text" maxlength="10" id="entity-dni" class="input_filled" value="${data?.dni ?? ''}" disabled>
+                    <label for="entity-dni">Cédula</label>
+                    </div>
+
                     <div class="material_input_select" style="display: none">
                     <label for="entity-business">Empresa</label>
                     <input type="text" id="entity-business" class="input_select" readonly placeholder="cargando...">
@@ -734,7 +710,7 @@ export class Guards {
                     // @ts-ignore
                     status: document.getElementById('entity-state'),
                     // @ts-ignore
-                    dni: document.getElementById('entity-dni'),
+                    //dni: document.getElementById('entity-dni'),
                     // @ts-ignore
                     //business: document.getElementById('entity-business'),
                     // @ts-ignore
@@ -760,7 +736,7 @@ export class Guards {
                    // },
                     // @ts-ignore
                     "phone": `${$value.phone?.value}`,
-                    "dni": `${$value.dni.value}`,
+                    //"dni": `${$value.dni.value}`,
                     //"email": `${$value.email?.value}`,
                 });
                 //const existEmail = await getVerifyEmail($value.email?.value);
@@ -769,11 +745,11 @@ export class Guards {
                 //}else{
                 //    update(raw);
                 //} 
-                if ($value.dni.value === '' || $value.dni.value === undefined) {
-                    alert("DNI vacío!");
-                }else{
+                //if ($value.dni.value === '' || $value.dni.value === undefined) {
+                //    alert("DNI vacío!");
+                //}else{
                     update(raw);
-                }
+                //}
             });
             const update = (raw) => {
                 updateEntity('User', entityId, raw)

@@ -320,11 +320,13 @@ export const getVerifyUsername = async (username) => {
                         "value": `${username}`
                     }
                 ]
-            }
+            },
+            fetchPlan: 'full',
+            limit: 1
         });
         let data = await getFilterEntityData("User", raw);
         if (data.length != 0) {
-            value = `${verifyUserType(data[0].userType)}, super: ${data[0].isSuper ? 'Si' : 'No'}`;
+            value = `${verifyUserType(data[0].userType)}, super: ${data[0].isSuper ? 'Si' : 'No'}, en empresa: ${data[0]?.customer?.name ?? ''} | username: ${username}`;
         }
     }
     return value;

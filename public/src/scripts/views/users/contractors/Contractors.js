@@ -520,7 +520,7 @@ export class Contractors {
                     alert("¡Correo electrónico ya existe!");
                 }else */
                 if (existUsername != "none") {
-                    alert("¡Usuario ya existe, es tipo " + existUsername + "!");
+                    alert("¡Usuario ya existe, es tipo " + existUsername);
                 }
                 else if (_values.firstName.value === '' || _values.firstName.value === undefined) {
                     alert("¡Nombre vacío!");

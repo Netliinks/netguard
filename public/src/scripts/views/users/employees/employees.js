@@ -539,7 +539,7 @@ export class Employees {
                 }else */
                 const existUsername = await getVerifyUsername(`${_values.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
                 if (existUsername != "none") {
-                    alert("¡Usuario ya existe, es tipo " + existUsername + "!");
+                    alert("¡Usuario ya existe, es tipo " + existUsername);
                 }
                 else if (_values.firstName.value === '' || _values.firstName.value === undefined) {
                     alert("¡Nombre vacío!");

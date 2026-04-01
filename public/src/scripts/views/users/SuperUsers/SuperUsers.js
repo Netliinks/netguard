@@ -445,7 +445,7 @@ export class SuperUsers {
                 const existEmail = await getVerifyEmail(inputsCollection.email.value);
                 const existUsername = await getVerifyUsername(`${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`);
                 if (existUsername != "none") {
-                    alert("¡Usuario ya existe, es tipo " + existUsername + "!");
+                    alert("¡Usuario ya existe, es tipo " + existUsername);
                 }else if(existEmail == true){
                     alert("¡Correo electrónico ya existe!");
                 }else if (inputsCollection.firstName.value === '' || inputsCollection.firstName.value === undefined) {
