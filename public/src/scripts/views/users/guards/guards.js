@@ -235,6 +235,7 @@ export class Guards {
         }
         this.register();
         this.import();
+        this.assignGuard();
         this.export();
         this.edit(this.entityDialogContainer, data);
         this.remove();
@@ -1313,6 +1314,501 @@ export class Guards {
             //console.log('close');
             new CloseDialog().x(editor);
         }, false);
+    }
+    assignGuard(){
+        const assignGuardButton = document.getElementById('assign-guard-entities');
+        assignGuardButton.addEventListener('click', () => {
+            this.entityDialogContainer.innerHTML = '';
+            this.entityDialogContainer.style.display = 'flex';
+            this.entityDialogContainer.innerHTML = `
+            <div class="entity_editor" id="entity-editor">
+                <div class="entity_editor_header">
+                <div class="user_info">
+                    <div class="avatar"><i class="fa-regular fa-up-from-line"></i></div>
+                    <h1 class="entity_editor_title">Importar <br><small>Asignación Guardias</small></h1>
+                </div>
+
+                <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+                </div>
+
+                <!-- EDITOR BODY -->
+                <div class="entity_editor_body padding_t_8_important">
+                <h3>Instrucciones:</h3>
+                <p>1. Descargue la plantilla de empresas activas.</p>
+                <div class="sidebar_section">
+                    <div class="file_template">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <div class="description">
+                            <p class="filename">Plantilla de empresas activas</p>
+                            <a id="file-export-customer" rel="noopener" target="_self" class="filelink">Descargar</a>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <p>2. Tomar en cuenta la columna "ID" de empresa que la representa.</p>
+                <p>3. Descargar la plantilla de asignación de guardias.</p>
+                <div class="input_checkbox">
+                    <label><input type="checkbox" class="checkbox" id="check-allCustomer"> Todas las empresas</label>
+                </div>
+                <div class="sidebar_section">
+                    <div class="file_template">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <div class="description">
+                            <p class="filename">Plantilla de asignación de guardias</p>
+                            <a id="file-export-guard" rel="noopener" target="_self" class="filelink">Descargar</a>
+                        </div>
+                    </div>
+                </div>
+                <p>4. Reemplazar el "ID" de la empresa por el que desea cambiar en el archivo de asignación de guardias.</p>
+                <div class="sidebar_section" style="display: none">
+                    <label class="drop_zone" id="drop-zone" draggable="true">
+                        Seleccione o arrastre <br>su archivo aquí
+                    </label>
+                </div>
+
+                <div class="sidebar_section">
+                    <input type="file" id="file-handler">
+                </div>
+                </div>
+                <!-- END EDITOR BODY -->
+
+                <div class="entity_editor_footer">
+                <button class="btn btn_primary btn_widder" id="button-import">Importar</button>
+                </div>
+            </div>
+            `;
+            const _fileExportCustomer = document.getElementById('file-export-customer');
+            const _fileExportGuard = document.getElementById('file-export-guard');
+            const _fileHandler = document.getElementById('file-handler');
+            const _checkAllCustomer = document.getElementById('check-allCustomer');
+            let onPressed = false;
+            _fileExportGuard.addEventListener('click', async () => {
+                if(!onPressed){
+                    onPressed = true;
+                    this.dialogContainer.style.display = 'block';
+                    this.dialogContainer.innerHTML = `
+                    <div class="dialog_content" id="dialog-content">
+                        <div class="dialog">
+                            <div class="dialog_container padding_8">
+                                <div class="dialog_header">
+                                    <h2>Exportando...</h2>
+                                </div>
+
+                                <div class="dialog_message padding_8">
+                                    <div class="material_input">
+                                        <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                        <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                    </div>
+
+                                    <div class="input_detail">
+                                        <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                        <p id="message-export" class="input_filled" readonly></p>
+                                    </div>
+                                </div>
+
+                                <div class="dialog_footer">
+                                    <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    inputObserver();
+                    const message1 = document.getElementById("export-total");
+                    const message2 = document.getElementById("message-export");
+                    const _closeButton = document.getElementById('cancel');
+                    _closeButton.onclick = () => {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                    };
+                    let rawToExport=(offset)=>{
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": `${_checkAllCustomer.checked ? 'business.id' : 'customer.id'}`,
+                                        "operator": "=",
+                                        "value": `${_checkAllCustomer.checked ? Config.currentUser.business.id : customerId}`
+                                    },
+                                    {
+                                        "property": "business.state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                    {
+                                        "property": "state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                ],
+                            },
+                            sort: `+customer.name`,
+                            limit: Config.limitExport,
+                            offset: offset,
+                            fetchPlan: 'full'
+                        });
+                        return rawExport;
+                    }
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("User", rawExport);
+                    if(totalRegisters === undefined){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("Ocurrió un error al exportar");
+                    }else if(totalRegisters===0){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("No hay ningún registro");  
+                    }else {
+                        message1.value = `0 / ${totalRegisters}`;
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let users = [];
+                        let offset = 0;
+                        for(let i = 0; i < pages; i++){
+                            if(onPressed){
+                                rawExport = rawToExport(offset);
+                                array[i] = await getFilterEntityData("User", rawExport); //await getEvents();
+                                for(let y=0; y<array[i].length; y++){
+                                    users.push({
+                                        "ID Guardia":array[i][y]["id"] ?? '',
+                                        "Username":array[i][y]["username"] ?? '',
+                                        "Nombre":`${array[i][y]["firstName"] ?? ''} ${array[i][y]["lastName"] ?? ''} ${array[i][y]["secondLastName"] ?? ''}`,
+                                        "ID Empresa":array[i][y]["customer"]["id"] ?? '',
+                                        "Empresa":array[i][y]["customer"]["name"] ?? '',
+                                    });
+                                }
+                                message1.value = `${users.length} / ${totalRegisters}`;
+                                offset = Config.limitExport + (offset);
+                            }
+                        }
+                    
+                        const generateFile = (ar, title, extension) => {
+                            //comprobamos compatibilidad
+                            if (window.Blob && (window.URL || window.webkitURL)) {
+                                var contenido = "", d = new Date(), blob, reader, save, clicEvent;
+                                //creamos contenido del archivo
+                                for (var i = 0; i < ar.length; i++) {
+                                    //construimos cabecera del csv
+                                    if (i == 0)
+                                        contenido += Object.keys(ar[i]).join(";") + "\n";
+                                    //resto del contenido
+                                    contenido += Object.keys(ar[i]).map(function (key) {
+                                        return ar[i][key];
+                                    }).join(";") + "\n";
+                                }
+                                //creamos el blob
+                                blob = new Blob(["\ufeff", contenido], { type: `text/${extension}` });
+                                //creamos el reader
+                                // @ts-ignore
+                                var reader = new FileReader();
+                                reader.onload = function (event) {
+                                    //escuchamos su evento load y creamos un enlace en dom
+                                    save = document.createElement('a');
+                                    // @ts-ignore
+                                    save.href = event.target.result;
+                                    save.target = '_blank';
+                                    //aquí le damos nombre al archivo
+                                    save.download = "Doc_" + title + "_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.${extension}`;
+                                    try {
+                                        //creamos un evento click
+                                        clicEvent = new MouseEvent('click', {
+                                            'view': window,
+                                            'bubbles': true,
+                                            'cancelable': true
+                                        });
+                                    }
+                                    catch (e) {
+                                        //si llega aquí es que probablemente implemente la forma antigua de crear un enlace
+                                        clicEvent = document.createEvent("MouseEvent");
+                                        // @ts-ignore
+                                        clicEvent.click();
+                                    }
+                                    //disparamos el evento
+                                    save.dispatchEvent(clicEvent);
+                                    //liberamos el objeto window.URL
+                                    (window.URL || window.webkitURL).revokeObjectURL(save.href);
+                                };
+                                //leemos como url
+                                reader.readAsDataURL(blob);
+                            }
+                            else {
+                                //el navegador no admite esta opción
+                                alert("Su navegador no permite esta acción");
+                            }
+                        };
+                        generateFile(users,"Guardias","csv");
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        onPressed = false;
+                    }
+                }
+            });
+            _fileExportCustomer.addEventListener('click', async () => {
+                if(!onPressed){
+                    onPressed = true;
+                    this.dialogContainer.style.display = 'block';
+                    this.dialogContainer.innerHTML = `
+                    <div class="dialog_content" id="dialog-content">
+                        <div class="dialog">
+                            <div class="dialog_container padding_8">
+                                <div class="dialog_header">
+                                    <h2>Exportando...</h2>
+                                </div>
+
+                                <div class="dialog_message padding_8">
+                                    <div class="material_input">
+                                        <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                        <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                    </div>
+
+                                    <div class="input_detail">
+                                        <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                        <p id="message-export" class="input_filled" readonly></p>
+                                    </div>
+                                </div>
+
+                                <div class="dialog_footer">
+                                    <button class="btn btn_primary" id="cancel">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    inputObserver();
+                    const message1 = document.getElementById("export-total");
+                    const message2 = document.getElementById("message-export");
+                    const _closeButton = document.getElementById('cancel');
+                    _closeButton.onclick = () => {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                    };
+                    let rawToExport=(offset)=>{
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": `business.id`,
+                                        "operator": "=",
+                                        "value": `${Config.currentUser.business.id}`
+                                    },
+                                    {
+                                        "property": "business.state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                    {
+                                        "property": "state.name",
+                                        "operator": "=",
+                                        "value": `Enabled`
+                                    },
+                                ],
+                            },
+                            sort: `+name`,
+                            limit: Config.limitExport,
+                            offset: offset,
+                        });
+                        return rawExport;
+                    }
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("Customer", rawExport);
+                    if(totalRegisters === undefined){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("Ocurrió un error al exportar");
+                    }else if(totalRegisters===0){
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("No hay ningún registro");  
+                    }else {
+                        message1.value = `0 / ${totalRegisters}`;
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let customers = [];
+                        let offset = 0;
+                        for(let i = 0; i < pages; i++){
+                            if(onPressed){
+                                rawExport = rawToExport(offset);
+                                array[i] = await getFilterEntityData("Customer", rawExport); //await getEvents();
+                                for(let y=0; y<array[i].length; y++){
+                                    customers.push({
+                                        "ID Empresa":array[i][y]["id"] ?? '',
+                                        "Nombre":array[i][y]["name"] ?? '',
+                                    });
+                                }
+                                message1.value = `${customers.length} / ${totalRegisters}`;
+                                offset = Config.limitExport + (offset);
+                            }
+                        }
+                    
+                        const generateFile = (ar, title, extension) => {
+                            //comprobamos compatibilidad
+                            if (window.Blob && (window.URL || window.webkitURL)) {
+                                var contenido = "", d = new Date(), blob, reader, save, clicEvent;
+                                //creamos contenido del archivo
+                                for (var i = 0; i < ar.length; i++) {
+                                    //construimos cabecera del csv
+                                    if (i == 0)
+                                        contenido += Object.keys(ar[i]).join(";") + "\n";
+                                    //resto del contenido
+                                    contenido += Object.keys(ar[i]).map(function (key) {
+                                        return ar[i][key];
+                                    }).join(";") + "\n";
+                                }
+                                //creamos el blob
+                                blob = new Blob(["\ufeff", contenido], { type: `text/${extension}` });
+                                //creamos el reader
+                                // @ts-ignore
+                                var reader = new FileReader();
+                                reader.onload = function (event) {
+                                    //escuchamos su evento load y creamos un enlace en dom
+                                    save = document.createElement('a');
+                                    // @ts-ignore
+                                    save.href = event.target.result;
+                                    save.target = '_blank';
+                                    //aquí le damos nombre al archivo
+                                    save.download = "Doc_" + title + "_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.${extension}`;
+                                    try {
+                                        //creamos un evento click
+                                        clicEvent = new MouseEvent('click', {
+                                            'view': window,
+                                            'bubbles': true,
+                                            'cancelable': true
+                                        });
+                                    }
+                                    catch (e) {
+                                        //si llega aquí es que probablemente implemente la forma antigua de crear un enlace
+                                        clicEvent = document.createEvent("MouseEvent");
+                                        // @ts-ignore
+                                        clicEvent.click();
+                                    }
+                                    //disparamos el evento
+                                    save.dispatchEvent(clicEvent);
+                                    //liberamos el objeto window.URL
+                                    (window.URL || window.webkitURL).revokeObjectURL(save.href);
+                                };
+                                //leemos como url
+                                reader.readAsDataURL(blob);
+                            }
+                            else {
+                                //el navegador no admite esta opción
+                                alert("Su navegador no permite esta acción");
+                            }
+                        };
+                        generateFile(customers,"Empresas_activas","csv");
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        onPressed = false;
+                    }
+                }
+            });
+            _fileHandler.addEventListener('change', () => {
+                readFile(_fileHandler.files[0]);
+            });
+            async function readFile(file) {
+                //const customer = await getEntitiesData('Customer');
+                //const citadel = await getEntitiesData('Citadel');
+                //const deparment = await getEntitiesData('Department');
+                //const contractor = await getEntitiesData('Contractor');
+                const fileReader = new FileReader();
+                fileReader.readAsText(file);
+                fileReader.addEventListener('load', (e) => {
+                    let result = e.srcElement.result;
+                    let resultSplit = result.split('\r');
+                    let rawFile;
+                    let elem = [];
+                    for (let i = 1; i < resultSplit.length-1; i++) {
+                        let userData = resultSplit[i].split(';');
+                        rawFile = {
+                            "id": `${userData[0]?.replace(/\n/g, '')}`,
+                            "nombre": `${userData[1]?.replace(/\n/g, '')}`,
+                            "reqNroVisitEmer": `${userData[2]?.replace(/\n/g, '')}`,
+                            "reqNroVehicle": `${userData[3]?.replace(/\n/g, '')}`,
+                            "reqNroReport": `${userData[4]?.replace(/\n/g, '')}`,
+                            "reqNroRoutine": `${userData[5]?.replace(/\n/g, '')}`,
+                        };
+                        elem.push(rawFile);
+                    }
+                    const importToBackend = document.getElementById('button-import');
+                    importToBackend.addEventListener('click', async () => {
+                        let cont = 0
+                        const dialogContainer = document.getElementById('app-dialogs');
+                        dialogContainer.style.display = 'block';
+                        dialogContainer.innerHTML = `
+                        <div class="dialog_content" id="dialog-content">
+                            <div class="dialog">
+                                <div class="dialog_container padding_8">
+                                    <div class="dialog_header">
+                                        <h2>Importando...</h2>
+                                    </div>
+
+                                    <div class="dialog_message padding_8">
+                                        <div class="material_input">
+                                            <input type="text" id="import-total" class="input_filled" value="..." readonly>
+                                            <label for="import-total"><i class="fa-solid fa-cloud-arrow-up"></i>Cargando datos</label>
+                                        </div>
+
+                                        <div class="input_detail">
+                                            <label for="message-import"><i class="fa-solid fa-file-import"></i></label>
+                                            <p id="message-import" class="input_filled" readonly></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="dialog_footer">
+                                        <button class="btn btn_primary" id="btn-cancelImport">Cancelar</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        const message1 = document.getElementById("import-total");
+                        const message2 = document.getElementById("message-import");
+                        const btnCancelModal = document.getElementById("btn-cancelImport");
+                        btnCancelModal.onclick = () => {
+                            const _dialog = document.getElementById('dialog-content');
+                            new CloseDialog().x(_dialog);
+                        };
+                        await elem.forEach(async (el) => {
+                            message1.value = `${cont += 1} / ${elem.length}`
+                            message2.innerText = `${el["nombre"]}`
+                            const entityId = el["id"];
+                            if(!isNaN(el["reqNroVisitEmer"]) && !isNaN(el["reqNroVehicle"]) && !isNaN(el["reqNroReport"]) && !isNaN(el["reqNroRoutine"])){
+                                const raw = JSON.stringify({
+                                    "reqNroVisitEmer": `${el["reqNroVisitEmer"]}`,
+                                    "reqNroVehicle": `${el["reqNroVehicle"]}`,
+                                    "reqNroReport": `${el["reqNroReport"]}`,
+                                    "reqNroRoutine": `${el["reqNroRoutine"]}`,
+                                });
+                                await updateEntity('Customer', entityId, raw)
+                                    .then((res) => {
+                                    setTimeout(async () => {
+                                    }, 2000);
+                                });
+                            }
+                        });
+                        setTimeout(async () => {
+                            alert("Proceso terminado");
+                            new CloseDialog().x(dialogContainer);
+                            const entityDialogContainer = document.getElementById('entity-editor-container');
+                            new CloseDialog().x(entityDialogContainer)
+                        }, 1000);
+                    });
+                });
+            }
+            const closeButton = document.getElementById('close');
+            const editor = document.getElementById('entity-editor-container');
+            closeButton.addEventListener('click', () => {
+                //console.log('close');
+                new CloseDialog().x(editor);
+            }, false);
+        });
     }
     selectCustomer() {
         const btnElement = document.getElementById('btn-select-customer');

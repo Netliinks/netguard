@@ -36,6 +36,12 @@ export const tableLayout = `
         Importar
       </button>
 
+      <button
+        class="datatable_button import_user"
+        id="assign-guard-entities">
+        Asignar
+      </button>
+
       <button class="datatable_button import_user" id="export-entities">Exportar</button>
     </div>
   </div>
