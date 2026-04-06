@@ -783,6 +783,11 @@ export class Guards {
                                         "property": "customer.id",
                                         "operator": "=",
                                         "value": `${data?.customer?.id}`
+                                    },
+                                    {
+                                        "property": "user.id",
+                                        "operator": "=",
+                                        "value": `${entityId}`
                                     }
                                 ],
                             },
@@ -1447,6 +1452,16 @@ export class Guards {
                                         "operator": "=",
                                         "value": `Enabled`
                                     },
+                                    {
+                                        "property": "userType",
+                                        "operator": "=",
+                                        "value": "GUARD"
+                                    },
+                                    {
+                                        "property": "isSuper",
+                                        "operator": "=",
+                                        "value": false
+                                    }
                                 ],
                             },
                             sort: `+customer.name`,
@@ -1733,11 +1748,10 @@ export class Guards {
                         let userData = resultSplit[i].split(';');
                         rawFile = {
                             "id": `${userData[0]?.replace(/\n/g, '')}`,
-                            "nombre": `${userData[1]?.replace(/\n/g, '')}`,
-                            "reqNroVisitEmer": `${userData[2]?.replace(/\n/g, '')}`,
-                            "reqNroVehicle": `${userData[3]?.replace(/\n/g, '')}`,
-                            "reqNroReport": `${userData[4]?.replace(/\n/g, '')}`,
-                            "reqNroRoutine": `${userData[5]?.replace(/\n/g, '')}`,
+                            "username": `${userData[1]?.replace(/\n/g, '')}`,
+                            "name": `${userData[2]?.replace(/\n/g, '')}`,
+                            "customer_id": `${userData[3]?.replace(/\n/g, '')}`,
+                            "customer_name": `${userData[4]?.replace(/\n/g, '')}`,
                         };
                         elem.push(rawFile);
                     }
@@ -1781,22 +1795,53 @@ export class Guards {
                             const _dialog = document.getElementById('dialog-content');
                             new CloseDialog().x(_dialog);
                         };
+                        const update = async (customer_id, entity_id) => {
+                            const raw = JSON.stringify({
+                                "customer": {
+                                    "id": `${customer_id}`
+                                },
+                            });
+                            await updateEntity('User', entity_id, raw)
+                                .then((res) => {
+                                setTimeout(async () => {
+                                }, 2000);
+                            });
+                        }
                         await elem.forEach(async (el) => {
                             message1.value = `${cont += 1} / ${elem.length}`
-                            message2.innerText = `${el["nombre"]}`
+                            message2.innerText = `${el["username"]}`
                             const entityId = el["id"];
-                            if(!isNaN(el["reqNroVisitEmer"]) && !isNaN(el["reqNroVehicle"]) && !isNaN(el["reqNroReport"]) && !isNaN(el["reqNroRoutine"])){
-                                const raw = JSON.stringify({
-                                    "reqNroVisitEmer": `${el["reqNroVisitEmer"]}`,
-                                    "reqNroVehicle": `${el["reqNroVehicle"]}`,
-                                    "reqNroReport": `${el["reqNroReport"]}`,
-                                    "reqNroRoutine": `${el["reqNroRoutine"]}`,
-                                });
-                                await updateEntity('Customer', entityId, raw)
-                                    .then((res) => {
-                                    setTimeout(async () => {
-                                    }, 2000);
-                                });
+                            const data = await getEntityData('User', entityId);
+                            if(data != undefined){
+                                if(data.customer.id != el["customer_id"]){
+                                    const rawToRoutine = JSON.stringify({
+                                        "filter": {
+                                            "conditions": [
+                                                {
+                                                    "property": "customer.id",
+                                                    "operator": "=",
+                                                    "value": `${data?.customer?.id}`
+                                                },
+                                                {
+                                                    "property": "user.id",
+                                                    "operator": "=",
+                                                    "value": `${entityId}`
+                                                }
+                                            ],
+                                        },
+                                        limit: 1
+                                    });
+                                    const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
+                                    if(existUserRoutine > 0){
+                                        //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                                        //console.log(`No se puede cambiar la empresa, el guardia: ${data?.username} tiene rutina asignada en ${data?.customer?.name}`);
+                                    }else{
+                                        update(el["customer_id"], entityId);
+                                    }
+                                }else{
+                                    //Wupdate(el["customer_id"], entityId);
+                                }
+                                
                             }
                         });
                         setTimeout(async () => {

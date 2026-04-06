@@ -62,7 +62,7 @@ export class RenderApplicationUI {
     const user = await getEntityData('User', currentUser.attributes.id);
     Config.currentUser = user;
     let customer = await getEntityData('Customer', customerId);
-    //srenderRoutines(customer.business.id);
+    renderRoutines(customer.business.id);
     let topbar = this.topbar.innerHTML = `
         <div class="user">
             <div class="settings_button">
