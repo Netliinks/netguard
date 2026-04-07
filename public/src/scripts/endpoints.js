@@ -266,7 +266,7 @@ export const setFile = async (file) => {
     return res;
 };
 
-export const postNotificationPush = async(data)=>{
+/*export const postNotificationPush = async(data,type)=>{
     var myHeaders = new Headers();
 myHeaders.append("Authorization", "key=AAAAQ1NOq3s:APA91bEXEqZ2ozsXg7JmQrOKqWPTPTQOSYqLmExWQsWB0LvA825JDiYisngPUOLXrJKgZpxN-v0i4fQw1G_ZbUgH41FVENrLV4bompTF_q8LxlN4jBdYPxut38fOa0nSCCOS6kGXHOUb");
 myHeaders.append("Content-Type", "application/json");
@@ -285,7 +285,7 @@ var raw = JSON.stringify({
     "body":bodyNoti
   },
   "data":{
-    "type": "tasks"
+    "type": `${type}`
   }
 });
 
@@ -300,4 +300,25 @@ fetch("https://fcm.googleapis.com/fcm/send", requestOptions)
   .then(response => response.text())
   .then(result => console.log(result))
   .catch(error => console.log('error', error));
+}*/
+
+export const postNotificationPush = async(data)=>{
+    const req = {
+        url: `${NetliinkBase}rest/services/UserServiceBean/sendNotificationPush`,
+        method: 'POST'
+    }
+    const requestOptions = {
+        method: req.method,
+        headers: headers,
+        body: data,
+        redirect: 'follow'
+    };
+
+    fetch(req.url, requestOptions)
+        .then(response => {
+        if (!response.ok) console.error('Network response was not ok');
+        // Check if response has content before parsing
+        return response.text().then(text => text ? JSON.parse(text) : {});
+    })
+    .catch(error => console.error('Fetch error:', error));
 }

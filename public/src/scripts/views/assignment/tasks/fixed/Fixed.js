@@ -480,12 +480,12 @@ export class Fixed {
                             ],
                         },
                     });
-                    const dataUser = await getFilterEntityData("User", rawUser);
+                    /*const dataUser = await getFilterEntityData("User", rawUser);
                     for (let i = 0; i < dataUser.length; i++) {
 
                         const data = { "token": dataUser[i]['token'], "title": "General", "body": `${inputsCollection.name.value}` }
-                        const envioPush = await postNotificationPush(data);
-                    }
+                        await postNotificationPush(data, "tasks");
+                    }*/
 
                 }
 
@@ -690,12 +690,12 @@ export class Fixed {
                         ],
                     },
                 });
-                const dataUser = await getFilterEntityData("User", rawUser);
+                /*const dataUser = await getFilterEntityData("User", rawUser);
                 for (let i = 0; i < dataUser.length; i++) {
 
                     const data = { "token": dataUser[i]['token'], "title": "General", "body": `${$value.name.value}` }
-                    const envioPush = await postNotificationPush(data);
-                }
+                    await postNotificationPush(data, "tasks");
+                }*/
             };
 
 
