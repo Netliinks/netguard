@@ -74,6 +74,11 @@ const getUsers = async () => {
                             "property": "email",
                             "operator": "contains",
                             "value": `${infoPage.search.toLowerCase()}`
+                        },
+                        {
+                            "property": "userPresent",
+                            "operator": "contains",
+                            "value": `${infoPage.search.toLowerCase()}`
                         }
                     ]
                 },
@@ -214,6 +219,7 @@ export class Guards {
                         <td>${client.username}</dt>
                         <td class="key"><button class="button" data-userid="${client.id}" id="change-user-password"><i class="fa-regular fa-key"></i></button></td>
                         <td class="tag"><span>${client.state.name}</span></td>
+                        <td>${client?.userPresent ?? ''}</dt>
                         <!-- <td>${client?.citadel?.description}</dt> -->
                         <td class="entity_options">
                             <button class="button" id="edit-entity" data-entityId="${client.id}">
@@ -310,6 +316,11 @@ export class Guards {
                     </div>
 
                     <div class="material_input">
+                        <input type="text" id="entity-position" autocomplete="none">
+                        <label for="entity-position">Puesto</label>
+                    </div>
+
+                    <div class="material_input">
                         <input type="text" id="entity-customer" autocomplete="none" class="input_filled" value="Actual" data-optionid="${customerId}" disabled>
                         <label for="entity-customer">Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
                     </div>
@@ -387,6 +398,7 @@ export class Guards {
                     temporalPass: document.getElementById('tempPass'),
                     dni: document.getElementById('entity-dni'),
                     email: document.getElementById('entity-email'),
+                    position: document.getElementById('entity-position')
                 };
                 const dni = inputsCollection.dni.value.trim();
                 const raw = JSON.stringify({
@@ -420,7 +432,8 @@ export class Guards {
                     },
                     "phone": `${inputsCollection.phoneNumer.value}`,
                     "userType": "GUARD",
-                    'username':`${dni}`,
+                    "username":`${dni}`,
+                    "userPresent":`${inputsCollection.position.value}`
                     //"username": `${inputsCollection.username.value}@${currentCustomer.name.toLowerCase().replace(/\s+/g, '')}.com`
                 });    
                 const existEmail = await getVerifyEmail(inputsCollection.email.value);
@@ -659,6 +672,11 @@ export class Guards {
                     </div>
 
                     <div class="material_input">
+                        <input type="text" id="entity-position" autocomplete="none" value="${data?.userPresent ?? ''}">
+                        <label for="entity-position">Puesto</label>
+                    </div>
+
+                    <div class="material_input">
                         <input type="text" id="entity-customer" autocomplete="none" class="input_filled" value="${data?.customer?.name ?? ''}" data-optionid="${data?.customer?.id ?? ''}" disabled>
                         <label for="entity-customer">Seleccionar empresa <button style="background-color:white; color:#808080; font-size:12px;" id="btn-select-customer"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:12px; color:blue;"></i></button></label>
                     </div>
@@ -737,6 +755,7 @@ export class Guards {
                     //email: document.getElementById('entity-email'),
                     // @ts-ignore
                     status: document.getElementById('entity-state'),
+                    position: document.getElementById('entity-position'),
                     customer: document.getElementById('entity-customer'),
                     // @ts-ignore
                     //dni: document.getElementById('entity-dni'),
@@ -761,6 +780,7 @@ export class Guards {
                     },
                     // @ts-ignore
                     "phone": `${$value.phone?.value}`,
+                    "userPresent":`${$value.position.value}`
                     //"dni": `${$value.dni.value}`,
                     //"email": `${$value.email?.value}`,
                 });

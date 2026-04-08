@@ -66,6 +66,10 @@ export const tableLayout = `
         Estado <i class="fa-regular fa-filter"></i>
       </span></th>
 
+      <th class="thead_centered"><span data-type="position">
+        Puesto <i class="fa-regular fa-filter"></i>
+      </span></th>
+
       <!-- <th><span data-type="citadel">
         Ciudadela <i class="fa-regular fa-filter"></i>
       </span></th> -->
