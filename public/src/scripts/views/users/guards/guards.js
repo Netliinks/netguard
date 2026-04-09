@@ -813,9 +813,15 @@ export class Guards {
                             },
                             limit: 1
                         });
-                        const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
-                        if(existUserRoutine > 0){
-                            alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                        const existUserRoutine = await getFilterEntityData("RoutineUser", rawToRoutine);
+                        if(existUserRoutine == undefined){
+                            alert(`Ocurrió un error buscando rutina`);
+                        }else if(existUserRoutine.length > 0){
+                            await deleteEntity('RoutineUser', existUserRoutine[0].id);
+                            //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
+                            update(raw);
+                            const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                            postNotificationPush(message);
                         }else{
                             update(raw);
                             const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
@@ -1853,10 +1859,15 @@ export class Guards {
                                         },
                                         limit: 1
                                     });
-                                    const existUserRoutine = await getFilterEntityCount("RoutineUser", rawToRoutine);
-                                    if(existUserRoutine > 0){
+                                    const existUserRoutine = await getFilterEntityData("RoutineUser", rawToRoutine);
+                                    if(existUserRoutine == undefined){
+                                        alert(`Ocurrió un error buscando rutina`);
+                                    }else if(existUserRoutine.length > 0){
+                                        await deleteEntity('RoutineUser', existUserRoutine[0].id);
                                         //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
-                                        //console.log(`No se puede cambiar la empresa, el guardia: ${data?.username} tiene rutina asignada en ${data?.customer?.name}`);
+                                        update(el["customer_id"], entityId);
+                                        let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                                        postNotificationPush(message);
                                     }else{
                                         update(el["customer_id"], entityId);
                                         let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
