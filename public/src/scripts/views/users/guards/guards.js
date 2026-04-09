@@ -1381,7 +1381,7 @@ export class Guards {
                 <p>2. Tomar en cuenta la columna "ID" de empresa que la representa.</p>
                 <p>3. Descargar la plantilla de asignación de guardias.</p>
                 <div class="input_checkbox">
-                    <label><input type="checkbox" class="checkbox" id="check-allCustomer"> Todas las empresas</label>
+                    <label><input type="checkbox" class="checkbox" id="check-allCustomer"> Descargar guardias de todas las empresas</label>
                 </div>
                 <div class="sidebar_section">
                     <div class="file_template">
