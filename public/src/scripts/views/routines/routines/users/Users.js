@@ -148,7 +148,7 @@ export class RoutineUsers {
                 let guard = paginatedItems[i];
                 let row = document.createElement('tr');
                 row.innerHTML += `
-          <td>${guard.user.username}</dt>
+          <td>[${guard.user.username}] ${guard?.user?.firstName ?? ''} ${guard?.user?.lastName ?? ''}</dt>
           <td>${guard.creationDate} ${guard.creationTime}</dt>
           <td>${guard.createdBy}</dt>
           <td class="entity_options">
