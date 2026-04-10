@@ -293,7 +293,7 @@ export const generarReportRoutineXls = async (conditions, routines) => {
     // @ts-ignore
     usuarios.forEach(u => {
         //const row = sheet.addRow([u["Usuario"], u["Total Alertas Generadas"], u["Total Alertas No Marcadas"], u["Total Alertas Respondidas"], u["Total Alertas Respondidas A Tiempo"], u["Cumplimiento"], u["Promedio"]]);
-        const row = sheet.addRow([u["customer"], u["username"], u["requerido"], u["routines"], u["cumplimiento"] == 'N/A' ? u["cumplimiento"] : `${u["cumplimiento"]}%`]);
+        const row = sheet.addRow([u["customer"], `[${u["username"]}] ${u["name"]}`, u["requerido"], u["routines"], u["cumplimiento"] == 'N/A' ? u["cumplimiento"] : `${u["cumplimiento"]}%`]);
         let cellIndex = 0;
         // @ts-ignore
         row.eachCell(cell => {
@@ -311,7 +311,7 @@ export const generarReportRoutineXls = async (conditions, routines) => {
     // Ajustar ancho de columnas
     sheet.columns = [
         { width: 30 },
-        { width: 40 },
+        { width: 60 },
         { width: 25 },
         { width: 25 },
         { width: 25 },
