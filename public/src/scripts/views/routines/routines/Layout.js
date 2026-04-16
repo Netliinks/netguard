@@ -25,7 +25,7 @@ export const tableLayout = `
         <button
           class="datatable_button add_user"
           id="ex-entity">
-          <i class="fa-solid fa-add"></i>ex
+          Exportar
         </button>
       </div>
     </div>

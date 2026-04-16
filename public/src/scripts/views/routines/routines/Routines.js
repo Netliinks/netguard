@@ -1,6 +1,6 @@
 // @filename: Routines.ts
 import { registerEntity, getUserInfo, getEntityData, updateEntity, getFilterEntityData, getFilterEntityCount, deleteEntity, getFile } from "../../../endpoints.js";
-import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination, currentDateTime, getDetails } from "../../../tools.js";
+import { drawTagsIntoTables, inputObserver, inputSelect, CloseDialog, filterDataByHeaderType, pageNumbers, fillBtnPagination, currentDateTime, getDetails, generateFileSimpleXls } from "../../../tools.js";
 import { Config } from "../../../Configs.js";
 import { tableLayout } from "./Layout.js";
 import { tableLayoutTemplate } from "./Template.js";
@@ -768,96 +768,147 @@ export class Routines {
   ex(){
     const exportRegisters = document.getElementById('ex-entity');
     exportRegisters.addEventListener('click', async () => {
-        const raw = JSON.stringify({
-            "filter": {
-                "conditions": [
-                    {
-                    "property": "business.id",
-                    "operator": "=",
-                    "value": `${Config.currentUser.business.id}`
-                    },
-                    {
-                    "property": "customer.state.name",
-                    "operator": "=",
-                    "value": `Enabled`
-                    }
-                ]
-            },
-            sort: "+customer.name,+routine.name",
-            fetchPlan: 'full',
-        });
-        const data = await getFilterEntityData("RoutineSchedule", raw);
-        const dataToExport = []
-        for(let i=0;i<data.length;i++){
-            dataToExport.push({
-                "Empresa":data[i].customer.name,
-                "Rutina":data[i].routine.name,
-                "Activo":data[i].routine.isActive ? "Si" : "No",
-                "GPS":data[i].routine.checkLocation ? "Si" : "No",
-                "Ubicacion":data[i].name,
-                "Coordenadas":data[i].cords,
-                "Horario":`${data[i].scheduleTime} - ${data[i].scheduleTimeEnd ?? ''}`,
-                "Frecuencia":data[i].frequency ?? 0,
-                "Distancia":data[i].distance ?? 0
-            })
-        }
-        const generateFile = (ar, title, extension) => {
-            //comprobamos compatibilidad
-            if (window.Blob && (window.URL || window.webkitURL)) {
-                var contenido = "", d = new Date(), blob, reader, save, clicEvent;
-                //creamos contenido del archivo
-                for (var i = 0; i < ar.length; i++) {
-                    //construimos cabecera del csv
-                    if (i == 0)
-                        contenido += Object.keys(ar[i]).join(";") + "\n";
-                    //resto del contenido
-                    contenido += Object.keys(ar[i]).map(function (key) {
-                        return ar[i][key];
-                    }).join(";") + "\n";
-                }
-                //creamos el blob
-                blob = new Blob(["\ufeff", contenido], { type: `text/${extension}` });
-                //creamos el reader
-                // @ts-ignore
-                var reader = new FileReader();
-                reader.onload = function (event) {
-                    //escuchamos su evento load y creamos un enlace en dom
-                    save = document.createElement('a');
-                    // @ts-ignore
-                    save.href = event.target.result;
-                    save.target = '_blank';
-                    //aquí le damos nombre al archivo
-                    save.download = "log_" + title + "_" + d.getDate() + "_" + (d.getMonth() + 1) + "_" + d.getFullYear() + `.${extension}`;
-                    try {
-                        //creamos un evento click
-                        clicEvent = new MouseEvent('click', {
-                            'view': window,
-                            'bubbles': true,
-                            'cancelable': true
-                        });
-                    }
-                    catch (e) {
-                        //si llega aquí es que probablemente implemente la forma antigua de crear un enlace
-                        clicEvent = document.createEvent("MouseEvent");
-                        // @ts-ignore
-                        clicEvent.click();
-                    }
-                    //disparamos el evento
-                    save.dispatchEvent(clicEvent);
-                    //liberamos el objeto window.URL
-                    (window.URL || window.webkitURL).revokeObjectURL(save.href);
-                };
-                //leemos como url
-                reader.readAsDataURL(blob);
-            }
-            else {
-                //el navegador no admite esta opción
-                alert("Su navegador no permite esta acción");
-            }
-        };
-        generateFile(dataToExport,"Rutinas","xls")
-                
+        this.dialogContainer.style.display = 'block';
+        this.dialogContainer.innerHTML = `
+        <div class="dialog_content" id="dialog-content">
+            <div class="dialog">
+                <div class="dialog_container padding_8">
+                    <div class="dialog_header">
+                        <h2>Antes de exportar</h2>
+                    </div>
 
+                    <div class="dialog_message padding_8">
+                        <div class="input_checkbox">
+                            <label><input type="checkbox" class="checkbox" id="check-allCustomer"> Descargar rutinas de todas las empresas</label>
+                        </div>
+                    </div>
+
+                    <div class="dialog_footer">
+                        <button class="btn btn_primary" id="cancel">Cancelar</button>
+                        <button class="btn btn_danger" id="export-data">Exportar</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        inputObserver();
+        const _closeButton = document.getElementById('cancel');
+        const exportButton = document.getElementById('export-data');
+        const _dialog = document.getElementById('dialog-content');
+        const _checkAllCustomer = document.getElementById('check-allCustomer');
+        let onPressed = false;
+        exportButton.addEventListener('click', async () => {
+            if(!onPressed){
+                onPressed = true;
+                this.dialogContainer.style.display = 'block';
+                this.dialogContainer.innerHTML = `
+                <div class="dialog_content" id="dialog-content">
+                    <div class="dialog">
+                        <div class="dialog_container padding_8">
+                            <div class="dialog_header">
+                                <h2>Exportando...</h2>
+                            </div>
+
+                            <div class="dialog_message padding_8">
+                                <div class="material_input">
+                                    <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                    <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                </div>
+
+                                <div class="input_detail">
+                                    <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                    <p id="message-export" class="input_filled" readonly></p>
+                                </div>
+                            </div>
+
+                            <div class="dialog_footer">
+                                <button class="btn btn_primary" id="cancel">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                inputObserver();
+                const message1 = document.getElementById("export-total");
+                const message2 = document.getElementById("message-export");
+                const _closeButton = document.getElementById('cancel');
+                _closeButton.onclick = () => {
+                    onPressed = false;
+                    const _dialog = document.getElementById('dialog-content');
+                    new CloseDialog().x(_dialog);
+                };
+                let rawToExport=(offset)=>{
+                    const raw = JSON.stringify({
+                        "filter": {
+                            "conditions": [
+                                {
+                                    "property": `${_checkAllCustomer.checked ? 'business.id' : 'customer.id'}`,
+                                    "operator": "=",
+                                    "value": `${_checkAllCustomer.checked ? Config.currentUser.business.id : customerId}`
+                                },
+                                {
+                                    "property": "business.state.name",
+                                    "operator": "=",
+                                    "value": `Enabled`
+                                },
+                            ]
+                        },
+                        sort: "+customer.name,+routine.name",
+                        limit: Config.limitExport,
+                        offset: offset,
+                        fetchPlan: 'full',
+                    });
+                    return raw;
+                }
+                let rawExport = rawToExport(0);
+                const totalRegisters = await getFilterEntityCount("RoutineSchedule", rawExport);
+                if(totalRegisters === undefined){
+                    onPressed = false;
+                    const _dialog = document.getElementById('dialog-content');
+                    new CloseDialog().x(_dialog);
+                    alert("Ocurrió un error al exportar");
+                }else if(totalRegisters===0){
+                    onPressed = false;
+                    const _dialog = document.getElementById('dialog-content');
+                    new CloseDialog().x(_dialog);
+                    alert("No hay ningún registro");  
+                }else {
+                    message1.value = `0 / ${totalRegisters}`;
+                    const pages = Math.ceil(totalRegisters / Config.limitExport);
+                    let array = [];
+                    let dataToExport = [];
+                    let offset = 0;
+                    for(let i = 0; i < pages; i++){
+                        if(onPressed){
+                            rawExport = rawToExport(offset);
+                            array[i] = await getFilterEntityData("RoutineSchedule", rawExport); //await getEvents();
+                            for(let y=0; y<array[i].length; y++){
+                                dataToExport.push({
+                                    "Empresa":array[i][y].customer.name,
+                                    "Rutina":array[i][y].routine.name,
+                                    "Activo":array[i][y].routine.isActive ? "Si" : "No",
+                                    "GPS":array[i][y].routine.checkLocation ? "Si" : "No",
+                                    "Ubicacion":array[i][y].name,
+                                    "Coordenadas":array[i][y].cords,
+                                    "Horario":`${array[i][y].scheduleTime} - ${array[i][y].scheduleTimeEnd ?? ''}`,
+                                    "Frecuencia":array[i][y].frequency ?? 0,
+                                    "Distancia":array[i][y].distance ?? 0
+                                });
+                            }
+                            message1.value = `${dataToExport.length} / ${totalRegisters}`;
+                            offset = Config.limitExport + (offset);
+                        }
+                    }
+                
+                    generateFileSimpleXls(dataToExport,"Rutinas","csv");
+                    const _dialog = document.getElementById('dialog-content');
+                    new CloseDialog().x(_dialog);
+                    onPressed = false;
+                }
+            }
+        });
+        _closeButton.addEventListener('click', () => {
+            new CloseDialog().x(_dialog);
+        });     
     });
   }
   
