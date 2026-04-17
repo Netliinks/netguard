@@ -827,7 +827,7 @@ export class Guards {
                             });
                             await registerEntity(raw, 'AndroidLogin');
                             await update(raw);
-                            const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                            const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido removido de la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                             postNotificationPush(message);
                         }else{
                             const raw = JSON.stringify({
@@ -838,7 +838,7 @@ export class Guards {
                             });
                             await registerEntity(raw, 'AndroidLogin');
                             await update(raw);
-                            const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                            const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido removido de la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                             postNotificationPush(message);
                         }
                     }else{
@@ -1845,7 +1845,7 @@ export class Guards {
                                         await registerEntity(raw, 'AndroidLogin');
                                         //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
                                         await update(el["customer_id"], entityId);
-                                        let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                                        let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido removido de la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                                         postNotificationPush(message);
                                     }else{
                                         const raw = JSON.stringify({
@@ -1856,7 +1856,7 @@ export class Guards {
                                         });
                                         await registerEntity(raw, 'AndroidLogin');
                                         await update(el["customer_id"], entityId);
-                                        let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
+                                        let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido removido de la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                                         postNotificationPush(message);
                                     }
                                 }else{
