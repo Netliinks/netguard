@@ -819,11 +819,18 @@ export class Guards {
                         }else if(existUserRoutine.length > 0){
                             await deleteEntity('RoutineUser', existUserRoutine[0].id);
                             //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
-                            update(raw);
+                            const raw = JSON.stringify({
+                                "user": {
+                                    "id": `${data.id}`
+                                },
+                                "model": '#NEWMOBILEADD'
+                            });
+                            await registerEntity(raw, 'AndroidLogin');
+                            await update(raw);
                             const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                             postNotificationPush(message);
                         }else{
-                            update(raw);
+                            await update(raw);
                             const message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                             postNotificationPush(message);
                         }
@@ -1822,12 +1829,19 @@ export class Guards {
                                         alert(`Ocurrió un error buscando rutina`);
                                     }else if(existUserRoutine.length > 0){
                                         await deleteEntity('RoutineUser', existUserRoutine[0].id);
+                                        const raw = JSON.stringify({
+                                            "user": {
+                                                "id": `${entityId}`
+                                            },
+                                            "model": '#NEWMOBILEADD'
+                                        });
+                                        await registerEntity(raw, 'AndroidLogin');
                                         //alert(`No se puede cambiar la empresa, el guardia tiene rutina asignada en ${data?.customer?.name}`);
-                                        update(el["customer_id"], entityId);
+                                        await update(el["customer_id"], entityId);
                                         let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                                         postNotificationPush(message);
                                     }else{
-                                        update(el["customer_id"], entityId);
+                                        await update(el["customer_id"], entityId);
                                         let message = JSON.stringify({"title": "Cambio de empresa","body":`Ha sido asignado a la empresa ${data?.customer?.name ?? ''}, por favor reinicie la aplicación ahora.`,"tokenUser":data['token'],"type":"routine"});
                                         postNotificationPush(message);
                                     }
