@@ -808,6 +808,19 @@ export class Routines {
                 <div class="input_checkbox">
                 <label><input type="checkbox" class="checkbox" id="entity-flip-image"> Girar Imágenes (hacia la derecha)</label>
                 </div>
+                <br>
+                <div class="form_group">
+                    <div class="form_input">
+                        <label class="form_label" for="start-date">Desde:</label>
+                        <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
+                    </div>
+
+                    <div class="form_input">
+                        <label class="form_label" for="end-date">Hasta:</label>
+                        <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
+                    </div>
+
+                </div> 
             
                 <br>
                 <br>
@@ -820,33 +833,21 @@ export class Routines {
             </div>
             </div>
         `;
-            /* <!--
-<div class="form_group">
-    <div class="form_input">
-        <label class="form_label" for="start-date">Desde:</label>
-        <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
-    </div>
 
-    <div class="form_input">
-        <label class="form_label" for="end-date">Hasta:</label>
-        <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
-    </div>
-
-</div> -->*/
             inputObserver();
-            /*let fecha: any = new Date(); //Fecha actual
-            let mes: any = fecha.getMonth()+1; //obteniendo mes
-            let dia: any = fecha.getDate(); //obteniendo dia
-            let anio: any = fecha.getFullYear(); //obteniendo año
+            let fecha = new Date(); //Fecha actual
+            let mes = fecha.getMonth()+1; //obteniendo mes
+            let dia = fecha.getDate(); //obteniendo dia
+            let anio = fecha.getFullYear(); //obteniendo año
             if(dia<10)
                 dia='0'+dia; //agrega cero si el menor de 10
             if(mes<10)
                 mes='0'+mes //agrega cero si el menor de 10
             // @ts-ignore
-            document.getElementById("entity-date").value = anio+"-"+mes+"-"+dia;*/
-            //document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
+            //document.getElementById("entity-date").value = anio+"-"+mes+"-"+dia;
+            document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
             // @ts-ignore
-            //document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
+            document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
             const _closeButton = document.getElementById('close');
             const exportButton = document.getElementById('export-data');
             const statusExport = document.getElementById('status-export');
@@ -926,7 +927,18 @@ export class Routines {
                                         "property": "routineState.name",
                                         "operator": `${conditionStatus}`,
                                         "value": `${status ? 'No cumplido' : ""}`
-                                    }
+                                    },
+                                    {
+                                        "property": "creationDate",
+                                        "operator": ">=",
+                                        "value": `${_values.start.value}`
+                                    },
+                                    {
+                                        "property": "creationDate",
+                                        "operator": "<=",
+                                        "value": `${_values.end.value}`
+                                    },
+                    
                                 ],
                             },
                             sort: `-createdDate`,
@@ -936,18 +948,6 @@ export class Routines {
                         });
                         return rawExport;
                     };
-                    /*
-                    {
-                        "property": "creationDate",
-                        "operator": ">=",
-                        "value": `${_values.start.value}`
-                    },
-                    {
-                        "property": "creationDate",
-                        "operator": "<=",
-                        "value": `${_values.end.value}`
-                    },
-                    */
                     let rawExport = rawToExport(0);
                     const totalRegisters = await getFilterEntityCount("RoutineRegister", rawExport);
                     console.log(totalRegisters);
@@ -998,22 +998,24 @@ export class Routines {
                                 //"date": `${data?.customer?.docRoutineDateApproval ?? ''}`,
                                 "rutina": `${register?.routine?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
                                 "cliente": `${register?.customer?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
-                                "status": `${data?.routineState?.name ?? ''}`,
+                                //"status": `${data?.routineState?.name ?? ''}`,
                                 "creado": `${data?.creationDate ?? ''} ${data?.creationTime ?? ''}`,
                                 "creadopor": `${data?.user?.firstName ?? ''} ${data?.user?.lastName ?? ''}`,
-                                "inicio": `${data?.startDate ?? ''} ${data?.startTime ?? ''}`,
-                                "iniciopor": `${data?.startUserId?.firstName ?? ''} ${data?.startUserId?.lastName ?? ''}`,
-                                "fin": `${data?.endDate ?? ''} ${data?.endTime ?? ''}`,
-                                "finpor": `${data?.endUserId?.firstName ?? ''} ${data?.endUserId?.lastName ?? ''}`,
+                                "inicio": `${_values.start.value}`,
+                                "fin": `${_values.end.value}`,
+                                //"inicio": `${data?.startDate ?? ''} ${data?.startTime ?? ''}`,
+                                //"iniciopor": `${data?.startUserId?.firstName ?? ''} ${data?.startUserId?.lastName ?? ''}`,
+                                //"fin": `${data?.endDate ?? ''} ${data?.endTime ?? ''}`,
+                                //"finpor": `${data?.endUserId?.firstName ?? ''} ${data?.endUserId?.lastName ?? ''}`,
                                 "fecha": `${register.creationDate}`,
                                 "hora": `${register.creationTime}`,
                                 "estado": `${register?.routineState?.name ?? ''}`,
-                                "cords": `${register?.latitude ?? ''},${register?.longitude ?? ''}`,
+                                "cords": `${register?.latitude ?? ''}\n${register?.longitude ?? ''}`,
                                 "usuario": `${register.user?.firstName ?? ''} ${register.user?.lastName ?? ''}`,
                                 "observacion": `${register?.observation?.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim() ?? ''}`,
-                                "pedido": `${data?.noOrder ?? ''}`,
-                                "guia": `${data?.noGuide ?? ''}`,
-                                "supervisor": `${data?.supervisorId?.firstName ?? ''} ${data?.supervisorId?.lastName ?? ''} ${data?.supervisorId?.secondLastName ?? ''}`,
+                                //"pedido": `${data?.noOrder ?? ''}`,
+                                //"guia": `${data?.noGuide ?? ''}`,
+                                //"supervisor": `${data?.supervisorId?.firstName ?? ''} ${data?.supervisorId?.lastName ?? ''} ${data?.supervisorId?.secondLastName ?? ''}`,
                                 "imagen": `${image}`,
                                 "imageTag": `${i + 1}`
                             };
