@@ -6,7 +6,7 @@ import { tableLayout } from "./Layout.js";
 import { tableLayoutTemplate } from "./Template.js";
 import { Locations } from "../routines/locations/Locations.js";
 import { RoutineUsers } from "../routines/users/Users.js";
-import { exportRoutinePdf } from "../../../exportFiles/extraRoutine.js";
+import { exportRoutinePdf, exportRoutinePdf2 } from "../../../exportFiles/extraRoutine.js";
 const tableRows = Config.tableRows;
 const currentPage = Config.currentPage;
 const customerId = localStorage.getItem('customer_id');
@@ -152,6 +152,10 @@ export class Routines {
                           <i class="fa-solid fa-file-pdf"></i>
                         </button>
 
+                        <button class="button" id="export2-entity" data-entityId="${routine.id}">
+                          <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+
                       <button class="button" id="remove-entity" data-entityId="${routine.id}">
                         <i class="fa-solid fa-trash"></i>
                       </button>
@@ -175,6 +179,10 @@ export class Routines {
                           <i class="fa-solid fa-user-police"></i>
                         </button>
 
+                        <button class="button" id="export2-entity" data-entityId="${routine.id}">
+                          <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+
                       <button class="button" id="remove-entity" data-entityId="${routine.id}">
                         <i class="fa-solid fa-trash"></i>
                       </button>
@@ -189,6 +197,7 @@ export class Routines {
         this.register();
         this.ex();
         this.export();
+        this.export2();
         this.remove();
         this.location();
         this.assignGuard();
@@ -765,6 +774,268 @@ export class Routines {
         });
       });
   }
+  export2() {
+    const exportRegisters = document.querySelectorAll('#export2-entity');
+    exportRegisters.forEach((exports) => {
+        const entityId = exports.dataset.entityid;
+        exports.addEventListener('click', () => {
+            this.entityDialogContainer.innerHTML = '';
+            this.entityDialogContainer.style.display = 'flex';
+            this.entityDialogContainer.innerHTML = `
+            <div class="entity_editor" id="entity-editor">
+            <div class="entity_editor_header">
+                <div class="user_info">
+                <div class="avatar"><i class="fa-regular fa-file-export"></i></div>
+                <h1 class="entity_editor_title">Exportar<br><small>Datos</small></h1>
+                </div>
+
+                <button class="btn btn_close_editor" id="close"><i class="fa-solid fa-x"></i></button>
+            </div>
+
+            <!-- EDITOR BODY -->
+            <div class="entity_editor_body">
+                <div class="material_input">
+                    <label for="status-export">Estados del registro</label>
+                    <br>
+                    <br>
+                    <select name="status-export" id="status-export">
+                        <option value="Todos" selected>Todos</option>
+                        <option value="Marcadas">Marcadas</option>
+                        <option value="NoMarcadas">No Marcadas</option>
+                    </select>
+                </div>
+                <br>
+                <div class="input_checkbox">
+                <label><input type="checkbox" class="checkbox" id="entity-flip-image"> Girar Imágenes (hacia la derecha)</label>
+                </div>
+            
+                <br>
+                <br>
+
+            </div>
+            <!-- END EDITOR BODY -->
+
+            <div class="entity_editor_footer">
+                <button class="btn btn_primary btn_widder" id="export-data">Listo</button>
+            </div>
+            </div>
+        `;
+            /* <!--
+<div class="form_group">
+    <div class="form_input">
+        <label class="form_label" for="start-date">Desde:</label>
+        <input type="date" class="input_date input_date-start" id="start-date" name="start-date">
+    </div>
+
+    <div class="form_input">
+        <label class="form_label" for="end-date">Hasta:</label>
+        <input type="date" class="input_date input_date-end" id="end-date" name="end-date">
+    </div>
+
+</div> -->*/
+            inputObserver();
+            /*let fecha: any = new Date(); //Fecha actual
+            let mes: any = fecha.getMonth()+1; //obteniendo mes
+            let dia: any = fecha.getDate(); //obteniendo dia
+            let anio: any = fecha.getFullYear(); //obteniendo año
+            if(dia<10)
+                dia='0'+dia; //agrega cero si el menor de 10
+            if(mes<10)
+                mes='0'+mes //agrega cero si el menor de 10
+            // @ts-ignore
+            document.getElementById("entity-date").value = anio+"-"+mes+"-"+dia;*/
+            //document.getElementById("start-date").value = anio+"-"+mes+"-"+dia;
+            // @ts-ignore
+            //document.getElementById("end-date").value = anio+"-"+mes+"-"+dia;
+            const _closeButton = document.getElementById('close');
+            const exportButton = document.getElementById('export-data');
+            const statusExport = document.getElementById('status-export');
+            const flipImage = document.getElementById('entity-flip-image');
+            let onPressed = false;
+            exportButton.addEventListener('click', async () => {
+                if (!onPressed) {
+                    onPressed = true;
+                    this.dialogContainer.style.display = 'block';
+                    this.dialogContainer.innerHTML = `
+                <div class="dialog_content" id="dialog-content">
+                    <div class="dialog">
+                        <div class="dialog_container padding_8">
+                            <div class="dialog_header">
+                                <h2>Exportando...</h2>
+                            </div>
+
+                            <div class="dialog_message padding_8">
+                                <div class="material_input">
+                                    <input type="text" id="export-total" class="input_filled" value="..." readonly>
+                                    <label for="export-total"><i class="fa-solid fa-cloud-arrow-down"></i>Obteniendo datos</label>
+                                </div>
+
+                                <div class="input_detail">
+                                    <label for="message-export"><i class="fa-solid fa-file-export"></i></label>
+                                    <p id="message-export" class="input_filled" readonly></p>
+                                </div>
+                            </div>
+
+                            <div class="dialog_footer">
+                                <button class="btn btn_primary" id="cancel">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                    inputObserver();
+                    let status = false;
+                    let conditionStatus = '<>';
+                    if (statusExport.value == 'Marcadas') {
+                        status = true;
+                    }
+                    else if (statusExport.value == 'NoMarcadas') {
+                        status = true;
+                        conditionStatus = '=';
+                    }
+                    const message1 = document.getElementById("export-total");
+                    const message2 = document.getElementById("message-export");
+                    const _closeButton = document.getElementById('cancel');
+                    _closeButton.onclick = () => {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                    };
+                    const _values = {
+                        start: document.getElementById('start-date'),
+                        end: document.getElementById('end-date'),
+                    };
+                    //console.log(_values.start.value)
+                    //console.log(_values.end.value)
+                    //const headers = ['Título', 'Contenido', 'Autor', 'Fecha', 'Hora']
+                    let rawToExport = (offset) => {
+                        let rawExport = JSON.stringify({
+                            "filter": {
+                                "conditions": [
+                                    {
+                                        "property": `customer.id`,
+                                        "operator": "=",
+                                        "value": `${customerId}`
+                                    },
+                                    {
+                                        "property": "routine.id",
+                                        "operator": `=`,
+                                        "value": `${entityId}`
+                                    },
+                                    {
+                                        "property": "routineState.name",
+                                        "operator": `${conditionStatus}`,
+                                        "value": `${status ? 'No cumplido' : ""}`
+                                    }
+                                ],
+                            },
+                            sort: `-createdDate`,
+                            limit: Config.limitExport,
+                            offset: offset,
+                            fetchPlan: 'full',
+                        });
+                        return rawExport;
+                    };
+                    /*
+                    {
+                        "property": "creationDate",
+                        "operator": ">=",
+                        "value": `${_values.start.value}`
+                    },
+                    {
+                        "property": "creationDate",
+                        "operator": "<=",
+                        "value": `${_values.end.value}`
+                    },
+                    */
+                    let rawExport = rawToExport(0);
+                    const totalRegisters = await getFilterEntityCount("RoutineRegister", rawExport);
+                    console.log(totalRegisters);
+                    if (totalRegisters === undefined) {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("Ocurrió un error al exportar");
+                    }
+                    else if (totalRegisters === 0) {
+                        onPressed = false;
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        alert("No hay ningún registro");
+                    }
+                    else {
+                        const data = await getEntityData('Routine', entityId);
+                        const users = await getDetails('routine.id', entityId, 'RoutineUser');
+                        message1.value = `0 / ${totalRegisters}`;
+                        const pages = Math.ceil(totalRegisters / Config.limitExport);
+                        let array = [];
+                        let registers = [];
+                        let offset = 0;
+                        for (let i = 0; i < pages; i++) {
+                            if (onPressed) {
+                                rawExport = rawToExport(offset);
+                                array[i] = await getFilterEntityData("RoutineRegister", rawExport); //await getEvents();
+                                for (let y = 0; y < array[i].length; y++) {
+                                    registers.push(array[i][y]);
+                                }
+                                message1.value = `${registers.length} / ${totalRegisters}`;
+                                offset = Config.limitExport + (offset);
+                            }
+                        }
+                        message2.innerText = `Generando archivo pdf,\nesto puede tomar un momento.`;
+                        let rows = [];
+                        for (let i = 0; i < registers.length; i++) {
+                            let register = registers[i];
+                            // @ts-ignore
+                            //if (noteCreationDate >= _values.start.value && noteCreationDate <= _values.end.value) {
+                            let image = '';
+                            if (register.attachment !== undefined) {
+                                image = await getFile(register.attachment);
+                            }
+                            let obj = {
+                                //"code": `${data?.customer?.docRoutineCode ?? ''}`,
+                                //"version": `${data?.customer?.docRoutineVersion ?? ''}`,
+                                //"date": `${data?.customer?.docRoutineDateApproval ?? ''}`,
+                                "rutina": `${register?.routine?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                "cliente": `${register?.customer?.name.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim()}`,
+                                "status": `${data?.routineState?.name ?? ''}`,
+                                "creado": `${data?.creationDate ?? ''} ${data?.creationTime ?? ''}`,
+                                "creadopor": `${data?.user?.firstName ?? ''} ${data?.user?.lastName ?? ''}`,
+                                "inicio": `${data?.startDate ?? ''} ${data?.startTime ?? ''}`,
+                                "iniciopor": `${data?.startUserId?.firstName ?? ''} ${data?.startUserId?.lastName ?? ''}`,
+                                "fin": `${data?.endDate ?? ''} ${data?.endTime ?? ''}`,
+                                "finpor": `${data?.endUserId?.firstName ?? ''} ${data?.endUserId?.lastName ?? ''}`,
+                                "fecha": `${register.creationDate}`,
+                                "hora": `${register.creationTime}`,
+                                "estado": `${register?.routineState?.name ?? ''}`,
+                                "cords": `${register?.latitude ?? ''},${register?.longitude ?? ''}`,
+                                "usuario": `${register.user?.firstName ?? ''} ${register.user?.lastName ?? ''}`,
+                                "observacion": `${register?.observation?.split("\n").join(". ").replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2580-\u27BF]|\uD83E[\uDD10-\uDDFF]/g, '').trim() ?? ''}`,
+                                "pedido": `${data?.noOrder ?? ''}`,
+                                "guia": `${data?.noGuide ?? ''}`,
+                                "supervisor": `${data?.supervisorId?.firstName ?? ''} ${data?.supervisorId?.lastName ?? ''} ${data?.supervisorId?.secondLastName ?? ''}`,
+                                "imagen": `${image}`,
+                                "imageTag": `${i + 1}`
+                            };
+                            rows.push(obj);
+                            //}
+                        }
+                        // @ts-ignore
+                        await exportRoutinePdf2(rows, users, flipImage.checked ? true : false);
+                        const _dialog = document.getElementById('dialog-content');
+                        new CloseDialog().x(_dialog);
+                        onPressed = false;
+                    }
+                }
+            });
+            _closeButton.onclick = () => {
+                onPressed = false;
+                const editor = document.getElementById('entity-editor-container');
+                new CloseDialog().x(editor);
+            };
+        });
+    });
+}
   ex(){
     const exportRegisters = document.getElementById('ex-entity');
     exportRegisters.addEventListener('click', async () => {

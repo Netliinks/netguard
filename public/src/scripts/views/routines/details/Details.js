@@ -5,7 +5,7 @@
 //
 import { Config } from "../../../Configs.js";
 import { getEntityData, getUserInfo, getFile, getFilterEntityData, getFilterEntityCount } from "../../../endpoints.js";
-import { CloseDialog, renderRightSidebar, drawTagsIntoTables, filterDataByHeaderType, inputObserver, pageNumbers, fillBtnPagination, calculateLine, searchUniversalSingle } from "../../../tools.js";
+import { CloseDialog, renderRightSidebar, drawTagsIntoTables, filterDataByHeaderType, inputObserver, pageNumbers, fillBtnPagination, calculateLine, searchUniversalSingle, currentDateTime } from "../../../tools.js";
 import { UIContentLayout, UIRightSidebar } from "./Layout.js";
 import { UITableSkeletonTemplate } from "./Template.js";
 import { exportRoutineDetailCsv, exportRoutineDetailPdf, exportRoutineDetailXls } from "../../../exportFiles/routines_details.js";
