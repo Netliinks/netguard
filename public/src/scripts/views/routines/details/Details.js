@@ -383,7 +383,6 @@ export class RoutineRegisters {
             });
             const previewBox = async (noteId) => {
                 const register = await getEntityData('RoutineRegister', noteId);
-                console.log(register)
                 renderRightSidebar(UIRightSidebar);
                 const sidebarContainer = document.getElementById('entity-editor-container');
                 const closeSidebar = document.getElementById('close');

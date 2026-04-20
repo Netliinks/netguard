@@ -633,20 +633,24 @@ export class Audits {
                     conditions.operator2= '<>';
                     conditions.value2= '';
                 }else{
-                    error += 1;
+                    if(_inputElements.objetiveTheme.value == 'RUTINA DE GUARDIA' || _inputElements.objetiveTheme.value == 'RUTINA DE CONSOLA'){
+                        error = 0;
+                    }else{
+                        error = 1;
+                    }
                 }
                 if(error == 0){
-                    if (_inputElements.objetiveTheme.value == 'RUTINA2') {
-                        _inputElements.objetiveType.value = 'GUARDIA';
+                    if (_inputElements.objetiveTheme.value == 'RUTINA DE GUARDIA' || _inputElements.objetiveTheme.value == 'RUTINA DE CONSOLA') {
                         const conditions = {
-                            objetive: _inputElements.objetiveType.value,
+                            objetive: _inputElements.objetiveTheme.value,
                             filterStartDate: _inputElements.filterStartDate.value,
                             filterEndDate: _inputElements.filterEndDate.value,
                             operator: '',
                             property: '',
-                            value: _inputElements.entityElement.dataset.optionid ?? '',
-                            name: _inputElements.entityElement.value ?? '',
+                            value: '',
+                            name: '',
                             countCumplido: 0,
+                            countLibre: 0,
                             countNoCumplido: 0,
                             registers: [],
                             registersNot: [],
@@ -666,13 +670,13 @@ export class Audits {
                             allUsersRoutines: []
                         };
                         let status = [];
-                        if (_inputElements.objetiveType.value == 'GUARDIA') {
+                        if (_inputElements.objetiveTheme.value == 'RUTINA DE GUARDIA') {
                             //conditions.property = 'user.id'
                             conditions.property = 'routine.name';
                             conditions.operator = '<>';
                             status = ["Cumplido", "No cumplido", "Libre"];
                         }
-                        else if (_inputElements.objetiveType.value == 'CONSOLA') {
+                        else if (_inputElements.objetiveTheme.value == 'RUTINA DE CONSOLA') {
                             //conditions.property = 'consoleUserId.id'
                             conditions.property = 'routine.name';
                             conditions.operator = '<>';
@@ -819,7 +823,7 @@ export class Audits {
                                     }
                                 }
                             }
-                            if (_inputElements.objetiveType.value == 'GUARDIA') {
+                            if (_inputElements.objetiveTheme.value == 'RUTINA DE GUARDIA') {
                                 const averageDate = averageTime(responseConsole);
                                 conditions.respConsole = responseConsole.length;
                                 conditions.average = averageDate;
@@ -883,7 +887,7 @@ export class Audits {
                                 `
                                 _dwnButton.style.display = 'flex'*/
                             }
-                            else if (_inputElements.objetiveType.value == 'CONSOLA') {
+                            else if (_inputElements.objetiveTheme.value == 'RUTINA DE CONSOLA') {
                                 const averageDate = averageTime(responseConsole);
                                 conditions.respConsole = responseConsole.length;
                                 conditions.average = averageDate;
@@ -988,7 +992,7 @@ export class Audits {
                                 _dwnButton.style.display = 'flex'*/
                                 //}   
                             }
-                            //if (_inputElements.entityUser.checked && (_inputElements.objetiveType.value == 'GUARDIA' || _inputElements.objetiveType.value == 'CONSOLA')) {
+                            //if (_inputElements.entityUser.checked && (_inputElements.objetiveTheme.value == 'GUARDIA' || _inputElements.objetiveTheme.value == 'CONSOLA')) {
                             //    await exportAuditV2Xls(conditions);
                             //}
                             //else {

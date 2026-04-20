@@ -7,7 +7,7 @@ export const exportAuditV2Xls = async (conditions) => {
     for (let i = 0; i < breakData.length; i++) {
         let data = breakData[i];
         let obj = {};
-        if (conditions.objetive == 'CONSOLA') {
+        if (conditions.objetive == 'RUTINA DE CONSOLA') {
             obj = {
                 "Usuario": `${data["Usuario"]}`,
                 //"Total Intentos Marcacion": `${data["Total Intentos Marcacion"]}`,
@@ -21,7 +21,7 @@ export const exportAuditV2Xls = async (conditions) => {
             };
             rows.push(obj);
         }
-        else if (conditions.objetive == 'GUARDIA') {
+        else if (conditions.objetive == 'RUTINA DE GUARDIA') {
             obj = {
                 "Usuario": `${data["name"]}`,
                 "Total Rutinas": `${data["totalRutinas"]}`,
@@ -34,7 +34,7 @@ export const exportAuditV2Xls = async (conditions) => {
             rows.push(obj);
         }
     }
-    if (conditions.objetive == 'GUARDIA') {
+    if (conditions.objetive == 'RUTINA DE GUARDIA') {
         generarReporteGuardia(rows, conditions.filterStartDate, conditions.filterEndDate);
     }
     else {

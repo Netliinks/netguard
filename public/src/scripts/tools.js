@@ -817,7 +817,7 @@ export const inputSelectTypeAudit = async (selectId, _inputElements) => {
     });
 };
 export const inputSelectThemeAudit = async (selectId, _inputElements) => {
-    const data = ['INGRESO EMERGENTE', 'INGRESO VEHICULAR', 'RUTINA', 'CONSIGNAS (REPORTES)'];
+    const data = ['INGRESO EMERGENTE', 'INGRESO VEHICULAR', 'RUTINA', 'CONSIGNAS (REPORTES)', 'RUTINA DE GUARDIA', 'RUTINA DE CONSOLA'];
     //const type = await currentType;
     const select = document.querySelector(`#${selectId}`);
     const inputParent = select.parentNode;
@@ -1317,14 +1317,14 @@ export const auditResponse = (conditions) => {
     const objUser = {};
     const objRoutine = {};
     let rawAudits = [];
-    if (conditions.objetive == "CONSOLA") {
+    if (conditions.objetive == "RUTINA DE CONSOLA") {
         rawAudits = [...conditions.registers, ...conditions.registersNot];
     }
-    else if (conditions.objetive == "GUARDIA") {
+    else if (conditions.objetive == "RUTINA DE GUARDIA") {
         rawAudits = [...conditions.registers, ...conditions.registersNot, ...conditions.registersLibre];
     }
     const audits = [];
-    if (conditions.objetive == "CONSOLA") {
+    if (conditions.objetive == "RUTINA DE CONSOLA") {
         rawAudits.forEach((rawAudit) => {
             const user = rawAudit['consoleUserId']?.id ?? '';
             if (user != '') {
@@ -1337,7 +1337,7 @@ export const auditResponse = (conditions) => {
             }
         });
     }
-    else if (conditions.objetive == "GUARDIA") {
+    else if (conditions.objetive == "RUTINA DE GUARDIA") {
         /*conditions.allUsersRoutines.forEach((routineUser) => {
             console.log(routineUser)
             const userId = routineUser?.user?.id ?? '';
@@ -1365,7 +1365,7 @@ export const auditResponse = (conditions) => {
     }
     
     
-        if (conditions.objetive == "CONSOLA") {
+        if (conditions.objetive == "RUTINA DE CONSOLA") {
             let key = Object.keys(objUser);
             for (let i = 0; i < key.length; i++) {
                 let objects = objUser[key[i]];
@@ -1426,13 +1426,13 @@ export const auditResponse = (conditions) => {
                 audits.push(obj);
             }
         }
-        else if (conditions.objetive == "GUARDIA") {
+        else if (conditions.objetive == "RUTINA DE GUARDIA") {
             //console.log(`${objects[0]['user']['firstName'] ?? ''} ${objects[0]['user']['lastName'] ?? ''} ${objects[0]['user']['secondLastName'] ?? ''}`)
             const users = [];
             let keyRoutine = Object.keys(objRoutine);
-            const routineScheduleG = [];
             conditions.allUsersRoutines.forEach((routineUser) => {
                 const routines = [];
+                const routineScheduleG = [];
                 const routinesSchedule = [];
                 const variables = {
                     totalRutinas: 0,
@@ -1446,7 +1446,7 @@ export const auditResponse = (conditions) => {
                 if (objectRoutine != undefined) {
                     // @ts-ignore
                     objectRoutine.map(element2 => {
-                        if (routineUser['routine']['id'] == element2['routine']['id']) {
+                        console.log(element2)//routineUser['routine']['id'] == element2['routine']['id'] && 
                             // @ts-ignore
                             const exisRoutine = routines.some(data => data.id === element2['routine']['id']);
                             if (!exisRoutine) {
@@ -1467,6 +1467,7 @@ export const auditResponse = (conditions) => {
                                 routinesSchedule.push(element2['routineSchedule']);
                             }
 
+                        if (routineUser['user']['id'] == element2['user']['id']) {
                             if (element2['routineState']['name'] == 'Cumplido' || element2['routineState']['name'] == 'Libre') {
                                 variables.totalRealizadas += 1;
                                 const creationDateTime = new Date(`${element2["creationDate"]}T${element2["creationTime"]}`);
