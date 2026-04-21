@@ -1416,7 +1416,7 @@ export const auditResponse = (conditions) => {
                     "Usuario": `${objects[0]['consoleUserId']['firstName'] ?? ''} ${objects[0]['consoleUserId']['lastName'] ?? ''} ${objects[0]['consoleUserId']['secondLastName'] ?? ''}`,
                     //"Total Intentos Marcacion": variables.totalIntentosMarcacion,
                     "Total Marcaciones Hechas": variables.totalMarcacionesHechas,
-                    "Total Alertas Generadas": variables.totalAlertasGeneradas,
+                    "Total Alertas Generadas": conditions.registersNot.length,//variables.totalAlertasGeneradas,
                     //"Total Alertas No Marcadas": variables.totalAlertasNoMarcadas,
                     "Total Alertas Respondidas": variables.totalAlertasRespondidas,
                     "Total Alertas Respondidas A Tiempo": variables.totalAlertasRespondidasATiempo,

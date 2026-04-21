@@ -950,7 +950,6 @@ export class Routines {
                     };
                     let rawExport = rawToExport(0);
                     const totalRegisters = await getFilterEntityCount("RoutineRegister", rawExport);
-                    console.log(totalRegisters);
                     if (totalRegisters === undefined) {
                         onPressed = false;
                         const _dialog = document.getElementById('dialog-content');
