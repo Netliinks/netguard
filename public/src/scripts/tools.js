@@ -816,7 +816,7 @@ export const inputSelectTypeAudit = async (selectId, _inputElements) => {
         });
     });
 };
-export const inputSelectThemeAudit = async (selectId, _inputElements) => {
+export const inputSelectThemeAudit = async (selectId, currentSelect, _inputElements) => {
     const data = ['INGRESO EMERGENTE', 'INGRESO VEHICULAR', 'RUTINA', 'CONSIGNAS (REPORTES)', 'RUTINA DE GUARDIA', 'RUTINA DE CONSOLA'];
     //const type = await currentType;
     const select = document.querySelector(`#${selectId}`);
@@ -849,15 +849,15 @@ export const inputSelectThemeAudit = async (selectId, _inputElements) => {
             //_inputElements.entityElement.removeAttribute('data-optionid');
             //service.removeAttribute('value');
             //service.removeAttribute('data-optionid');
-            if (option.getAttribute('value') === "CLIENTE") {
+            if (option.getAttribute('value') === "RUTINA DE GUARDIA" || option.getAttribute('value') === "RUTINA DE CONSOLA") {
                 //console.log("es cliente")
-                //_inputElements.divStatsCustomer.style.display = "flex";
-                //_inputElements.divStatsUser.style.display = "none";
+                _inputElements.divAllCustomer.style.display = "none";
+                _inputElements.divCustomer.style.display = "none";
             }
             else {
                 //console.log("no es cliente")
-                //_inputElements.divStatsCustomer.style.display = "none";
-                //_inputElements.divStatsUser.style.display = "none";//"flex";
+                _inputElements.divAllCustomer.style.display = "block";
+                _inputElements.divCustomer.style.display = "block";//"flex";
             }
         });
     });

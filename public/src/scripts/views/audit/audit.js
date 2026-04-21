@@ -217,6 +217,7 @@ export class Audits {
         const _inputElements = {
             objetiveTheme: document.getElementById('entity-theme'),
             //objetiveType: document.getElementById('entity-type'),
+            divAllCustomer: document.getElementById('stats-allcustomer'),
             checkAllCustomer: document.getElementById('entity-allcustomer'),
             divCustomer: document.getElementById('div-customer'),
             customerElement: document.getElementById('entity-customer'),
@@ -226,10 +227,11 @@ export class Audits {
             //checkDate: document.getElementById("entity-check-date"),
             calculateButton: document.getElementById('calculate-entity')
         };
-        this.load(_inputElements);
+        
         this.import();
         this.selectElement();
         //this.selectService()
+        this.load(_inputElements);
         this.generateReport(_inputElements);
     }
     load(_inputElements) {
