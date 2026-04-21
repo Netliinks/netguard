@@ -1410,7 +1410,7 @@ export const auditResponse = (conditions) => {
                         }
                     }
                 });
-                const cumplimiento = ((variables.totalAlertasRespondidasATiempo / variables.totalAlertasGeneradas) * 100).toFixed(2);
+                const cumplimiento = ((variables.totalAlertasRespondidasATiempo / conditions.registersNot.length/*variables.totalAlertasGeneradas*/) * 100).toFixed(2);
                 const averageDate = averageTime(averageConsole);
                 const obj = {
                     "Usuario": `${objects[0]['consoleUserId']['firstName'] ?? ''} ${objects[0]['consoleUserId']['lastName'] ?? ''} ${objects[0]['consoleUserId']['secondLastName'] ?? ''}`,
