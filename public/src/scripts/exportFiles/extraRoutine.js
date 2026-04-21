@@ -251,8 +251,8 @@ export const exportRoutinePdf2 = async (ar, users, flipImage) => {
     doc.text(157, row + 22, `${ar[0].fin}`);
     row += 30;
     doc.line(5, row, 205, row); //linea arriba
-    doc.line(5, row, 5, row + 24); //linea izquierda inicial
-    doc.line(205, row, 205, row + 24); //linea derecha final
+    doc.line(5, row, 5, row + 12); //linea izquierda inicial
+    doc.line(205, row, 205, row + 12); //linea derecha final
     doc.line(5, row + 10, 205, row + 10); //linea abajo 1
     doc.setFillColor(10, 71, 88);
     doc.rect(5, row, 200, 10, 'F');
