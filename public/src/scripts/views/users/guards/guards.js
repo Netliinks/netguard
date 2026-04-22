@@ -228,6 +228,10 @@ export class Guards {
 
                             <button class="button" id="mobile-entity" data-entityId="${client.id}" data-entityName="${client.username}"><i class="fa-solid fa-mobile"></i></button>
 
+                            <button class="button" id="facecam-entity" data-entityId="${client.id}" data-entityName="${client.firstName} ${client.lastName}">
+                            <i class="fa-solid fa-image"></i>
+                            </button>
+
                             <button class="button" id="remove-entity" data-entityId="${client.id}">
                             <i class="fa-solid fa-trash"></i>
                             </button>
@@ -1124,6 +1128,16 @@ export class Guards {
                 }
             };
         }
+    }
+    faceCamUser() {
+        const mobile = document.querySelectorAll('#facecam-entity');
+        mobile.forEach((element) => {
+            const entityId = element.dataset.entityid;
+            const entityName = element.dataset.entityname;
+            element.addEventListener('click', () => {
+                RInterface(entityId, entityName);
+            });
+        });
     }
     /*convertToSuper() {
         const convert = document.querySelectorAll('#convert-entity');
