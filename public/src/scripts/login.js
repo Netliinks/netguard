@@ -167,6 +167,11 @@ export class SignIn {
           <h1 class="login_title">Iniciar Sesión</h1>
           <p>Inicie sesión con los datos proporcionados por el proveedor.</p>
         </div>
+        <div class="login_notice" style="margin: 16px 0 18px; padding: 12px 14px; border: 1px solid #f1b55c; background: #fff8e7; color: #7c4d00; border-radius: 6px; font-size: 12px; line-height: 1.5; text-align: center;">
+          <strong>Importante:</strong> Esta versión de la página se cerrará definitivamente el viernes 28 de agosto de 2026.
+          <br>
+          <a href="https://netguard.netliinks.com/" target="_blank" rel="noopener noreferrer" style="color: #21698C; text-decoration: underline; font-weight: 600;">Ir a la nueva página</a>
+        </div>
         <div class="login_content">
           <form id="login-form">
             <div class="input">
