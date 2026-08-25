@@ -26,6 +26,32 @@ let infoPage = {
     timeColorNoti: null,
     audioNoti: new Audio("./public/src/assets/sounds/alarm.mp3")
 };
+const renderClosureNotice = () => {
+    const appContent = document.getElementById('app-content');
+    if (!appContent || document.getElementById('netguard-closure-notice')) {
+        return;
+    }
+    const notice = document.createElement('div');
+    notice.id = 'netguard-closure-notice';
+    notice.style.cssText = `
+    margin: 16px 24px 0;
+    padding: 12px 14px;
+    border: 1px solid #f1b55c;
+    background: #fff8e7;
+    color: #7c4d00;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    box-sizing: border-box;
+  `;
+    notice.innerHTML = `
+    <strong>Importante:</strong> Esta versión de la página se cerrará definitivamente el viernes 28 de agosto de 2026.
+    <br>
+    <a href="https://netguard.netliinks.com/" target="_blank" rel="noopener noreferrer" style="color: #21698C; text-decoration: underline; font-weight: 600;">Ir a la nueva página</a>
+  `;
+    appContent.insertBefore(notice, appContent.firstChild);
+};
 export class RenderApplicationUI {
     constructor() {
         this.loginContainer = document.getElementById('login-container');
@@ -39,6 +65,7 @@ export class RenderApplicationUI {
       this.sidebarContainer.style.display = 'inline-flex';
       this.topbar.style.display = 'flex';
       this.topbar.style.justifyContent = 'space-between';
+      renderClosureNotice();
       await this.renderTopbar();
       new Sidebar().render();
       Config.currentScreen = "AlertsRegisters";

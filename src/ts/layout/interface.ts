@@ -16,8 +16,38 @@ const sidebar: InterfaceElement =
 const app: InterfaceElement =
   document.getElementById('app')
 
+const appContent: InterfaceElement =
+  document.getElementById('app-content')
+
 const userAndPreferences: InterfaceElement =
   document.getElementById('app-topbar')
+
+const renderClosureNotice = (): void => {
+  if (document.getElementById('netguard-closure-notice')) return
+  if (!appContent) return
+
+  const notice = document.createElement('div')
+  notice.id = 'netguard-closure-notice'
+  notice.style.cssText = `
+    margin: 16px 24px 0;
+    padding: 12px 14px;
+    border: 1px solid #f1b55c;
+    background: #fff8e7;
+    color: #7c4d00;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    box-sizing: border-box;
+  `
+  notice.innerHTML = `
+    <strong>Importante:</strong> Esta versión de la página se cerrará definitivamente el viernes 28 de agosto de 2026.
+    <br>
+    <a href="https://netguard.netliinks.com/" target="_blank" rel="noopener noreferrer" style="color: #21698C; text-decoration: underline; font-weight: 600;">Ir a la nueva página</a>
+  `
+
+  appContent.insertBefore(notice, appContent.firstChild)
+}
 
 export const renderLayout = async (): Promise<void> => {
   const data = await getUserInfo()
@@ -34,6 +64,7 @@ const activeElements = (data: any): void => {
   app.classList.add('bg_dots')
   sidebar.style.display = 'inline-flex'
   userAndPreferences.style.display = 'flex'
+  renderClosureNotice()
   renderInterface(data)
   renderSidebar()
 }
