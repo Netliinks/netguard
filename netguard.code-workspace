@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"name": "Root",
+			"path": "./",
+		},
+        {
+            "name": "Styles",
+            "path": "./src/scss"
+        },
+		{
+			"name": "Scripts",
+			"path": "./src/ts"
+		},
+		{
+			"name": "App Views",
+			"path": "./src/ts/views"
+		},
+        {
+			"name": "App Layout",
+			"path": "./src/ts/layout"
+		}
+	],
+	"settings": {
+		"window.zoomLevel": 0,
+		"editor.fontSize": 12,
+		"liveServer.settings.multiRootWorkspaceName": "Root",
+		"prettier.tabWidth": 4,
+        "editor.cursorBlinking": "phase",
+        "editor.detectIndentation": false
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [],
+		"compounds": []
+	},
+}

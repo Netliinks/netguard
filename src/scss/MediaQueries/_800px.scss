@@ -1,0 +1,33 @@
+@media screen and (max-width: 800px) {
+
+    .app {
+        grid-template-columns: 1fr !important;
+    }
+
+    .app_sidebar {
+        display: none !important;
+    }
+
+    .datatable_container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 16px !important;
+    }
+
+    .app_topbar {
+        padding: 16px 0px;
+        max-width: 100% !important;
+        margin: 0;
+    }
+
+    .dashboard_news_and_notes {
+        display: grid !important;
+        grid-template-columns: 50% 50% !important;
+        // grid-template-rows: auto !important;
+
+        .news, .notes {
+            display: inline;
+            // width: 40% !important;
+        }
+    }
+}

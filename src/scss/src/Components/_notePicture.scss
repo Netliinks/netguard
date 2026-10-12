@@ -1,0 +1,19 @@
+// @filename: _notePicture.scss
+
+.note_picture {
+    display: block;
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+    // overflow: hidden;
+    border-radius: 8px;
+    background-color: $grayLightBlue;
+    box-shadow: $lightShadow1;
+    margin-bottom: 22px;
+    box-shadow: $lightShadow2;
+
+    img {
+        display: block;
+        object-fit: cover;
+    }
+}

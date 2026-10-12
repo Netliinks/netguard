@@ -1,0 +1,53 @@
+//
+//  _variables.scss
+//
+//  Created by Poll Castillo on 14/02/2023
+//
+
+// Fonts
+$thin: 100;
+$extraLight: 200;
+$light: 300;
+$regular: 400;
+$medium: 500;
+$semiBold: 600;
+$bold: 700;
+$extraBold: 800;
+$black: 900;
+
+// colors
+$dark: #26233A;
+$red: #DB4545;
+$yellow: #F76400;
+$green: #5DBD51;
+$white: #FFFFFF;
+$slategray: #706F8E;
+$gray: #E9EAEF;
+$grayLightBlue: #F5F6FA;
+$blue: #6F7ADD;
+
+$sidebarBackgroundColor: $dark;
+
+$colorLightShadow1: $dark;
+$colorLightShadow2: $slategray;
+
+// Shadows index
+// 1. Cards and pressed buttons
+// 2. Buttons and notification bandges
+// 3. Navigation Menu and navigation bar
+// 4. Card raised and button raised
+// 5. Picker and popover
+// 6. Modals and dialogues
+
+// Cards and pressed Buttons
+$lightShadow1: 0 0 1px 0 rgba($colorLightShadow1, 0.08), 0 0.5px 2px 0 rgba($colorLightShadow2, 0.16);
+// Buttons and Notification badges
+$lightShadow2: 0 0 1px 0 rgba($colorLightShadow1, 0.04), 0 2px 4px 0 rgba($colorLightShadow2, 0.16);
+// Navigation Menu and navigation bar
+$lightShadow3: 0 0 2px 0 rgba($colorLightShadow1, 0.04), 0 4px 8px 0 rgba($colorLightShadow2, 0.16);
+// Card raised and Button raised
+$lightShadow4: 0 2px 4px 0 rgba($colorLightShadow1, 0.04), 0 8px 16px 0 rgba($colorLightShadow2, 0.16);
+// Picker and popover
+$lightShadow5: 0 2px 8px 0 rgba($colorLightShadow1, 0.04), 0 16px 24px 0 rgba($colorLightShadow2, 0.16);
+// Modals and dialogues
+$lightShadow6: 0 2px 8px 0 rgba($colorLightShadow1, 0.04), 0 20px 32px 0 rgba($colorLightShadow2, 0.24);

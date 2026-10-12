@@ -1,0 +1,56 @@
+
+tbody {
+    .tag span {
+        margin: 0 auto;
+    }
+}
+
+.tag {
+    span {
+      display: block;
+      font-size: 10px;
+      font-weight: $bold;
+      text-transform: uppercase;
+      letter-spacing: 0.25px;
+      width: fit-content;
+      margin: 4px 0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: $slategray;
+      background-color: $gray;
+    }
+
+    &_green {
+      background-color: $green !important;
+      color: $white !important;
+    }
+
+    &_gray {
+      background-color: $gray !important;
+      color: $slategray !important;
+    }
+
+    &_blue {
+      background-color: $blue !important;
+      color: $white !important;
+    }
+
+    &_yellow {
+      background-color: $yellow !important;
+      color: $white !important;
+    }
+
+    &_red {
+      background-color: $red !important;
+      color: $white !important;
+    }
+  }
+
+  i {
+    text-transform: uppercase;
+    font-weight: $bold;
+    color: $slategray;
+    font-style: normal !important;
+    font-size: 10px;
+    text-transform: uppercase;
+  }

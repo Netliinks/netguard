@@ -1,0 +1,32 @@
+//
+//  main.scss
+//
+//  Created by Poll Castillo on 14/02/2023.
+//
+//  Helpers
+@import './src/Helpers/variables';
+@import './src/Helpers/someStyles';
+@import './src/Helpers/reset';
+//  Components
+@import './src/Components/avatar';
+@import './src/Components/buttons';
+@import './src/Components/content';
+@import './src/Components/datatable';
+@import './src/Components/dialogs';
+@import './src/Components/editor';
+@import './src/Components/fonts';
+@import './src/Components/forms';
+@import './src/Components/inputs';
+@import './src/Components/notePicture';
+@import './src/Components/sidebar';
+@import './src/Components/tagsAndBadges';
+@import './src/Components/userSettings';
+@import './src/Components/zoomPicture';
+//  Layout
+@import './src/Layouts/app';
+@import './src/Layouts/dashboard';
+@import './src/Layouts/grid';
+@import './src/Layouts/login';
+//  Media queries
+@import './MediaQueries/1024px';
+@import './MediaQueries/800px';

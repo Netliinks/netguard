@@ -1,0 +1,76 @@
+@media screen and (max-width: 1024px) {
+    .app {
+        display: grid;
+        grid-template-columns: 75px 100%;
+        height: 100vh;
+
+        &_topbar {
+            max-width: 90%;
+        }
+
+        &_sidebar {
+            background-color: $dark;
+            height: 100%;
+            max-width: 100%;
+            overflow-y: scroll;
+
+            &_container {
+              width: 100%;
+            }
+          }
+
+          .sidebar_item {
+              span {
+                display: block;
+                padding: 16px 16px;
+                margin: 8px auto;
+                text-align: center;
+
+              .label {
+                display: none;
+              }
+            }
+          }
+    }
+
+    .datatable_content {
+        display: block;
+        overflow-x: scroll;
+    }
+
+    .dashboard_container {
+        margin: 0;
+        padding: 16px !important;
+    }
+
+    .dashboard_datefilter {
+      display: none;
+    }
+
+    .dashboard_content {
+        grid-template-columns: 1fr !important;
+        // grid-template-rows: fit-content fit-content !important;
+        padding: 0;
+    }
+
+    // .dashboard_news_and_notes {
+    //     display: grid !important;
+    //     grid-template-columns: repeat(2, 1fr) !important;
+    //     width: 100%;
+    //     column-gap: 10px;
+
+    //     .news {
+    //         grid-column: 1 / 2;
+    //     }
+
+    //     .notes {
+    //         grid-column: 2 / 2;
+    //     }
+    // }
+
+    #datatable-container {
+      display: block;
+      width: 100%;
+      max-width: 90%;
+    }
+}
